@@ -14,7 +14,7 @@ def custom_exception_handler(exc, context):
     if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
         response.status_code = status.HTTP_401_UNAUTHORIZED
         response.data = {"code": "NOT_AUTHENTICATED",
-                         "message": "로그인이 필요합니다."}
+                         "message": "로그인 상태가 아닙니다."}
 
     # CSRF 실패: 403
     elif isinstance(exc, PermissionDenied):

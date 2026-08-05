@@ -9,6 +9,11 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 
 # Create your views here.
+
+def _has_profile(user) -> bool:
+    # TODO: 프로필 모델 확정 후 구현
+    return False
+
 # 회원가입
 @api_view(["POST"])
 @permission_classes([AllowAny])   # 공개 엔드포인트
@@ -38,7 +43,7 @@ def login(request):
     if not username or not password:
         return Response(
             {"code": "INVALID_INPUT",
-             "message": "아이디 또는 비밀번호를 모두 입력해주세요."
+             "message": "아이디와 비밀번호를 모두 입력해주세요."
              },
             status=status.HTTP_400_BAD_REQUEST,
         )
@@ -57,18 +62,37 @@ def login(request):
     has_profile = _has_profile(user)  # 프로필 존재 여부 확인
     return Response(
         {"user_id": user.id, "username": user.username,
-         "has_profile": True, "next": "/" if has_profile else "/signup/profile"},
+         "has_profile": has_profile, "next": "/" if has_profile else "/signup/profile"},
          status=status.HTTP_200_OK,
     )
 
 # 로그아웃
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])  
 def logout(request):
-    return render(request, "accounts/logout.html")
+    auth_logout(request)  # 세션 삭제
+    return Response(
+        {"success": True, "night_session_active": True, "next": "/login"}, 
+        status=status.HTTP_200_OK
+    )
 
 # 세션 확인
+@api_view(["GET"])
+@permission_classes([AllowAny])   
+@ensure_csrf_cookie
 def session(request):
-    return render(request, "accounts/session.html")
+    # 미인증
+    if not request.user.is_authenticated:
+        return Response(
+            {"is_authenticated": False, "user_id": None, 
+             "has_profile": False, "next": "/login"},
+            status=status.HTTP_200_OK,
+        )
 
-# 프로필 생성
-@login_required
-def profile_create(request):
+    # 인증됨
+    has_profile = _has_profile(request.user)   # TODO: 프로필 이슈에서 구현
+    return Response(
+        {"is_authenticated": True, "user_id": request.user.id,
+         "has_profile": has_profile, "next": "/" if has_profile else "/signup/profile"},
+        status=status.HTTP_200_OK,
+    )
