@@ -37,7 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    'accounts',
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "EXCEPTION_HANDLER": "config.exception_handlers.custom_exception_handler",
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

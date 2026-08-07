@@ -15,4 +15,5 @@ venv/
 
 # IDE
 .vscode/
-.idea/
+.idea/cookies.txt
+cookies.txt
