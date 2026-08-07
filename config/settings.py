@@ -53,7 +53,7 @@ SITE_ID=1
 
 #kakao
 AUTHENTICATION_BACKENDS= [
-    "django.contrib.backends.ModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -77,11 +77,12 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 #소셜로그인 동작설정
-SOCIALACCOUNT_LOGIN_ON_GET = True # 버튼 클릭시 중간확인없이 바로 카카오로 이동
+SOCIALACCOUNT_LOGIN_ON_GET = False # 폼 + CSRF방어
 SOCIALACCOUNT_EMAIL_REQUIRED = False # 카카오가 이메일 안줘도 가입가능
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none' # 소셜가입시 이메일 인증절차 생략
-
-
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False # 자동연결차단
+LOGIN_REDIRECT_URL = "/" # 로그인 후 리다이렉트 주소
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.KakaoSocialAccountAdapter"
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
