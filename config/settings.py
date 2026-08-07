@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -40,6 +42,19 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'accounts',
+    
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.kakao',
+]
+
+SITE_ID=1
+
+#kakao
+AUTHENTICATION_BACKENDS= [
+    "django.contrib.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 REST_FRAMEWORK = {
@@ -57,7 +72,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    #kakao
+    'allauth.account.middleware.AccountMiddleware',
 ]
+#소셜로그인 동작설정
+SOCIALACCOUNT_LOGIN_ON_GET = True # 버튼 클릭시 중간확인없이 바로 카카오로 이동
+SOCIALACCOUNT_EMAIL_REQUIRED = False # 카카오가 이메일 안줘도 가입가능
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none' # 소셜가입시 이메일 인증절차 생략
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -120,6 +143,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+SOCIALACCOUNT_PROVIDERS = {
+    "kakao": {
+        "APP": {
+            "client_id": os.environ.get("KAKAO_REST_API_KEY"), # .env에서 읽어온 REST API 키
+            "secret": os.environ.get("KAKAO_CLIENT_SECRET"),   # .env에서 읽어온 Client Secret
+            "key": "",
+        }
+    }
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
