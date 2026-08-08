@@ -12,5 +12,7 @@ class UserProfile(models.Model):
     target_sleeptime = models.TimeField(null=True, blank=True)         
     profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True) 
 
+    # TODO: 계산식 등 나중에 작성
+    
     def __str__(self):
         return f"{self.user.username} UserProfile"
