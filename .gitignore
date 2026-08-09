@@ -17,3 +17,6 @@ venv/
 .vscode/
 .idea/cookies.txt
 cookies.txt
+
+# 개인 수동 테스트 스크립트
+calcs/_scratch.py
