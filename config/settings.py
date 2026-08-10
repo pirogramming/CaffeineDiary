@@ -42,19 +42,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'accounts',
-    
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.kakao',
-]
-
-SITE_ID=1
-
-#kakao
-AUTHENTICATION_BACKENDS= [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    'allnight',
+    'diary',
 ]
 
 REST_FRAMEWORK = {
