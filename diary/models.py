@@ -1,26 +1,39 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
-# Create your models here.
+from .constants import Brand, DrinkType
+
+
 class Drink(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="drinks",
     )
-    caffeine_mg = models.FloatField()                       # 1회 제공량 기준 카페인
-    is_favorite = models.BooleanField(default=False)          # 즐겨찾기 음료 여부
-    is_recent = models.BooleanField(default=False)            # 최근 섭취 음료 여부
-    type = models.CharField(max_length=50, blank=True)  # 커피/차/탄산/에너지드링크
-    brand = models.CharField(max_length=100, blank=True)      
-    name = models.CharField(max_length=100)    
-    size = models.CharField(max_length=50, blank=True)  # 용량/사이즈 
-    
+    caffeine_mg = models.PositiveSmallIntegerField()   # 1회 제공량 기준
+
+    type = models.CharField(
+        max_length=20, choices=DrinkType.choices, default=DrinkType.COFFEE
+    )
+    brand = models.CharField(
+        max_length=20, choices=Brand.choices, default=Brand.CUSTOM
+    )
+    name = models.CharField(max_length=100)
+    size = models.CharField(max_length=50, blank=True)  # 브랜드별 라벨, 검증은 serializer
+
+    is_favorite = models.BooleanField(default=False)
+    is_recent = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)       # 소프트 삭제
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.name
-
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "brand", "name", "size"],
+                condition=models.Q(is_active=True),
+                name="uniq_active_drink_per_user",
+            )
+        ]
 
 class CaffeineLog(models.Model):
     user = models.ForeignKey(
