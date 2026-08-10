@@ -18,5 +18,5 @@ venv/
 .idea/cookies.txt
 cookies.txt
 
-# 스크래치/수동 테스트 스크립트
-_scratch.py
+# 개인 수동 테스트 스크립트
+calcs/_scratch.py
