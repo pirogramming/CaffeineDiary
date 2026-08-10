@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'accounts',
+    'allnight',
+    'diary',
 ]
 
 REST_FRAMEWORK = {
