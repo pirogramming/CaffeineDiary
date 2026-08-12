@@ -1,15 +1,35 @@
 """프리셋 음료 카탈로그 레지스트리.
 
-브랜드별 원본 데이터(`starbucks.py` 등)를 읽기 전용으로 모아두고,
+브랜드별 원본 데이터(`starbucks.py`, `compose.py` 등)를 읽기 전용으로 모아두고,
 (브랜드, 음료, 사이즈) leaf 단위로 조회할 수 있는 헬퍼를 제공한다.
 
 이 패키지는 DB에 접근하지 않는다. Drink 모델과의 연결은 serializer가 담당한다.
+새 브랜드를 추가할 때는 (1) 데이터 파일을 만들고 (2) 아래 PRESET_BRANDS에
+등록한 뒤 (3) constants.Brand에도 같은 코드를 추가해야 한다.
 """
 
+from .baik import BAIK
+from .compose import COMPOSE
+from .ediya import EDIYA
+from .gongcha import GONGCHA
+from .mega import MEGA
+from .mammoth import MAMMOTH
 from .starbucks import STARBUCKS
 
-# 브랜드 코드 -> 브랜드 정의. 새 브랜드는 여기에만 추가하면 된다.
-PRESET_BRANDS = {b["code"]: b for b in (STARBUCKS,)}
+# 브랜드 코드 -> 브랜드 정의. 등록 순서가 목록 노출 순서가 된다.
+PRESET_BRANDS = {b["code"]: b for b in (STARBUCKS, COMPOSE, BAIK, MAMMOTH, EDIYA, MEGA, GONGCHA)}
+
+
+def brand_choices():
+    """프리셋이 있는 브랜드의 (코드, 표시명) 목록을 반환한다.
+
+    constants.Brand와의 정합성을 테스트에서 확인하거나, 브랜드 선택
+    드롭다운을 만들 때 쓴다.
+
+    Returns:
+        list[tuple[str, str]]: 예) [("starbucks", "스타벅스"), ...]
+    """
+    return [(code, b["name"]) for code, b in PRESET_BRANDS.items()]
 
 
 def size_labels(brand_code):
