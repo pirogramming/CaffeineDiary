@@ -13,11 +13,15 @@ from .compose import COMPOSE
 from .ediya import EDIYA
 from .gongcha import GONGCHA
 from .mega import MEGA
+from .soda import COCACOLA, PEPSI
 from .mammoth import MAMMOTH
 from .starbucks import STARBUCKS
 
 # 브랜드 코드 -> 브랜드 정의. 등록 순서가 목록 노출 순서가 된다.
-PRESET_BRANDS = {b["code"]: b for b in (STARBUCKS, COMPOSE, BAIK, MAMMOTH, EDIYA, MEGA, GONGCHA)}
+PRESET_BRANDS = {
+    b["code"]: b
+    for b in (STARBUCKS, COMPOSE, BAIK, MAMMOTH, EDIYA, MEGA, GONGCHA, PEPSI, COCACOLA)
+}
 
 
 def brand_choices():

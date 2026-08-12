@@ -40,4 +40,6 @@ class Brand(models.TextChoices):
     EDIYA = "ediya", "이디야커피"
     MEGA = "mega", "메가엠지씨커피"
     GONGCHA = "gongcha", "공차"
+    PEPSI = "pepsi", "펩시"
+    COCACOLA = "cocacola", "코카콜라"
     CUSTOM = "custom", "직접 입력"
