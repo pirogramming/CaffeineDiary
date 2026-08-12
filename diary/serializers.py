@@ -14,7 +14,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .constants import Brand
+from .constants import Brand, DrinkType
 from .models import Drink
 from .presets import find_preset, size_labels
 
@@ -139,7 +139,7 @@ class DrinkSerializer(serializers.ModelSerializer):
             name=validated_data["name"],
             size=validated_data.get("size", ""),
             defaults={
-                "type": validated_data.get("type"),
+                "type": validated_data.get("type", DrinkType.COFFEE),
                 "caffeine_mg": validated_data["caffeine_mg"],
                 "is_favorite": validated_data.get("is_favorite", False),
             },
