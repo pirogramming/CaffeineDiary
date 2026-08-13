@@ -35,4 +35,5 @@ urlpatterns = [
     path('login', login_placeholder, name='login-placeholder'),
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
+    path('', include('diary.urls')),
 ]
