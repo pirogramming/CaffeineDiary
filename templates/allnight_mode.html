@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>밤샘모드</title>
+    <link rel="stylesheet" href="{% static 'css/allnight_mode.css' %}">
+</head>
+<body class="allnight_page">
+    <header class="allnight_header">
+        <div class="logo">
+            <div class="logotext">
+                <span>caffeine</span>
+                <span>diary</span>
+            </div>
+        </div>
+        <nav>
+            <a href="#">메인 화면</a>
+            <a href="#">나의 다이어리</a>
+            <a href="#">음료 추가</a>
+            <a href="#">밤샘 모드</a>
+            <a href="#">로그아웃</a>
+            <a href="#">마이페이지</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="allnight_feed">
+            <section class="cloud_section">
+                <img src="{% static 'images/cloud_section.svg' %}" alt="" class="cloud_background">
+                <div class="cloud_content">
+                    <p class="timer_text">10:30</p> <!-- 자리 표시용으로 임시 설정 -->
+                    <button class="finish_btn">종료버튼</button>
+
+                    <div class="schedule_toggle">
+                        <span class="line"></span>
+                        <span class="toggle_text">오늘의 스케줄</span>
+                        <span class="line"></span>
+                    </div>
+
+                    <ul class="schedule_list">
+                        <li><span class="time">00:00</span><span class="work">공부 시작</span></li> <!-- 자리 표시용으로 임시 설정 -->
+                        <li><span class="time">00:00</span><span class="work">카페인 섭취</span></li> <!-- 자리 표시용으로 임시 설정 -->
+                        <li><span class="time">00:00</span><span class="work">공부 종료</span></li> <!-- 자리 표시용으로 임시 설정 -->
+                    </ul>
+                    <span class="bottom_line"></span>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

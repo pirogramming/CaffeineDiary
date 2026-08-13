@@ -21,6 +21,10 @@ from .serializers import (
     PresetDrinkSerializer,
 )
 
+# 임시로 추가
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+
 
 class DrinkListCreateView(generics.ListCreateAPIView):
     """음료 목록 조회 / 직접 입력 생성.
@@ -106,3 +110,16 @@ class DrinkFromPresetView(generics.CreateAPIView):
 
     serializer_class = DrinkFromPresetSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+# main(맨 처음 들어갔을 때 화면) view 추가 (임시)
+class MainView(LoginRequiredMixin, TemplateView):
+    login_url = "/login"
+    template_name = "diary/base.html"
+    extra_context = {"page_title": "메인 화면"}
+
+
+# feed(한잔마시기) view 추가 (임시))
+class FeedView(LoginRequiredMixin, TemplateView):
+    login_url = "/login"
+    template_name = "diary/feed.html"
+    extra_context = {"page_title": "피드 화면"}

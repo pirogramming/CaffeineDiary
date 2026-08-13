@@ -1,0 +1,154 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-y: auto;   /* 세로 스크롤만 스케줄 길이에 맞춰서 생기게 */
+    overflow-x: hidden;
+    background-color: #35354B;
+}
+
+.allnight_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 84px 0 40px;
+    flex-shrink: 0;
+}
+
+.logo {
+    position: relative;
+}
+
+.logotext {
+    position: absolute;
+    left: 54px;
+    display: flex;
+    flex-direction: column;
+    color: #F4EFE9;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+nav {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    padding-top: 50px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #F4EFE9;
+    font-size: 15px;
+}
+
+
+main {
+    flex: 1;
+    position: relative;
+}
+
+.cloud_section {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-top: 120px;
+}
+
+.cloud_background {
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: auto;
+    z-index: -1;
+}
+
+.cloud_content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
+    padding: 1% 15% 10%;
+}
+
+.timer_text {
+    font-size: 200px;
+    font-weight: bold;
+    color: #eab361;  
+
+}
+
+.finish_btn {
+    background-color: #A98E91;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 80px;
+    font-size: 25px;
+    cursor: pointer;
+    margin-bottom: 60px;
+}
+
+.schedule_toggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 80%;
+    margin: 0 auto 50px;
+    cursor: pointer;  
+}
+
+.line {
+    flex: 1;
+    height: 0;
+    border-top: 2px solid #333;
+    background: none;  
+}
+
+.bottom_line {
+    display: block;
+    width: 80%;
+    height: 0;
+    border-top: 2px solid #333;
+    background: none;
+    margin: 50px auto 0;
+}
+
+.toggle_text {
+    white-space: nowrap;
+    font-size: 25px;
+}
+
+.schedule_list {
+    list-style: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    column-gap: 13em;
+    font-size: 20px;
+    row-gap: 13px;
+}
+
+.schedule_list li {
+    display: contents;
+}
+
+.schedule_list .time {
+    text-align: right;
+}
+
+.schedule_list .work {
+    text-align: left;
+}

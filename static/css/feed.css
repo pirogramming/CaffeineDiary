@@ -1,0 +1,135 @@
+/* ==========================================================
+   feed.css — "나의 다이어리" 메인 화면 (/feed/)
+   클래스는 전부 cd-feed- 로 네임스페이스해서, 다른 페이지의
+   cd-* 클래스와 이름이 겹치지 않게 했다.
+   색상·폰트·간격 값은 base.css의 --cd-* 토큰을 그대로 참조한다.
+   ========================================================== */
+
+/* .cd-main은 base.css가 정의하는 전역 클래스지만, 이 페이지에서만
+   로드되는 feed.css에서 덮어써서 "이 화면 안에서만" 콘텐츠를 정중앙에 둔다.
+   다른 페이지(base.css만 로드하는 곳)에는 영향 없다. */
+.cd-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 히어로 전체를 감싸는 컨테이너.
+   position: relative */
+.cd-feed-hero {
+    display: inline-flex;
+    align-items: flex-start;
+    position: relative;
+    max-width: 620px;
+    transform: translateX(70px); /* 오른쪽으로 40px — 값 조절해서 원하는 만큼 */
+}
+
+.cd-feed-main-wrapper{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+}
+
+/* ---- 상태 표시: "오늘의 카페인 마감 시간은 8:00" ---- */
+
+.cd-feed-hero__label {
+    text-align: center;
+    font-size: 25px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    font-family:var(--cd-font-display);
+    text-align: center;
+    margin-bottom: 10px;
+    color: var(--cd-brown-dark);
+}
+
+.cd-feed-hero__time {
+    font-family: var(--cd-font-display); 
+    font-weight: 800;
+    font-size: 3.4rem;
+    text-align: center;
+    line-height: 1;
+    color: var(--cd-brown-dark);
+}
+.cd-feed-hero__time .cd-numeric {
+    font-family: var(--cd-font-display);
+}
+
+/* ---- "커스텀 마시기" 버튼 ---- */
+
+.cd-feed-bubble {
+    margin-top: 30px;/* 시간 표시 오른쪽에 나란히 오도록 고정 좌표 */
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+.cd-feed-bubble:hover { transform: translateY(-2px); } 
+.cd-feed-bubble:focus-visible {
+    outline: 2px solid var(--cd-brown-deep);
+    outline-offset: 3px;
+    border-radius: 12px; 
+}
+.cd-feed-bubble__img {
+    display: block;
+    width: 220.463px;
+    height: 97px;
+}
+
+/* 컵 버튼 (한잔 마시기 / 즐겨찾는 음료 공통) */  
+
+.cd-feed-cup {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    position: relative; /* .cd-feed-cup__label을 내부 absolute로 겹쳐 올리기 위한 기준점 */
+    color: var(--cd-feed-cup-color, #9DC4C0); /* 타입 클래스가 없으면 기본 민트색 */
+    transition: transform 0.15s ease;
+}
+.cd-feed-cup:hover { transform: translateY(-3px); }
+.cd-feed-cup:focus-visible {
+    outline: 2px solid var(--cd-brown-deep);
+    outline-offset: 6px;
+    border-radius: 12px; /* 아웃라인도 컵 실루엣처럼 둥글게 */
+}
+
+/* ---- 큰 컵: 한잔 마시기 (오늘 마실/마신 음료를 바로 기록하는 메인 CTA) ---- */
+
+.cd-feed-cup-wrap { margin-top: var(--cd-space-6); }
+
+.cd-feed-cup--lg {
+    width: 240px;
+    height: 224px;
+    color: var(--cd-feed-cup-color, #9DC4C0); /* 타입 클래스(cd-feed-cup--coffee 등)가 없으면 기본 민트 */
+}
+
+.cd-feed-cup__label {
+  /* 컵 몸통 안쪽, 살짝 아래 위치에 텍스트를 겹쳐 올림 */
+    position: absolute;
+    left: 0;
+    right: 20%;
+    bottom: 40%;
+    text-align: center;
+    font-size: 25px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    font-family: var(--cd-font-display);
+    color: var(--cd-brown-deep);
+}
+
+/* ---- 작은 컵들: 즐겨찾는 음료 3개 ---- */
+
+.cd-feed-cup-row {
+    display: flex;
+    gap: 12px;
+}
+.cd-feed-cup--sm {
+    width: 86px;
+    height: 80px;
+}
