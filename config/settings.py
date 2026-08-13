@@ -84,7 +84,10 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+
+
         'DIRS': [BASE_DIR / 'templates'], # templates 디렉토리 참조하도록
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -154,4 +157,6 @@ SOCIALACCOUNT_PROVIDERS = {
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+
+STATICFILES_DIRS = [BASE_DIR / 'static']
+

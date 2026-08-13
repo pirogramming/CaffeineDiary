@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, include
-
+from django.views.generic import TemplateView #임시
 
 def home(request):
     # TODO: 프론트엔드 구현 후 SPA index 서빙으로 교체
@@ -35,5 +35,8 @@ urlpatterns = [
     path('login', login_placeholder, name='login-placeholder'),
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
+    path('mypage/', TemplateView.as_view(template_name='mypage.html'), name='mypage'),
+    path('allnight_mode/', TemplateView.as_view(template_name='allnight_mode.html'), name='allnight_mode'),
+    path('allnight_setup/', TemplateView.as_view(template_name='allnight_setup.html'), name='allnight_setup'),
     path('', include('diary.urls')),
 ]
