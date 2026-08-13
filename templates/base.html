@@ -1,0 +1,35 @@
+{% load static %} <!--헤더만 작성-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CaffeineDiary{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header>
+        <div class="logo">
+            <img src="{% static 'images/logo_bg.svg' %}" class="logo_img" alt="로고 배경">
+            <div class="logotext">
+                <span>caffeine</span>
+                <span>diary</span>
+            </div>
+            
+        </div>
+        <nav>
+            <a href="#">메인 화면</a>
+            <a href="#">나의 다이어리</a>
+            <a href="#">음료 추가</a>
+            <a href="#">밤샘 모드</a>
+            <a href="#">로그아웃</a>
+            <a href="#">마이페이지</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

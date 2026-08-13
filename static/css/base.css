@@ -1,0 +1,71 @@
+:root {
+    --background: #F4EFE9;
+    --brown-light: #CABDB8;
+    --brown-dark: #775151;
+    --icon-pink: #FFE6DE;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;  
+    min-height: 100vh;
+    overflow: hidden;       
+    background-color: var(--background);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; 
+    padding: 0 84px 0 0;
+    flex-shrink: 0;    
+}
+
+.logo {
+    position: relative;
+    max-width: 250px;
+}
+
+.logo_img {
+    width: 100%;
+    height: auto;   
+    display: block;
+}
+
+.logotext {
+    position: absolute;
+    top: 46px;
+    left: 54px;
+    color: #ffffff;
+    font-size: 40px;
+    display: flex;
+    flex-direction: column;
+}
+
+nav {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    padding-top: 50px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--brown-dark);
+    font-size: 15px;
+}
+
+main {
+    flex: 1;                
+    position: relative;    
+}

@@ -1,0 +1,149 @@
+.chat_page {
+    display: flex;
+    justify-content: center;
+}
+
+.chat_frame {
+    width: 90%;           
+    max-width: 500px;     
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.chat_container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 봇 메시지 */
+.chatbot {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 75%;
+}
+
+.bot_profile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.bot_icon {
+    width: 28px;
+    height: 28px;
+}
+
+.bot_name {
+    font-size: 12px;
+    color: #775151;
+}
+
+.bot_bubble {
+    position: relative;
+    background-color: #CABDB8;
+    padding: 12px 18px;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #6a4747;
+}
+
+.bot_bubble::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #CABDB8;
+}
+
+/* 시작 메시지 */
+.start_bubble {
+    position: relative;
+    background-color: #6CA9B3;
+    padding: 12px 18px;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+.start_bubble::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #6CA9B3;
+}
+
+/* 사용자 메시지 */
+.chat_user {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.user_bubble {
+    position: relative;
+    background-color: #795B5B;
+    padding: 12px 18px;
+    border-radius: 16px;
+    font-size: 14px;
+    max-width: 60%;
+    color: #ffffff;
+}
+
+.user_bubble::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #795B5B;
+}
+
+/* 입력창 */
+.chat_input_container {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid #ddd;
+}
+
+.chat_input {
+    flex: 1;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    border: 1px solid #ffffff;
+}
+
+.send_btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.send_btn img {
+    width: 24px;
+    height: 24px;
+}
