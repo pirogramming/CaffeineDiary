@@ -77,19 +77,25 @@ class DrinkDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PresetDrinkListView(generics.ListAPIView):
     """프리셋 카탈로그 조회 (읽기 전용).
 
-    GET /users/me/drinks/presets/           - 전체 프리셋
-    GET /users/me/drinks/presets/?brand=... - 특정 브랜드만
+    GET /users/me/drinks/presets/                    - 전체 프리셋
+    GET /users/me/drinks/presets/?type=coffee        - 특정 종류만
+    GET /users/me/drinks/presets/?brand=starbucks    - 특정 브랜드만
+    GET /users/me/drinks/presets/?type=coffee&brand=starbucks - 둘 다 적용
 
     카탈로그는 DB 행이 아니라 상수이므로 (브랜드, 음료, 사이즈) leaf 단위로
-    펼쳐 반환한다. 카페인량이 아직 입력되지 않은 사이즈는 제외된다.
-    """
+    펼쳐 반환한다. 카페인량이 아직 입력되지 않은 사이즈는 제외된다.    """
 
     serializer_class = PresetDrinkSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         brand = self.request.query_params.get("brand")
-        return list(iter_presets(brand_code=brand))
+        drink_type = self.request.query_params.get("type")
+
+        presets = iter_presets(brand_code=brand)
+        if drink_type:
+            presets = (p for p in presets if p["type"] == drink_type)
+        return list(presets)
 
 
 class DrinkFromPresetView(generics.CreateAPIView):
