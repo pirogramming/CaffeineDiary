@@ -108,7 +108,7 @@ class DrinkFromPresetView(generics.CreateAPIView):
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
 class MainView(LoginRequiredMixin, TemplateView):
     login_url = "/login"
-    template_name = "diary/base.html"
+    template_name = "diary/main.html"
     extra_context = {"page_title": "메인 화면"}
 
 
