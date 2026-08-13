@@ -42,7 +42,7 @@
     line-height: normal;
     font-family:var(--cd-font-display);
     text-align: center;
-    color: var(--cd-brown-deep);
+    color: var(--cd-brown-dark);
 }
 
 .cd-feed-hero__time {
@@ -51,7 +51,7 @@
     font-size: 3.4rem;
     text-align: center;
     line-height: 1;
-    color: var(--cd-brown-deep);
+    color: var(--cd-brown-dark);
 }
 .cd-feed-hero__time .cd-numeric {
     font-family: var(--cd-font-display);
