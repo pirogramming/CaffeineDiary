@@ -18,6 +18,7 @@ class Drink(models.Model):
     brand = models.CharField(
         max_length=20, choices=Brand.choices, default=Brand.CUSTOM
     )
+    custom_brand_name = models.CharField(max_length=100, blank=True)  # brand=custom일 때만 사용하는 자유 입력 브랜드명
     name = models.CharField(max_length=100)
     size = models.CharField(max_length=50, blank=True)  # 브랜드별 라벨, 검증은 serializer
 
@@ -29,7 +30,7 @@ class Drink(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "brand", "name", "size"],
+                fields=["user", "brand", "custom_brand_name", "name", "size"],
                 condition=models.Q(is_active=True),
                 name="uniq_active_drink_per_user",
             )
