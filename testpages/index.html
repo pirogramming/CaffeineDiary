@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[홈] 진입 화면</title>
+</head>
+<body>
+
+<h1>[홈] 진입 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p>앱 진입 시 로딩되는 화면. 로그인 여부에 따라 실제 서비스라면 로그인 화면 또는 메인 화면으로 분기됩니다.</p>
+
+<h2>GET /</h2>
+<pre id="home-result">로딩중...</pre>
+
+<h2>GET /auth/session/</h2>
+<pre id="session-result">로딩중...</pre>
+
+<script src="common.js"></script>
+<script>
+window.addEventListener("DOMContentLoaded", async () => {
+  initNav();
+  renderResult("home-result", await apiFetch("/"));
+  renderResult("session-result", await apiFetch("/auth/session/"));
+});
+</script>
+
+</body>
+</html>

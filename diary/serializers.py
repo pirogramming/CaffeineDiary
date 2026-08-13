@@ -30,7 +30,7 @@ class DrinkSerializer(serializers.ModelSerializer):
     """
 
     type_display = serializers.CharField(source="get_type_display", read_only=True)
-    brand_display = serializers.CharField(source="get_brand_display", read_only=True)
+    brand_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Drink
@@ -39,6 +39,7 @@ class DrinkSerializer(serializers.ModelSerializer):
             "type",
             "type_display",
             "brand",
+            "custom_brand_name",
             "brand_display",
             "name",
             "size",
@@ -48,6 +49,19 @@ class DrinkSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "is_recent", "created_at"]
+
+    def get_brand_display(self, obj):
+        """brand=custom이고 custom_brand_name이 있으면 그 값을, 아니면 choices 라벨을 보여준다.
+
+        Args:
+            obj (Drink): 직렬화 대상 인스턴스
+
+        Returns:
+            str: 화면에 보여줄 브랜드명
+        """
+        if obj.brand == Brand.CUSTOM and obj.custom_brand_name:
+            return obj.custom_brand_name
+        return obj.get_brand_display()
 
     def validate_name(self, value):
         """음료명 공백을 정리하고 빈 문자열을 거부한다.
@@ -105,6 +119,10 @@ class DrinkSerializer(serializers.ModelSerializer):
         brand = attrs.get("brand") or getattr(self.instance, "brand", Brand.CUSTOM)
         size = attrs.get("size", getattr(self.instance, "size", ""))
 
+        # custom이 아닌 브랜드에는 자유 입력 브랜드명이 의미가 없으므로 비워둔다.
+        if brand != Brand.CUSTOM:
+            attrs["custom_brand_name"] = ""
+
         labels = size_labels(brand)
         if not labels:
             return attrs
@@ -136,6 +154,7 @@ class DrinkSerializer(serializers.ModelSerializer):
         return _create_or_revive(
             user=user,
             brand=validated_data.get("brand", Brand.CUSTOM),
+            custom_brand_name=validated_data.get("custom_brand_name", ""),
             name=validated_data["name"],
             size=validated_data.get("size", ""),
             defaults={
@@ -226,6 +245,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
         return _create_or_revive(
             user=self.context["request"].user,
             brand=preset["brand"],
+            custom_brand_name="",
             name=preset["name"],
             size=preset["size"] or "",
             defaults={
@@ -251,7 +271,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
 
 
 @transaction.atomic
-def _create_or_revive(user, brand, name, size, defaults):
+def _create_or_revive(user, brand, custom_brand_name, name, size, defaults):
     """중복 음료를 새로 만들지 않고 되살리거나 갱신한다.
 
     Drink에 걸린 UniqueConstraint는 is_active=True 조건부라서 DRF의
@@ -266,6 +286,7 @@ def _create_or_revive(user, brand, name, size, defaults):
     Args:
         user (User): 소유자
         brand (str): 브랜드 코드
+        custom_brand_name (str): brand=custom일 때의 자유 입력 브랜드명. 그 외엔 빈 문자열
         name (str): 음료명
         size (str): 사이즈 라벨. 사이즈가 없으면 빈 문자열
         defaults (dict): type, caffeine_mg, is_favorite
@@ -275,14 +296,14 @@ def _create_or_revive(user, brand, name, size, defaults):
     """
     existing = (
         Drink.objects.select_for_update()
-        .filter(user=user, brand=brand, name=name, size=size)
+        .filter(user=user, brand=brand, custom_brand_name=custom_brand_name, name=name, size=size)
         .order_by("-is_active", "-created_at")
         .first()
     )
 
     if existing is None:
         return Drink.objects.create(
-            user=user, brand=brand, name=name, size=size, **defaults
+            user=user, brand=brand, custom_brand_name=custom_brand_name, name=name, size=size, **defaults
         )
 
     if not existing.is_active:
