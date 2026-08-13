@@ -1,71 +1,161 @@
+/* ==========================================================
+   base.css — Caffeine Diary 앱 공통 
+   로그인 이후 화면들 (feed, 밤샘 모드, 마이페이지 등)이 전부 이 파일을 공유
+   ========================================================== */
+
+/* ---- 디자인 토큰 ----
+   색상·폰트·간격 값을 한 곳에 모아두고, 실제 규칙에서는 var(--cd-*)로만 참조  */
+
 :root {
-    --background: #F4EFE9;
-    --brown-light: #CABDB8;
-    --brown-dark: #775151;
-    --icon-pink: #FFE6DE;
+    /* Color */
+    --cd-cream:       #F4EFE9; /* 캔버스 기본 배경 */
+    --cd-brown-light: #CABDB8; /* 연한 갈색 */
+    --cd-brown-dark:  #775151; /* 진한 갈색 */
+    --cd-brown-deep:  #543131; /* 커피색 */
+     --cd-brown-ink:   #775151; /* 본문 텍스트 기본색 */
+
+    /* Type — 역할별 서체 3종 */
+    --cd-font-display: 'Kirang Haerang', 'Baloo 2', cursive; /* 로고·헤딩·히어로 숫자 — 손글씨 톤, 한글도 지원 */
+    --cd-font-body:    'Noto Sans KR', -apple-system, sans-serif; /* 본문·버튼 등 일반 텍스트 */
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ---- 리셋 ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 
-html, body {
-    height: 100%;
-}
+/* body는 실제 화면이 아니라, 1280×832 캔버스(.cd-app)를 감싸는 "바깥 프레임" 역할.
+   뷰포트가 캔버스보다 크면 이 어두운 배경이 여백으로 보이고, 작으면 body 자체가
+   스크롤되며 캔버스 크기는 항상 그대로 유지. */
 
 body {
-    display: flex;
-    flex-direction: column;  
     min-height: 100vh;
-    overflow: hidden;       
-    background-color: var(--background);
+    background: var(--cd-cream);
+    color: var(--cd-brown-ink);
+    font-family: var(--cd-font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; 
-    padding: 0 84px 0 0;
-    flex-shrink: 0;    
+h1, h2, h3, h4 { font-family: var(--cd-font-display); margin: 0; color: var(--cd-brown-deep); }
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; } /* 폼 요소는 브라우저 기본 폰트를 안 쓰게 강제 상속 */
+ul { list-style: none; margin: 0; padding: 0; }
+img, svg { display: block; max-width: 100%; }
+
+/* 숫자·시간 등 "데이터"는 항상 이 클래스로 감싼다.
+   모노스페이스라 자리수가 바뀌어도(1자리↔2자리) 정렬이 흔들리지 않는다. */
+
+.cd-numeric {
+    font-family: var(--cd-font-display); 
+    font-variant-numeric: tabular-nums; /* 숫자 폭을 고정폭으로 강제 */
 }
 
-.logo {
-    position: relative;
-    max-width: 250px;
-}
-
-.logo_img {
-    width: 100%;
-    height: auto;   
-    display: block;
-}
-
-.logotext {
-    position: absolute;
-    top: 46px;
-    left: 54px;
-    color: #ffffff;
-    font-size: 40px;
+/* ==========================================================
+   1280×832 고정 캔버스
+   ========================================================== */
+.cd-app {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-nav {
+/* ==========================================================
+   Header — 좌측 찢어진 종이 로고 카드 + 우측 가로 메뉴
+   base.html에서 {% block header %}로 감싸져 있음
+   ========================================================== */
+.cd-header {
+    position: relative;
     display: flex;
-    gap: 50px;
+    align-items: flex-start;         /* 로고 카드가 nav보다 키가 크므로 위쪽 기준으로 정렬 */
+    justify-content: space-between;
+    padding: 0 20px 0 0; /* 우측에만 여백 — 좌측은 로고 카드가 캔버스 끝까지 붙어야 함 */
+}
+ 
+.cd-logo-card {
+    position: relative; /* 이미지(찢어진 종이)와 텍스트를 겹치는 기준 */
+    width: 260px;
+    flex-shrink: 0; 
+    aspect-ratio: 307 / 217; /* logo_background.png의 실제 가로세로 비율 — 찌그러짐 방지 */
+    padding: 24px 30px 32px;
+    color: var(--cd-cream);
+}
+.cd-logo-card__bg {
+    /* 찢어진 종이 모양의 투명 PNG. 카드 전체를 채우는 배경 레이어로 깔고
+        텍스트보다 아래(z-index: 0)에 둔다. */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 0;
+    pointer-events: none; /* 로고 클릭(a 태그)이 이미지에 가로막히지 않도록 */
+}
+.cd-logo-card__link {
+    position: relative;
+    z-index: 1; /* 배경 이미지 위로 */
+    display: inline-block;
+    color: #FFF;
+    text-align: center;
+    font-family: "Kirang Haerang";
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 35px; /* 87.5% */
+    padding: 10px;
+}
+ 
+.cd-nav {
+    display: flex;
     align-items: center;
-    padding-top: 50px;
+    flex-wrap: wrap; /* 메뉴 항목이 늘어나면 줄바꿈 */
+    gap: 50px;
+    padding: 50px 70px 10px 0; /* 로고 카드의 텍스트 위치와 세로선이 비슷하게 맞도록 상단 여백만 */
 }
-
-nav a {
-    text-decoration: none;
-    color: var(--brown-dark);
-    font-size: 15px;
+.cd-nav__link {
+    /* <a>와 <button>(로그아웃) 둘 다 이 클래스 사용 */
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--cd-font-body);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--cd-brown-ink);
+    position: relative; /* 아래 ::after 밑줄의 기준점 */
 }
-
-main {
-    flex: 1;                
-    position: relative;    
+.cd-nav__link::after {
+    /* hover/현재 페이지일 때만 나타나는 밑줄. 항상 존재하되 scaleX(0)로 숨겨두고
+        transform만 바꿔서 애니메이션시키는 방식 -> 임시 */
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -6px;
+    height: 2px;
+    background: var(--cd-brown-deep);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.15s ease;
 }
+.cd-nav__link:hover::after,
+.cd-nav__link[aria-current="page"]::after { transform: scaleX(1); }
+.cd-nav__link[aria-current="page"] { color: var(--cd-brown-deep); } /* 현재 페이지는 글자색도 살짝 진하게 */
+.cd-nav__link:focus-visible {
+    outline: 2px solid var(--cd-brown-deep);
+    outline-offset: 4px;
+}
+ 
+/* ==========================================================
+   Content — 페이지별로 {% block content %}만 채우면 되는 영역
+   ========================================================== */
+.cd-main {
+    flex: 1; /* .cd-app이 column flex라, 헤더를 제외한 나머지 세로 공간을 전부 차지 */
+    padding: 48px 20px 64px;
+}
+ 
+/* 시스템 설정에서 "동작 줄이기"를 켠 사용자를 위한 접근성 대응.
+   모든 transition/animation을 즉시 종료 상태로 강제한다. */
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}
+ 

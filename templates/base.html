@@ -1,35 +1,45 @@
-{% load static %} <!--헤더만 작성-->
 <!DOCTYPE html>
+{% load static %}
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CaffeineDiary{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    {% block extra_css %}{% endblock %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Caffeine Diary{% endblock %}</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+{% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
-    <header>
-        <div class="logo">
-            <img src="{% static 'images/logo_bg.svg' %}" class="logo_img" alt="로고 배경">
-            <div class="logotext">
-                <span>caffeine</span>
-                <span>diary</span>
-            </div>
-            
-        </div>
-        <nav>
-            <a href="#">메인 화면</a>
-            <a href="#">나의 다이어리</a>
-            <a href="#">음료 추가</a>
-            <a href="#">밤샘 모드</a>
-            <a href="#">로그아웃</a>
-            <a href="#">마이페이지</a>
-        </nav>
-    </header>
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+<body>
+<div class="cd-app">
+  {% block header %}
+  <header class="cd-header">
+    <div class="cd-logo-card">
+      <img src="{% static 'images/logo_background.png' %}" alt="" class="cd-logo-card__bg">
+      <a href="#" class="cd-logo-card__link" aria-label="Caffeine Diary 메인으로">
+        caffeine<br>diary
+      </a>
+    </div>
+    <nav class="cd-nav" aria-label="주 메뉴">
+      <a href="#" class="cd-nav__link">메인 화면</a>
+      <a href="{% url 'diary:feed' %}" class="cd-nav__link">나의 다이어리</a>
+      <a href="{% url 'diary:drink-list' %}" class="cd-nav__link">음료 추가</a>
+      <a href="#" class="cd-nav__link">밤샘 모드</a>
+      <button type="button" class="cd-nav__link" id="cd-logout-btn">로그아웃</button>
+      <a href="#" class="cd-nav__link">마이페이지</a>
+    </nav>
+  </header>
+  {% endblock %}
+
+  <main class="cd-main">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="{% static 'js/base.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
