@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[프리셋 카탈로그] 화면</title>
+</head>
+<body>
+
+<h1>[프리셋 카탈로그] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<h2>프리셋에서 담기 (type → brand → 이름 → 사이즈 순으로 선택)</h2>
+<p>type/brand를 고르면 그 조합에 실제로 존재하는 이름만, 이름을 고르면 그 이름에 존재하는 사이즈만 나타납니다. caffeine_mg는 입력값이 아니라 서버가 카탈로그에서 채우는 값이라 사이즈 옆에 미리보기로만 보여줍니다.</p>
+
+<form id="from-preset-form">
+  <label>type
+    <select id="type-select" required>
+      <option value="">-- 선택 --</option>
+      <option value="coffee">coffee</option>
+      <option value="tea">tea</option>
+      <option value="energy">energy</option>
+      <option value="soda">soda</option>
+      <option value="other">other</option>
+    </select>
+  </label><br><br>
+
+  <label>brand
+    <select id="brand-select" required>
+      <option value="">-- 선택 --</option>
+      <option value="starbucks">starbucks</option>
+      <option value="compose">compose</option>
+      <option value="baik">baik</option>
+      <option value="mammoth">mammoth</option>
+      <option value="ediya">ediya</option>
+      <option value="mega">mega</option>
+      <option value="gongcha">gongcha</option>
+      <option value="pepsi">pepsi</option>
+      <option value="cocacola">cocacola</option>
+    </select>
+  </label><br><br>
+
+  <label>name
+    <select id="name-select" disabled>
+      <option value="">-- type/brand를 먼저 선택하세요 --</option>
+    </select>
+  </label><br><br>
+
+  <label>size
+    <select id="size-select" disabled>
+      <option value="">-- 이름을 먼저 선택하세요 --</option>
+    </select>
+  </label><br><br>
+
+  <label>is_favorite <input type="checkbox" id="is-favorite"></label><br><br>
+
+  <button type="submit">담기 (POST /users/me/drinks/from-preset/)</button>
+</form>
+
+<h3>후보 목록 (GET /users/me/drinks/presets/?brand=... 원본, type으로 클라이언트에서 한번 더 거름)</h3>
+<pre id="catalog-raw">(type/brand를 모두 선택하세요)</pre>
+
+<h3>담기 응답</h3>
+<pre id="from-preset-result">(아직 요청 없음)</pre>
+
+<p><a href="/testpages/drinks.html">내 음료 목록으로 이동해서 확인</a></p>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+let catalogCache = [];
+
+async function onTypeOrBrandChange() {
+  const type = document.getElementById("type-select").value;
+  const brand = document.getElementById("brand-select").value;
+  const nameSelect = document.getElementById("name-select");
+  const sizeSelect = document.getElementById("size-select");
+
+  nameSelect.innerHTML = '<option value="">-- 선택 --</option>';
+  sizeSelect.innerHTML = '<option value="">-- 이름을 먼저 선택하세요 --</option>';
+  nameSelect.disabled = true;
+  sizeSelect.disabled = true;
+  catalogCache = [];
+
+  if (!type || !brand) {
+    document.getElementById("catalog-raw").textContent = "(type/brand를 모두 선택하세요)";
+    return;
+  }
+
+  const result = await apiFetch("/users/me/drinks/presets/?brand=" + encodeURIComponent(brand));
+  renderResult("catalog-raw", result);
+
+  const items = Array.isArray(result.data) ? result.data : [];
+  catalogCache = items.filter((item) => item.type === type);
+
+  const names = [...new Set(catalogCache.map((item) => item.name))];
+  if (names.length === 0) {
+    nameSelect.innerHTML = '<option value="">-- 해당 조합의 음료 없음 --</option>';
+    return;
+  }
+  nameSelect.innerHTML = '<option value="">-- 선택 --</option>';
+  names.forEach((name) => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    nameSelect.appendChild(opt);
+  });
+  nameSelect.disabled = false;
+}
+
+function onNameChange() {
+  const name = document.getElementById("name-select").value;
+  const sizeSelect = document.getElementById("size-select");
+  sizeSelect.innerHTML = '<option value="">-- 선택 --</option>';
+
+  if (!name) {
+    sizeSelect.disabled = true;
+    return;
+  }
+
+  const matches = catalogCache.filter((item) => item.name === name);
+  matches.forEach((item) => {
+    const opt = document.createElement("option");
+    opt.value = item.size;
+    opt.textContent = item.size + " (" + item.caffeine_mg + "mg)";
+    sizeSelect.appendChild(opt);
+  });
+  sizeSelect.disabled = matches.length === 0;
+}
+
+document.getElementById("type-select").addEventListener("change", onTypeOrBrandChange);
+document.getElementById("brand-select").addEventListener("change", onTypeOrBrandChange);
+document.getElementById("name-select").addEventListener("change", onNameChange);
+
+document.getElementById("from-preset-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const brand = document.getElementById("brand-select").value;
+  const name = document.getElementById("name-select").value;
+  const size = document.getElementById("size-select").value;
+  const isFavorite = document.getElementById("is-favorite").checked;
+
+  if (!brand || !name || !size) {
+    alert("type/brand/이름/사이즈를 모두 선택하세요.");
+    return;
+  }
+
+  const result = await apiFetch("/users/me/drinks/from-preset/", "POST", {
+    brand,
+    name,
+    size,
+    is_favorite: isFavorite,
+  });
+  renderResult("from-preset-result", result);
+});
+</script>
+
+</body>
+</html>
