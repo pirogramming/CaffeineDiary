@@ -34,4 +34,7 @@ urlpatterns = [
         views.DrinkDetailView.as_view(),
         name="drink-detail",
     ),
+
+    # feed url 임시로추가
+    path("feed/", views.FeedView.as_view(), name="feed"),  
 ]
