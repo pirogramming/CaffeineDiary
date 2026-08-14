@@ -39,16 +39,16 @@
 /* ---- 카드: 정중앙에 절대좌표로 고정 ---- */
 
 .cd-auth__paper {
-display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 52%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 300px;
-  padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    padding: 10px;
 }
 
 /* ---- 타이틀 ---- */
@@ -186,4 +186,17 @@ display: flex;
 @media (prefers-reduced-motion: reduce) {
   .cd-auth__submit,
   .cd-auth__social-btn { transition: none; }
+}
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 크기 조정
+   ========================================================== */
+
+@media (max-width: 767px) {
+    .cd-auth__bg {width: 650px;}
+}
+
+@media (max-width: 480px) {
+    .cd-auth__bg {display: none;}
+    .cd-auth__paper { background-color: #FFF ; padding: 25px 30px 40px;}
 }
