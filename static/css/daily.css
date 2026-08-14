@@ -40,7 +40,7 @@
     height: auto;
     z-index: 1;
     pointer-events: none;
-    transform: translateY(-30px);
+    transform: translateY(-150px);
 }
 
 /* 내용 박스 */
@@ -402,4 +402,33 @@
     color: #B4552E;
     text-align: center;
     margin-top: -30px;
+}
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .cd-bg-icons__icon {transform: rotate(var(--icon-rotate, 0deg)) scale(var(--icon-scale, 0.6));}
+  .cd-daily__paper {transform: translateY(30px);min-height: 100%;}
+}
+
+@media (max-width: 480px) {
+    .cd-daily__paper {transform: translateY(30px); min-height: 100%;}
+    .cd-daily-rating__beans {gap: 0px;}
+
+    .cd-daily-rating__next-icon, 
+    .cd-daily-time__next-icon, 
+    .cd-daily-rating__back-icon, 
+    .cd-daily-time__back-icon {width: 50px; height: 50px;}
+
+    .cd-daily-rating__next, 
+    .cd-daily-time__next, 
+    .cd-daily-rating__back, 
+    .cd-daily-time__back {font-size:0;}
+
+    .cd-daily-rating__next, 
+    .cd-daily-time__next{right: 50px;}
+    .cd-daily-rating__back, 
+    .cd-daily-time__back {left:50px;}
 }
