@@ -12,6 +12,7 @@
 """
 
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 
 from calcs.pharmacokinetics import concentration_at
@@ -419,7 +420,10 @@ class SleepLogSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """기상 시각이 취침 시각보다 앞서는 등의 명백한 오입력을 막는다.
+        """기상 시각이 취침 시각보다 앞서거나, 취침 시각이 미래인 오입력을 막는다.
+
+        미래 actual_bedtime 차단은 명세 SLEEP-002 요구사항이다("아직 안 일어난
+        일"을 기록할 수 없게 한다).
 
         Args:
             attrs (dict): 필드 단위 검증을 통과한 값들
@@ -428,13 +432,18 @@ class SleepLogSerializer(serializers.ModelSerializer):
             dict: 그대로 통과된 attrs
 
         Raises:
-            serializers.ValidationError: wakeup_time이 actual_bedtime보다 앞선 경우
+            serializers.ValidationError: wakeup_time이 actual_bedtime보다 앞서거나,
+                actual_bedtime이 미래 시각인 경우
         """
         bedtime = attrs.get("actual_bedtime", getattr(self.instance, "actual_bedtime", None))
         wakeup = attrs.get("wakeup_time", getattr(self.instance, "wakeup_time", None))
         if bedtime and wakeup and wakeup <= bedtime:
             raise serializers.ValidationError(
                 {"wakeup_time": "기상 시각은 취침 시각 이후여야 합니다."}
+            )
+        if "actual_bedtime" in attrs and bedtime and bedtime > timezone.now():
+            raise serializers.ValidationError(
+                {"actual_bedtime": "미래 시각은 입력할 수 없습니다."}
             )
         return attrs
 

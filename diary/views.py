@@ -11,8 +11,6 @@
     아예 제외한다(404로 떨어진다).
 """
 
-from datetime import datetime, time as dt_time
-
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from rest_framework import generics, permissions, status
@@ -33,7 +31,7 @@ from calcs.pharmacokinetics import (
     service_date,
 )
 
-from .calc_bridge import doses_for_user, reference_dose_mg, theta_for_user
+from .calc_bridge import doses_for_user, reference_dose_mg, service_day_bounds, theta_for_user
 from .models import CaffeineLog, Drink, SleepLog
 from .presets import iter_presets
 from .serializers import (
@@ -205,8 +203,9 @@ class SleepLogListCreateView(generics.ListCreateAPIView):
 
     GET  /sleep-logs/   - 본인 기록 목록(최신순). start_date~end_date로
                           기간을 좁히고 page/page_size로 페이지네이션한다.
-    POST /sleep-logs/   - 수면기록 생성. actual_bedtime을 보내면 그 시각의
-                          잔류 카페인량을 서버가 계산해 함께 저장한다.
+    POST /sleep-logs/   - 수면기록 생성(명세 SLEEP-002, "수면 설문 입력"). 하루
+                          1회만 허용하며, actual_bedtime을 보내면 그 시각의
+                          잔류 카페인량과 갱신된 개인화 θ를 함께 계산해 저장한다.
 
     기간 필터는 created_at의 날짜(서버 타임존 Asia/Seoul) 기준이다.
     start_date/end_date는 YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
@@ -227,6 +226,31 @@ class SleepLogListCreateView(generics.ListCreateAPIView):
         if end:
             qs = qs.filter(created_at__date__lte=end)
         return qs
+
+    def create(self, request, *args, **kwargs):
+        """오늘자 수면기록이 이미 있으면 409로 막는다(명세: 하루 1회 제출).
+
+        생성에 성공하면, 방금 만든 기록까지 반영한 개인화 진행도(θ, 설문
+        누적 수, 가중치)를 응답에 함께 실어 CALC-005 갱신 결과를 바로
+        보여준다.
+        """
+        today, day_start = service_day_bounds(timezone.now())
+        if SleepLog.objects.filter(user=request.user, created_at__gte=day_start).exists():
+            return Response(
+                {
+                    "code": "DAILY_LOG_ALREADY_EXISTS",
+                    "message": "오늘의 수면 기록이 이미 저장되었습니다.",
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        response = super().create(request, *args, **kwargs)
+
+        theta = theta_for_user(request.user)
+        response.data["threshold_mg"] = theta.theta_mg
+        response.data["daily_log_count"] = theta.n_records
+        response.data["personalization_weight"] = theta.weight
+        return response
 
 
 class SleepLogDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -280,12 +304,8 @@ class FeedStatusView(APIView):
 
         compact = request.query_params.get("compact", "").lower() == "true"
         now = timezone.now()
-        # 서비스일 경계(05:00)는 서버 로컬시각(Asia/Seoul) 기준이다. now는 항상 UTC를
-        # 담고 있으므로(Django의 timezone.now() 규약), .date()/.hour를 직접 쓰면 안 되고
-        # localtime으로 변환한 값을 써야 한다.
         local_now = timezone.localtime(now)
-        today = service_date(local_now)
-        day_start = timezone.make_aware(datetime.combine(today, dt_time(hour=SERVICE_DAY_START_HOUR)))
+        today, day_start = service_day_bounds(now)
 
         sleep_survey_required = self._sleep_survey_required(user, local_now, today, day_start)
         night_session_active = AllNightSession.objects.filter(

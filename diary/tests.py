@@ -269,6 +269,41 @@ class SleepLogAPITests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(res.data["residual_mg_at_sleep"])
 
+    # ------------------------------------------------------------ 하루 1회 제한
+
+    def test_second_post_same_day_rejected(self):
+        """같은 서비스일에 두 번째로 POST하면 409 DAILY_LOG_ALREADY_EXISTS."""
+        first = self.client.post(self.list_url, {"sleep_quality": 3}, format="json")
+        self.assertEqual(first.status_code, status.HTTP_201_CREATED)
+
+        second = self.client.post(self.list_url, {"sleep_quality": 4}, format="json")
+        self.assertEqual(second.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(second.data["code"], "DAILY_LOG_ALREADY_EXISTS")
+        self.assertEqual(SleepLog.objects.filter(user=self.user).count(), 1)
+
+    def test_second_post_does_not_block_other_users(self):
+        """하루 1회 제한은 사용자별로 독립적이다."""
+        self.client.post(self.list_url, {"sleep_quality": 3}, format="json")
+
+        self.client.force_authenticate(self.other)
+        res = self.client.post(self.list_url, {"sleep_quality": 3}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_create_response_includes_personalization_progress(self):
+        """생성 응답에 갱신된 θ·설문 누적 수·가중치가 함께 실린다."""
+        bedtime = timezone.now()
+        self._log_caffeine_at(self.user, 100, bedtime - timedelta(hours=5))
+
+        res = self.client.post(
+            self.list_url,
+            {"actual_bedtime": bedtime.isoformat(), "sleep_quality": 2},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertIn("threshold_mg", res.data)
+        self.assertEqual(res.data["daily_log_count"], 1)
+        self.assertGreater(res.data["personalization_weight"], 0)
+
     # ------------------------------------------------------------------ 검증
 
     def test_sleep_quality_out_of_range_rejected(self):
@@ -290,6 +325,24 @@ class SleepLogAPITests(APITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("wakeup_time", res.data)
+
+    def test_future_bedtime_rejected(self):
+        """미래 시각의 actual_bedtime은 400."""
+        future = timezone.now() + timedelta(hours=1)
+        res = self.client.post(
+            self.list_url, {"actual_bedtime": future.isoformat()}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("actual_bedtime", res.data)
+
+    def test_patch_future_bedtime_rejected(self):
+        """수정 시에도 미래 actual_bedtime은 400."""
+        log = SleepLog.objects.create(user=self.user, sleep_quality=3)
+        future = timezone.now() + timedelta(hours=1)
+        res = self.client.patch(
+            self.detail_url(log.id), {"actual_bedtime": future.isoformat()}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     # ------------------------------------------------------------------ 조회
 

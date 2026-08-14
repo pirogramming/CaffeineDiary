@@ -7,9 +7,12 @@ docstring 참고). CaffeineLog/SleepLog/Drink를 calcs가 쓰는 Dose/SleepRecor
 재사용한다.
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from datetime import time as dt_time
 
-from calcs.pharmacokinetics import Dose
+from django.utils import timezone
+
+from calcs.pharmacokinetics import SERVICE_DAY_START_HOUR, Dose, service_date
 from calcs.personalization import SleepRecord, ThetaResult, estimate_theta
 
 from .models import CaffeineLog, Drink, SleepLog
@@ -55,6 +58,20 @@ def theta_for_user(user) -> ThetaResult:
         for log in logs
     ]
     return estimate_theta(records)
+
+
+def service_day_bounds(now):
+    """now가 속한 서비스일(today)과 그 시작 시각(day_start)을 반환한다.
+
+    서비스일 경계는 05:00, 서버 로컬시각(Asia/Seoul) 기준이다. now는 항상
+    UTC를 담고 있으므로(Django timezone.now() 규약) localtime으로 변환한
+    뒤 날짜를 뽑아야 한다. FeedStatusView(피드 계산)와 SleepLog 하루 1회
+    제한 판정 양쪽에서 같은 "오늘"을 써야 하므로 여기 모아둔다.
+    """
+    local_now = timezone.localtime(now)
+    today = service_date(local_now)
+    day_start = timezone.make_aware(datetime.combine(today, dt_time(hour=SERVICE_DAY_START_HOUR)))
+    return today, day_start
 
 
 def reference_dose_mg(user):
