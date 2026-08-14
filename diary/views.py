@@ -15,13 +15,14 @@ from django.utils.dateparse import parse_date
 from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 
-from .models import CaffeineLog, Drink
+from .models import CaffeineLog, Drink, SleepLog
 from .presets import iter_presets
 from .serializers import (
     CaffeineLogSerializer,
     DrinkFromPresetSerializer,
     DrinkSerializer,
     PresetDrinkSerializer,
+    SleepLogSerializer,
 )
 
 # 임시로 추가
@@ -170,6 +171,60 @@ class CaffeineLogDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return CaffeineLog.objects.filter(user=self.request.user)
+
+
+class SleepLogPagination(PageNumberPagination):
+    """수면기록 목록 페이지네이션. CaffeineLogPagination과 동일한 규칙."""
+
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class SleepLogListCreateView(generics.ListCreateAPIView):
+    """수면기록 목록 조회 / 생성.
+
+    GET  /sleep-logs/   - 본인 기록 목록(최신순). start_date~end_date로
+                          기간을 좁히고 page/page_size로 페이지네이션한다.
+    POST /sleep-logs/   - 수면기록 생성. actual_bedtime을 보내면 그 시각의
+                          잔류 카페인량을 서버가 계산해 함께 저장한다.
+
+    기간 필터는 created_at의 날짜(UTC) 기준이다. start_date/end_date는
+    YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
+    """
+
+    serializer_class = SleepLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = SleepLogPagination
+
+    def get_queryset(self):
+        """본인 기록만 최신순으로, 요청된 기간으로 좁혀 반환한다."""
+        qs = SleepLog.objects.filter(user=self.request.user).order_by("-created_at")
+
+        start = parse_date(self.request.query_params.get("start_date", "") or "")
+        end = parse_date(self.request.query_params.get("end_date", "") or "")
+        if start:
+            qs = qs.filter(created_at__date__gte=start)
+        if end:
+            qs = qs.filter(created_at__date__lte=end)
+        return qs
+
+
+class SleepLogDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """수면기록 상세 조회 / 수정 / 삭제.
+
+    GET    /sleep-logs/<id>/   - 상세 조회
+    PATCH  /sleep-logs/<id>/   - 수정 (actual_bedtime 변경 시 잔류량 재계산)
+    DELETE /sleep-logs/<id>/   - 삭제
+
+    쿼리셋을 본인 소유로 제한하므로 타인의 기록에 접근하면 404가 된다.
+    """
+
+    serializer_class = SleepLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SleepLog.objects.filter(user=self.request.user)
 
 
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)

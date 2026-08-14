@@ -46,6 +46,17 @@ urlpatterns = [
         name="log-detail",
     ),
 
+    path(
+        "sleep-logs/",
+        views.SleepLogListCreateView.as_view(),
+        name="sleep-log-list",
+    ),
+    path(
+        "sleep-logs/<int:pk>/",
+        views.SleepLogDetailView.as_view(),
+        name="sleep-log-detail",
+    ),
+
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
 ]

@@ -11,11 +11,15 @@
 실제 mg 값은 서버가 카탈로그에서 조회해 채운다.
 """
 
+from datetime import timedelta
+
 from django.db import transaction
 from rest_framework import serializers
 
+from calcs.pharmacokinetics import Dose, concentration_at
+
 from .constants import Brand, DrinkType
-from .models import CaffeineLog, Drink
+from .models import CaffeineLog, Drink, SleepLog
 from .presets import find_preset, size_labels
 
 
@@ -371,6 +375,127 @@ class CaffeineLogSerializer(serializers.ModelSerializer):
             log.drink.is_recent = True
             log.drink.save(update_fields=["is_recent"])
         return log
+
+
+# 잔류량 계산에 포함할 과거 섭취기록의 최대 조회 범위(시간). 집단 평균 반감기가 5h이므로
+# 48h(~10 half-life) 이전 기록의 기여도는 2^-9.6 ≈ 0.1%로 무시할 수 있는 수준이다.
+RESIDUAL_LOOKBACK_HOURS = 48
+
+
+class SleepLogSerializer(serializers.ModelSerializer):
+    """수면기록 조회/생성/수정.
+
+    residual_mg_at_sleep(취침시각의 잔류 카페인량)은 클라이언트가 보낼 수 없는
+    계산값이다. actual_bedtime이 (처음) 정해지거나 바뀔 때, calcs 엔진으로
+    해당 사용자의 최근 CaffeineLog를 모아 그 시각의 잔류량을 계산해 스냅샷으로
+    박제한다. 이후 CaffeineLog가 추가/삭제돼도 이미 기록된 값은 보존된다
+    (CaffeineLog.caffeine_mg 스냅샷 정책과 동일한 이유).
+
+    user는 fields에서 제외했다. create에서 context의 request.user로만 주입한다.
+    """
+
+    residual_mg_at_sleep = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = SleepLog
+        fields = [
+            "id",
+            "actual_bedtime",
+            "wakeup_time",
+            "sleep_quality",
+            "residual_mg_at_sleep",
+            "created_at",
+        ]
+        read_only_fields = ["id", "residual_mg_at_sleep", "created_at"]
+
+    def validate_sleep_quality(self, value):
+        """수면질은 1~5점 설문 척도다.
+
+        Args:
+            value (int): 입력된 수면질 점수
+
+        Returns:
+            int: 검증을 통과한 값
+
+        Raises:
+            serializers.ValidationError: 1~5 범위를 벗어난 경우
+        """
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("수면질은 1~5 사이여야 합니다.")
+        return value
+
+    def validate(self, attrs):
+        """기상 시각이 취침 시각보다 앞서는 등의 명백한 오입력을 막는다.
+
+        Args:
+            attrs (dict): 필드 단위 검증을 통과한 값들
+
+        Returns:
+            dict: 그대로 통과된 attrs
+
+        Raises:
+            serializers.ValidationError: wakeup_time이 actual_bedtime보다 앞선 경우
+        """
+        bedtime = attrs.get("actual_bedtime", getattr(self.instance, "actual_bedtime", None))
+        wakeup = attrs.get("wakeup_time", getattr(self.instance, "wakeup_time", None))
+        if bedtime and wakeup and wakeup <= bedtime:
+            raise serializers.ValidationError(
+                {"wakeup_time": "기상 시각은 취침 시각 이후여야 합니다."}
+            )
+        return attrs
+
+    @staticmethod
+    def _residual_at(user, bedtime):
+        """취침시각 기준, 요청 사용자의 최근 섭취기록으로 잔류 카페인량(mg)을 계산한다.
+
+        Args:
+            user (User): 대상 사용자
+            bedtime (datetime): 잔류량을 계산할 시각
+
+        Returns:
+            float: 반올림된 잔류 카페인량(mg)
+        """
+        window_start = bedtime - timedelta(hours=RESIDUAL_LOOKBACK_HOURS)
+        logs = CaffeineLog.objects.filter(
+            user=user, created_at__gte=window_start, created_at__lte=bedtime
+        )
+        doses = [Dose(amount_mg=log.caffeine_mg, taken_at=log.created_at) for log in logs]
+        return round(concentration_at(doses, bedtime), 2)
+
+    def create(self, validated_data):
+        """요청 사용자 소유로 기록을 생성하고, bedtime이 있으면 잔류량을 스냅샷한다.
+
+        Args:
+            validated_data (dict): 검증된 필드 값
+
+        Returns:
+            SleepLog: 생성된 인스턴스
+        """
+        user = self.context["request"].user
+        validated_data["user"] = user
+        bedtime = validated_data.get("actual_bedtime")
+        if bedtime is not None:
+            validated_data["residual_mg_at_sleep"] = self._residual_at(user, bedtime)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """actual_bedtime이 이번 요청에서 바뀔 때만 잔류량을 다시 계산한다.
+
+        보내지 않은 필드는 건드리지 않아 기존 스냅샷을 임의로 덮어쓰지 않는다.
+
+        Args:
+            instance (SleepLog): 수정 대상
+            validated_data (dict): 검증된 필드 값
+
+        Returns:
+            SleepLog: 수정된 인스턴스
+        """
+        if "actual_bedtime" in validated_data:
+            bedtime = validated_data["actual_bedtime"]
+            validated_data["residual_mg_at_sleep"] = (
+                self._residual_at(instance.user, bedtime) if bedtime is not None else None
+            )
+        return super().update(instance, validated_data)
 
 
 @transaction.atomic
