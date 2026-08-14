@@ -1,6 +1,8 @@
 """accounts 앱 테스트.
 
-UserProfile API(/users/me/profile/)의 계약을 고정한다.
+회원가입(/auth/signup/) API와 UserProfile API(/users/me/profile/)의 계약을
+고정한다. 회원가입 쪽은 특히 신뢰 경계(중복 아이디, 비밀번호 정책) 검증이
+회귀하면 500 크래시로 이어지므로 반드시 지킨다.
 """
 
 from datetime import timedelta
@@ -16,6 +18,70 @@ from diary.models import Drink
 from .models import UserProfile
 
 User = get_user_model()
+
+
+class SignupAPITests(APITestCase):
+    """POST /auth/signup/ 계약."""
+
+    def setUp(self):
+        self.url = reverse("signup")
+
+    def _body(self, **overrides):
+        body = {
+            "username": "coffeelover",
+            "password": "Str0ng-Pass!",
+            "password_confirm": "Str0ng-Pass!",
+        }
+        body.update(overrides)
+        return body
+
+    def test_signup_creates_user_and_logs_in(self):
+        """유효한 입력으로 가입하면 201, 세션이 생성되고 has_profile은 false다."""
+        res = self.client.post(self.url, self._body(), format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(res.data["has_profile"])
+        self.assertEqual(res.data["next"], "/signup/profile")
+        self.assertTrue(User.objects.filter(username="coffeelover").exists())
+
+        session_res = self.client.get(reverse("session"))
+        self.assertTrue(session_res.data["is_authenticated"])
+
+    def test_signup_requires_username(self):
+        """username이 없으면 400."""
+        res = self.client.post(self.url, self._body(username=""), format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.data["code"], "INVALID_INPUT")
+
+    def test_signup_requires_password(self):
+        """password가 없으면 400."""
+        body = self._body()
+        del body["password"]
+        res = self.client.post(self.url, body, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_signup_rejects_password_mismatch(self):
+        """password와 password_confirm이 다르면 400."""
+        res = self.client.post(
+            self.url, self._body(password_confirm="Different-1"), format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password_confirm", res.data["errors"])
+
+    def test_signup_rejects_weak_password(self):
+        """비밀번호 정책(최소 길이 등)을 위반하면 400."""
+        res = self.client.post(
+            self.url, self._body(password="123", password_confirm="123"), format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", res.data["errors"])
+
+    def test_signup_duplicate_username_rejected(self):
+        """이미 있는 아이디로 가입하면 409, 새 계정이 생기지 않는다."""
+        User.objects.create_user(username="coffeelover", password="pw12345!")
+        res = self.client.post(self.url, self._body(), format="json")
+        self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(res.data["code"], "USERNAME_ALREADY_EXISTS")
+        self.assertEqual(User.objects.filter(username="coffeelover").count(), 1)
 
 
 class UserProfileAPITests(APITestCase):

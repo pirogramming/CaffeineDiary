@@ -1,17 +1,75 @@
 # accounts/serializers.py
 """accounts 앱 시리얼라이저.
 
-UserProfile 조회/생성/수정을 다룬다. 명세(Notion API 명세서, PROF-001~002)
-기준이며, calcs 엔진(CALC-002~003)이 쓰는 target_bedtime·body_weight_kg가
+두 갈래로 나뉜다.
+
+1. SignupSerializer      - 회원가입(AUTH-002) 입력 검증
+2. UserProfileSerializer - UserProfile 조회/생성/수정(PROF-001~002)
+
+UserProfile은 calcs 엔진(CALC-002~003)이 쓰는 target_bedtime·body_weight_kg가
 핵심 입력값이다.
 """
 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from diary.constants import Brand, DrinkType
 from diary.models import Drink
 
 from .models import UserProfile
+
+User = get_user_model()
+
+
+class SignupSerializer(serializers.Serializer):
+    """회원가입 입력(AUTH-002).
+
+    계정 생성만 담당한다. UserProfile 생성과 즐겨찾는 Drink 등록은 별도
+    엔드포인트(PROF-001)에서 처리한다.
+
+    username 중복 검사는 여기서 하지 않는다 — 명세상 409(Conflict)인데,
+    이 serializer의 검증 실패는 전부 400으로 매핑되기 때문이다(config의
+    공통 예외 처리기 참고). 중복 검사는 view에서 별도로 한다.
+    """
+
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
+
+    def validate_username(self, value):
+        username = value.strip()
+        if not username:
+            raise serializers.ValidationError("아이디를 입력해주세요.")
+        return username
+
+    def validate(self, attrs):
+        """비밀번호 정책(settings.AUTH_PASSWORD_VALIDATORS)과 확인 일치를 검사한다.
+
+        User.objects.create_user()는 이 검증기들을 자동으로 실행하지
+        않으므로(흔한 Django 함정) 여기서 명시적으로 호출해야 한다.
+
+        Args:
+            attrs (dict): 필드 단위 검증을 통과한 값들
+
+        Returns:
+            dict: 그대로 통과된 attrs
+
+        Raises:
+            serializers.ValidationError: 비밀번호 불일치이거나 정책 위반인 경우
+        """
+        password = attrs.get("password")
+        confirm = attrs.get("password_confirm")
+        if password != confirm:
+            raise serializers.ValidationError(
+                {"password_confirm": "비밀번호가 일치하지 않습니다."}
+            )
+        try:
+            validate_password(password)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": " ".join(exc.messages)})
+        return attrs
 
 
 class ProfileDrinkSerializer(serializers.Serializer):

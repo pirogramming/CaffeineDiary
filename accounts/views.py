@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
@@ -15,7 +16,7 @@ from diary.calc_bridge import doses_for_user, reference_dose_mg, theta_for_user
 from diary.models import Drink
 
 from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .serializers import SignupSerializer, UserProfileSerializer
 
 # Create your views here.
 
@@ -26,12 +27,28 @@ def _has_profile(user) -> bool:
 @api_view(["POST"])
 @permission_classes([AllowAny])   # 공개 엔드포인트
 def signup(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
+    serializer = SignupSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data["username"]
+    password = serializer.validated_data["password"]
 
-    # TODO: 검증 — 필수값 누락, username 중복, 비밀번호 정책 등
+    # 흔한 경로는 여기서 먼저 걸러 불필요한 IntegrityError를 피하고,
+    # 동시 요청으로 인한 경합은 아래 create_user()의 IntegrityError로 막는다
+    # (DB의 username UNIQUE 제약이 최종 방어선이다).
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {"code": "USERNAME_ALREADY_EXISTS", "message": "이미 사용 중인 아이디입니다."},
+            status=status.HTTP_409_CONFLICT,
+        )
 
-    user = User.objects.create_user(username=username, password=password)
+    try:
+        user = User.objects.create_user(username=username, password=password)
+    except IntegrityError:
+        return Response(
+            {"code": "USERNAME_ALREADY_EXISTS", "message": "이미 사용 중인 아이디입니다."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
     auth_login(request, user)  # 가입직후 세션 생성
 
     return Response(
