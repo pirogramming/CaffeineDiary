@@ -109,9 +109,12 @@ img, svg { display: block; max-width: 100%; }
 .cd-nav {
     display: flex;
     align-items: center;
+    row-gap: 10px;
     flex-wrap: wrap; /* 메뉴 항목이 늘어나면 줄바꿈 */
-    gap: 50px;
-    padding: 50px 70px 10px 0; /* 로고 카드의 텍스트 위치와 세로선이 비슷하게 맞도록 상단 여백만 */
+    column-gap: 50px;
+    margin-right: 70px;
+    margin-left: 50px;
+    padding: 50px 0 10px ; /* 로고 카드의 텍스트 위치와 세로선이 비슷하게 맞도록 상단 여백만 */
 }
 .cd-nav__link {
     /* <a>와 <button>(로그아웃) 둘 다 이 클래스 사용 */
@@ -159,3 +162,17 @@ img, svg { display: block; max-width: 100%; }
     * { animation: none !important; transition: none !important; }
 }
  
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+   /* 특별한 변경사항 X */
+}
+
+@media (max-width: 480px) {
+
+    /* 임시로 nav bar 없앰 */
+    .cd-nav { display: none; } 
+}

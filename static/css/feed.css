@@ -49,7 +49,7 @@
 .cd-feed-hero__time {
     font-family: var(--cd-font-display); 
     font-weight: 800;
-    font-size: 3.4rem;
+    font-size: 60px;
     text-align: center;
     line-height: 1;
     color: var(--cd-brown-dark);
@@ -132,4 +132,37 @@
 .cd-feed-cup--sm {
     width: 86px;
     height: 80px;
+}
+
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+    /* 변경사항 없음 */
+}
+
+@media (max-width: 480px) {
+
+    /* 전체적인 비율 조정 */
+    .cd-feed-hero {max-width: 350px; transform: translateX(0px);}
+    
+
+    /* 오늘의 마감 시간은 부분 */
+    .cd-feed-hero__label {font-size: 18px;transform: translateX(20px);}
+    /* 마감 시간 숫자 */
+    .cd-feed-hero__time {font-size: 40px; transform: translateX(20px);}
+    /* 그림 크기 조절 */
+    .cd-feed-cup { width: 70px; transform: translateX(20px); }
+    .cd-feed-cup--lg { width: 200px; height: 184px; transform: translateX(20px); }
+    /* 한잔 마시기 글자 크기 */
+    .cd-feed-cup__label {font-size: 20px;}
+    .cd-feed-bubble { margin-top: 10px; transform: translateX(-10px);}
+    .cd-feed-bubble__img {
+      content: url('../images/custom_drinking_button2.png');
+    }
+
+    
+
 }
