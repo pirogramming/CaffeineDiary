@@ -1,0 +1,11 @@
+{% extends "diary/survey_receipt_base.html" %}
+
+{% load static %}
+
+{% block title %}회원가입 설문 - 사이즈 · Caffeine Diary{% endblock %}
+
+{% block survey_receipt_bg %}
+<img src="{% static 'images/survey_size.png' %}" alt="" class="cd-receipt__bg cd-receipt__bg--size">
+{% endblock %}
+
+{% block survey_question %}어떤 사이즈를 즐겨 마시나요?{% endblock %}
