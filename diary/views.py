@@ -154,8 +154,8 @@ class CaffeineLogListCreateView(generics.ListCreateAPIView):
                              기간을 좁히고 page/page_size로 페이지네이션한다.
     POST /caffeine-logs/   - 한잔(drink_id) 또는 커스텀(caffeine_mg+name) 기록
 
-    기간 필터는 created_at의 날짜(UTC) 기준이다. start_date/end_date는
-    YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
+    기간 필터는 created_at의 날짜(서버 타임존 Asia/Seoul) 기준이다.
+    start_date/end_date는 YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
     """
 
     serializer_class = CaffeineLogSerializer
@@ -208,8 +208,8 @@ class SleepLogListCreateView(generics.ListCreateAPIView):
     POST /sleep-logs/   - 수면기록 생성. actual_bedtime을 보내면 그 시각의
                           잔류 카페인량을 서버가 계산해 함께 저장한다.
 
-    기간 필터는 created_at의 날짜(UTC) 기준이다. start_date/end_date는
-    YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
+    기간 필터는 created_at의 날짜(서버 타임존 Asia/Seoul) 기준이다.
+    start_date/end_date는 YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
     """
 
     serializer_class = SleepLogSerializer
@@ -244,6 +244,139 @@ class SleepLogDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return SleepLog.objects.filter(user=self.request.user)
+
+
+class FeedStatusView(APIView):
+    """메인피드용 계산 결과 조회.
+
+    GET /feed-status/   - CALC-001(잔류량+그래프), CALC-002(마감시각),
+                          CALC-003(남은허용량/잔수), CALC-005(개인화 θ),
+                          CALC-006(한계효용)을 이 안에서 호출해 한 번에 내려준다.
+                          ?compact=true면 drinks/graph를 생략한다.
+
+    명세(Notion API 명세서) URI는 /feed이지만, 그 경로는 diary/urls.py의
+    "feed/"에서 프론트가 작업 중인 HTML 화면(FeedView)이 이미 쓰고 있다.
+    같은 경로에 화면(HTML)과 데이터(JSON)를 동시에 둘 수 없어, 프론트와
+    최종 경로를 맞추기 전까지 feed-status/에 임시로 둔다.
+
+    선행조건: UserProfile 존재. 없으면 404 PROFILE_NOT_FOUND.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            profile = user.profile
+        except UserProfile.DoesNotExist:
+            return Response(
+                {
+                    "code": "PROFILE_NOT_FOUND",
+                    "message": "프로필이 없습니다.",
+                    "next": "/signup/profile",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        compact = request.query_params.get("compact", "").lower() == "true"
+        now = timezone.now()
+        # 서비스일 경계(05:00)는 서버 로컬시각(Asia/Seoul) 기준이다. now는 항상 UTC를
+        # 담고 있으므로(Django의 timezone.now() 규약), .date()/.hour를 직접 쓰면 안 되고
+        # localtime으로 변환한 값을 써야 한다.
+        local_now = timezone.localtime(now)
+        today = service_date(local_now)
+        day_start = timezone.make_aware(datetime.combine(today, dt_time(hour=SERVICE_DAY_START_HOUR)))
+
+        sleep_survey_required = self._sleep_survey_required(user, local_now, today, day_start)
+        night_session_active = AllNightSession.objects.filter(
+            user=user, status=AllNightSession.Status.ACTIVE
+        ).exists()
+
+        theta_mg = theta_for_user(user).theta_mg
+        doses = doses_for_user(user, now, since=day_start)
+        today_total_mg = sum(d.amount_mg for d in doses)
+        current_mg = round(concentration_at(doses, now), 1)
+
+        bedtime = resolve_next_occurrence(profile.target_sleeptime, now)
+        ref_dose = reference_dose_mg(user)
+
+        cutoff_result = calc_cutoff(now, bedtime, ref_dose, doses, theta_mg)
+        allowance_result = calc_allowance(bedtime, doses, theta_mg, ref_dose)
+        marginal_result = calc_marginal_utility(today_total_mg, ref_dose, profile.body_weight_kg)
+
+        warnings = []
+        if cutoff_result.status in (CutoffStatus.OVER_THRESHOLD, CutoffStatus.CUTOFF_PASSED):
+            warnings.append(
+                {"code": "CUTOFF_EXCEEDED", "message": "오늘의 카페인 마감시간이 지났습니다."}
+            )
+        if marginal_result.over_daily_limit:
+            warnings.append(
+                {"code": "DAILY_LIMIT_EXCEEDED", "message": "일일 권장 상한을 초과했습니다."}
+            )
+        elif marginal_result.negligible:
+            warnings.append(
+                {"code": "MARGINAL_EFFECT", "message": "추가 섭취는 각성 효과가 거의 없습니다."}
+            )
+
+        cutoff_at_local = timezone.localtime(cutoff_result.cutoff_at) if cutoff_result.cutoff_at else None
+
+        data = {
+            "date": today.isoformat(),
+            "now": local_now.isoformat(),
+            "sleep_survey_required": sleep_survey_required,
+            "night_session_active": night_session_active,
+            "target_bedtime": profile.target_sleeptime.strftime("%H:%M"),
+            "threshold_mg": theta_mg,
+            "current_mg": current_mg,
+            "cutoff_at": cutoff_at_local.isoformat() if cutoff_at_local else None,
+            "remaining_mg": allowance_result.remaining_mg,
+            "remaining_cups": allowance_result.cups,
+            "today_total_mg": round(today_total_mg, 1),
+            "today_log_count": len(doses),
+            "marginal": {
+                "g_pd_min": marginal_result.g_pd_after,
+                "delta_g": marginal_result.delta_g,
+                "warning": marginal_result.warning is not None,
+            },
+            "warnings": warnings,
+        }
+
+        if not compact:
+            data["drinks"] = [
+                {"drink_id": d.id, "name": d.name, "caffeine_mg": d.caffeine_mg}
+                for d in Drink.objects.filter(user=user, is_active=True)
+            ]
+            data["graph"] = build_curve_payload(
+                doses,
+                start=day_start,
+                threshold_mg=theta_mg,
+                threshold_role="max",
+                now=now,
+                bedtime=bedtime,
+                cutoff_at=cutoff_result.cutoff_at,
+            )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def _sleep_survey_required(user, local_now, today, day_start):
+        """SLEEP-001: 수면설문 노출 판정.
+
+        가입 당일, 서비스일 경계(05:00) 이전, 오늘자 SleepLog가 이미 있으면
+        노출하지 않는다. "전날 밤샘모드면 건너뛴다"는 명세 조건은 AllNightSession과
+        CaffeineLog를 잇는 연결이 아직 없어 반영하지 못한다 — 밤샘모드 API를
+        만들 때 마저 구현해야 한다.
+
+        local_now는 서버 로컬시각(Asia/Seoul)으로 변환된 값이어야 한다.
+        date_joined는 DB에 UTC로 저장되므로 비교 전에 같은 방식으로 변환한다.
+        """
+        if service_date(timezone.localtime(user.date_joined)) == today:
+            return False
+        if local_now.hour < SERVICE_DAY_START_HOUR:
+            return False
+        if SleepLog.objects.filter(user=user, created_at__gte=day_start).exists():
+            return False
+        return True
 
 
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
