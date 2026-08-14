@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[피드계산] 화면</title>
+</head>
+<body>
+
+<h1>[피드계산] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <a href="/testpages/sleep_logs.html">수면기록</a> |
+  <a href="/testpages/profile.html">프로필</a> |
+  <a href="/testpages/feed_status.html">피드계산</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p><small>
+  GET /feed-status/ — calcs 엔진(CALC-001 잔류량, CALC-002 마감시각, CALC-003 남은허용량,
+  CALC-005 개인화 임계치, CALC-006 한계효용)을 한 번에 호출하는 API입니다.
+  <br>명세서 원래 URI는 <code>/feed</code>지만, 그 경로는 프론트가 만들고 있는 화면(<code>/feed/</code>)이
+  이미 쓰고 있어 경로가 겹칩니다. 프론트와 최종 경로를 맞추기 전까지 이 이름을 씁니다.
+  <br><b>선행조건: 프로필 화면에서 프로필을 먼저 만들어야 합니다.</b>
+</small></p>
+
+<button onclick="loadFeedStatus(false)">조회 (전체)</button>
+<button onclick="loadFeedStatus(true)">조회 (compact — drinks/graph 생략)</button>
+
+<h3>요약</h3>
+<table border="1" cellpadding="4" id="summary-table">
+  <tbody>
+    <tr><td>오늘 마감시각 (cutoff_at)</td><td id="s-cutoff">-</td></tr>
+    <tr><td>현재 잔류 카페인 (current_mg)</td><td id="s-current">-</td></tr>
+    <tr><td>개인화 임계치 θ (threshold_mg)</td><td id="s-threshold">-</td></tr>
+    <tr><td>더 마셔도 되는 양 (remaining_mg / cups)</td><td id="s-remaining">-</td></tr>
+    <tr><td>오늘 누적 섭취량 (today_total_mg)</td><td id="s-today">-</td></tr>
+    <tr><td>수면설문 필요 여부 (sleep_survey_required)</td><td id="s-survey">-</td></tr>
+    <tr><td>밤샘모드 진행중 (night_session_active)</td><td id="s-night">-</td></tr>
+    <tr><td>경고 (warnings)</td><td id="s-warnings">-</td></tr>
+  </tbody>
+</table>
+
+<h3>원본 응답</h3>
+<pre id="feed-result">(아직 요청 없음)</pre>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+async function loadFeedStatus(compact) {
+  const path = "/feed-status/" + (compact ? "?compact=true" : "");
+  const result = await apiFetch(path);
+  renderResult("feed-result", result);
+
+  const d = result.data || {};
+  document.getElementById("s-cutoff").textContent = d.cutoff_at ?? "-";
+  document.getElementById("s-current").textContent = (d.current_mg ?? "-") + " mg";
+  document.getElementById("s-threshold").textContent = (d.threshold_mg ?? "-") + " mg";
+  document.getElementById("s-remaining").textContent =
+    (d.remaining_mg ?? "-") + " mg / " + (d.remaining_cups ?? "-") + "잔";
+  document.getElementById("s-today").textContent = (d.today_total_mg ?? "-") + " mg";
+  document.getElementById("s-survey").textContent = String(d.sleep_survey_required ?? "-");
+  document.getElementById("s-night").textContent = String(d.night_session_active ?? "-");
+  document.getElementById("s-warnings").textContent =
+    Array.isArray(d.warnings) && d.warnings.length
+      ? d.warnings.map((w) => w.code).join(", ")
+      : "(없음)";
+
+  if (!result.ok) {
+    alert("조회 실패\nHTTP " + result.status + "\n" + JSON.stringify(result.data));
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadFeedStatus(false);
+});
+</script>
+
+</body>
+</html>

@@ -1,17 +1,21 @@
 """diary 앱 테스트.
 
-섭취기록(CaffeineLog)·수면기록(SleepLog) API의 계약을 고정한다. 특히 신뢰
-경계 관련 동작(스냅샷 박제, 소유권 격리)은 회귀하면 데이터 위조로 이어지므로
-반드시 지킨다.
+섭취기록(CaffeineLog)·수면기록(SleepLog)·메인피드 계산(FeedStatusView) API의
+계약을 고정한다. 특히 신뢰 경계 관련 동작(스냅샷 박제, 소유권 격리)은
+회귀하면 데이터 위조로 이어지므로 반드시 지킨다.
 """
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from accounts.models import UserProfile
+from allnight.models import AllNightSession
 
 from .models import CaffeineLog, Drink, SleepLog
 
@@ -370,3 +374,115 @@ class SleepLogAPITests(APITestCase):
         res = self.client.delete(self.detail_url(log.id))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(SleepLog.objects.filter(id=log.id).exists())
+
+
+class FeedStatusAPITests(APITestCase):
+    """/feed-status/(명세상 GET /feed)의 계산 결과 계약.
+
+    target_sleeptime을 항상 "지금부터 5시간 뒤"로 두어, 실행 시각과 무관하게
+    자정 넘김 등을 resolve_next_occurrence가 알아서 처리하게 만든다 — 테스트가
+    몇 시에 돌아도 bedtime이 always now+5h가 되도록 하는 트릭이다.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="tester", password="pw12345!")
+        self.url = reverse("diary:feed-status")
+        self.client.force_authenticate(self.user)
+
+    def _create_profile(self, body_weight_kg=65.0):
+        bedtime = (timezone.now() + timedelta(hours=5)).time()
+        return UserProfile.objects.create(
+            user=self.user, target_sleeptime=bedtime, body_weight_kg=body_weight_kg
+        )
+
+    def test_requires_profile(self):
+        """프로필이 없으면 404 PROFILE_NOT_FOUND."""
+        res = self.client.get(self.url)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(res.data["code"], "PROFILE_NOT_FOUND")
+
+    def test_requires_authentication(self):
+        """비로그인 요청은 거부된다."""
+        self.client.force_authenticate(None)
+        res = self.client.get(self.url)
+        self.assertIn(
+            res.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+        )
+
+    def test_defaults_with_no_history(self):
+        """기록이 전혀 없으면 θ_pop(80.0) 기준값과 초기상태(0mg)로 내려온다.
+
+        기준음료(ref_dose_mg) 폴백값(180mg)에서, bedtime 시점 잔류량이 0이므로
+        theta_pop(80mg) 전부가 남는다. cutoff는 이미 지난 시각으로 계산되어
+        CUTOFF_EXCEEDED 경고가 함께 뜬다 (80/180 비율로는 5시간 뒤 취침 전에
+        마감시각이 지나가 버리는 계산 결과다 — calcs/cutoff.py CALC-002 그대로).
+        """
+        self._create_profile()
+        res = self.client.get(self.url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["threshold_mg"], 80.0)
+        self.assertEqual(res.data["current_mg"], 0.0)
+        self.assertEqual(res.data["remaining_mg"], 80.0)
+        self.assertEqual(res.data["remaining_cups"], 0)
+        self.assertEqual(res.data["today_total_mg"], 0.0)
+        self.assertEqual(res.data["today_log_count"], 0)
+        self.assertIsNotNone(res.data["cutoff_at"])
+        self.assertIn("CUTOFF_EXCEEDED", [w["code"] for w in res.data["warnings"]])
+        self.assertFalse(res.data["night_session_active"])
+        self.assertFalse(res.data["sleep_survey_required"])  # 가입 당일
+
+    def test_today_caffeine_logs_are_counted(self):
+        """오늘 남긴 CaffeineLog가 today_total_mg/today_log_count에 반영된다."""
+        self._create_profile()
+        CaffeineLog.objects.create(user=self.user, caffeine_mg=100, name="테스트")
+        res = self.client.get(self.url)
+        self.assertEqual(res.data["today_total_mg"], 100.0)
+        self.assertEqual(res.data["today_log_count"], 1)
+        self.assertGreater(res.data["current_mg"], 0)
+
+    def test_night_session_active_reflects_allnightsession(self):
+        """활성 AllNightSession이 있으면 night_session_active가 true."""
+        self._create_profile()
+        now = timezone.now()
+        AllNightSession.objects.create(
+            user=self.user,
+            status=AllNightSession.Status.ACTIVE,
+            started_at=now,
+            target_time=now + timedelta(hours=8),
+        )
+        res = self.client.get(self.url)
+        self.assertTrue(res.data["night_session_active"])
+
+    def test_compact_omits_drinks_and_graph(self):
+        """compact=true는 drinks/graph를 생략한다."""
+        self._create_profile()
+        res = self.client.get(self.url, {"compact": "true"})
+        self.assertNotIn("drinks", res.data)
+        self.assertNotIn("graph", res.data)
+
+        res = self.client.get(self.url)
+        self.assertIn("drinks", res.data)
+        self.assertIn("graph", res.data)
+
+    def test_sleep_survey_required_false_when_already_submitted_today(self):
+        """가입일과 무관하게, 오늘자 SleepLog가 이미 있으면 설문을 다시 띄우지 않는다."""
+        self._create_profile()
+        User.objects.filter(id=self.user.id).update(
+            date_joined=timezone.now() - timedelta(days=5)
+        )
+        self.user.refresh_from_db()  # force_authenticate가 쥔 in-memory user도 갱신
+        SleepLog.objects.create(user=self.user, sleep_quality=3)
+        res = self.client.get(self.url)
+        self.assertFalse(res.data["sleep_survey_required"])
+
+    def test_sleep_survey_required_true_when_applicable(self):
+        """가입 당일도 아니고, 05:00 이후이며, 오늘자 SleepLog가 없으면 설문이 필요하다."""
+        self._create_profile()
+        User.objects.filter(id=self.user.id).update(
+            date_joined=timezone.now() - timedelta(days=5)
+        )
+        self.user.refresh_from_db()  # force_authenticate가 쥔 in-memory user도 갱신
+        fixed_now = timezone.now().replace(hour=10, minute=0, second=0, microsecond=0)
+        with patch("diary.views.timezone.now", return_value=fixed_now):
+            res = self.client.get(self.url)
+        self.assertTrue(res.data["sleep_survey_required"])

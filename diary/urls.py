@@ -57,6 +57,14 @@ urlpatterns = [
         name="sleep-log-detail",
     ),
 
+    # 명세상 URI는 /feed지만 아래 "feed/"(프론트 HTML 화면)와 경로가 겹쳐
+    # 임시로 feed-status/에 둔다. FeedStatusView 참고.
+    path(
+        "feed-status/",
+        views.FeedStatusView.as_view(),
+        name="feed-status",
+    ),
+
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
 ]

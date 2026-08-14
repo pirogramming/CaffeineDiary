@@ -11,13 +11,12 @@
 실제 mg 값은 서버가 카탈로그에서 조회해 채운다.
 """
 
-from datetime import timedelta
-
 from django.db import transaction
 from rest_framework import serializers
 
-from calcs.pharmacokinetics import Dose, concentration_at
+from calcs.pharmacokinetics import concentration_at
 
+from .calc_bridge import doses_for_user
 from .constants import Brand, DrinkType
 from .models import CaffeineLog, Drink, SleepLog
 from .presets import find_preset, size_labels
@@ -377,11 +376,6 @@ class CaffeineLogSerializer(serializers.ModelSerializer):
         return log
 
 
-# 잔류량 계산에 포함할 과거 섭취기록의 최대 조회 범위(시간). 집단 평균 반감기가 5h이므로
-# 48h(~10 half-life) 이전 기록의 기여도는 2^-9.6 ≈ 0.1%로 무시할 수 있는 수준이다.
-RESIDUAL_LOOKBACK_HOURS = 48
-
-
 class SleepLogSerializer(serializers.ModelSerializer):
     """수면기록 조회/생성/수정.
 
@@ -455,11 +449,7 @@ class SleepLogSerializer(serializers.ModelSerializer):
         Returns:
             float: 반올림된 잔류 카페인량(mg)
         """
-        window_start = bedtime - timedelta(hours=RESIDUAL_LOOKBACK_HOURS)
-        logs = CaffeineLog.objects.filter(
-            user=user, created_at__gte=window_start, created_at__lte=bedtime
-        )
-        doses = [Dose(amount_mg=log.caffeine_mg, taken_at=log.created_at) for log in logs]
+        doses = doses_for_user(user, bedtime)
         return round(concentration_at(doses, bedtime), 2)
 
     def create(self, validated_data):
