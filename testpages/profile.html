@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[프로필] 화면</title>
+</head>
+<body>
+
+<h1>[프로필] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <a href="/testpages/sleep_logs.html">수면기록</a> |
+  <a href="/testpages/profile.html">프로필</a> |
+  <a href="/testpages/feed_status.html">피드계산</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p><small>calcs 엔진(마감시각·잔류량 계산)이 쓰는 목표 취침시각·체중을 여기서 설정합니다. 피드계산 화면을 보려면 먼저 프로필을 만들어야 합니다.</small></p>
+
+<h2>1) 프로필 생성 (POST /users/me/profile/)</h2>
+<p><small>즐겨찾는 음료를 최소 1개 입력해야 합니다. 여기 입력한 음료는 실제 내 음료로 등록됩니다.</small></p>
+<label>목표 취침시각 <input type="time" id="create-bedtime" value="23:30"></label>
+<label>체중(kg) <input type="number" id="create-weight" value="65" step="0.1"></label>
+<br><br>
+<div id="create-drinks">
+  <div class="drink-row">
+    <input type="text" class="drink-name" placeholder="음료 이름" value="아이스아메리카노">
+    <input type="number" class="drink-mg" placeholder="카페인(mg)" value="180">
+  </div>
+</div>
+<button type="button" onclick="addDrinkRow()">+ 음료 추가</button>
+<br><br>
+<button onclick="createProfile()">프로필 생성</button>
+<pre id="create-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>2) 프로필 조회 (GET /users/me/profile/)</h2>
+<button onclick="loadProfile()">조회</button>
+<pre id="get-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>3) 프로필 수정 (PATCH /users/me/profile/)</h2>
+<label>목표 취침시각 <input type="time" id="patch-bedtime"></label>
+<label>체중(kg) <input type="number" id="patch-weight" step="0.1"></label>
+<p><small>비워두면 그 필드는 수정하지 않습니다.</small></p>
+<button onclick="patchProfile()">수정</button>
+<pre id="patch-result">(아직 요청 없음)</pre>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+function addDrinkRow() {
+  const wrap = document.getElementById("create-drinks");
+  const row = document.createElement("div");
+  row.className = "drink-row";
+  row.innerHTML =
+    '<input type="text" class="drink-name" placeholder="음료 이름">' +
+    '<input type="number" class="drink-mg" placeholder="카페인(mg)">';
+  wrap.appendChild(row);
+}
+
+function collectDrinks() {
+  const rows = document.querySelectorAll("#create-drinks .drink-row");
+  const drinks = [];
+  rows.forEach((row) => {
+    const name = row.querySelector(".drink-name").value.trim();
+    const mg = Number(row.querySelector(".drink-mg").value);
+    if (name && mg) drinks.push({ name, caffeine_mg: mg });
+  });
+  return drinks;
+}
+
+async function createProfile() {
+  const body = {
+    target_bedtime: document.getElementById("create-bedtime").value,
+    body_weight_kg: Number(document.getElementById("create-weight").value),
+    drinks: collectDrinks(),
+  };
+  const result = await apiFetch("/users/me/profile/", "POST", body);
+  renderResult("create-result", result);
+}
+
+async function loadProfile() {
+  const result = await apiFetch("/users/me/profile/");
+  renderResult("get-result", result);
+}
+
+async function patchProfile() {
+  const body = {};
+  const bedtime = document.getElementById("patch-bedtime").value;
+  const weight = document.getElementById("patch-weight").value;
+  if (bedtime) body.target_bedtime = bedtime;
+  if (weight) body.body_weight_kg = Number(weight);
+  const result = await apiFetch("/users/me/profile/", "PATCH", body);
+  renderResult("patch-result", result);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadProfile();
+});
+</script>
+
+</body>
+</html>
