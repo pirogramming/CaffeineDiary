@@ -281,7 +281,7 @@
     padding: 10px 50px;
     background-color: var(--cd-cream);
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     font-size: 30px;
     color: var(--cd-brown-dark);
     font-weight: 800;
@@ -316,7 +316,7 @@
     display: flex;
     align-items: center;
     gap: var(--cd-space-2);
-  width: 100%;
+    width: 100%;
 }
 .cd-survey-final__field--time {
     transform: translateX(150px); /* 말풍선과 입력 필드가 살짝 겹치도록 */
@@ -366,5 +366,126 @@
   .cd-survey-final__arrow,
   .cd-receipt__next { transition: none; }
 }
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    /* 아이콘 크기 조정 */
+    .cd-bg-icons__icon { transform: scale(var(--icon-scale, 0.6));}
+
+    /* ----- 음료 조사------ */
+    /* 영수증 이미지 수정 */
+    .cd-receipt__bg {max-width: 500px;}
+
+    /* 화살표 수정 */
+    .cd-receipt__arrow--prev { left: 24px; }
+    .cd-receipt__arrow--next { right: 24px;}
+    
+    /* 영수증 안의 내용 */
+    .cd-receipt__content { transform: translateY(-20px);}
+
+    /* receipt */
+    .cd-receipt__label {font-size: 40px;}
+    /* 질문 텍스트 */
+    .cd-receipt__question {font-size: 15px;}
+    /* 옵션 목록 — 스크롤 영역 */
+    .cd-receipt__options {padding: 0 15px;margin-bottom: 30px; } 
+    /* 옵션 글자 사이즈 조정 */
+    .cd-receipt__option label {font-size: 15px;}
+        .cd-receipt__custom-input {font-size: 15px;}
+    /* 바코드 */
+    .cd-receipt__barcode {font-size: 50px;}
+
+
+    /* ----- 수면, 몸무게 조사 ------ */
+
+    /* 레이아웃 범위 수정 */
+    .cd-survey-final__content { min-width: 0; width: 80vw; max-width: 300px; }
+
+    /* 말풍선 위치 조정 */
+    .cd-survey-final__bubble { width: 300px; }
+    .cd-survey-final__bubble--top { transform: translateX(-30px); }
+    .cd-survey-final__bubble--bottom { transform: translateX(30px); }
  
+    /* 말풍선과 입력 필드 사이의 간격 조절 */
+    .cd-survey-final__field--time { transform: translateX(100px); margin-bottom: 10px;}
+    .cd-survey-final__field--weight { transform: translateX(50px); }
+
+    /* 입력 필드 폰트 사이즈 조정 */
+    .cd-survey-final__field label, 
+    .cd-survey-final__input, 
+    .cd-survey-final__input::placeholder {font-size: 15px;}
+
+    .cd-survey-final__submit-wrap {top: 75%; left: 40%; transform: translateY(0%);}
+}
+
+
+
+@media (max-width: 480px) {
+     
+    /* 아이콘 크기 조정 */
+    .cd-bg-icons__icon { transform: scale(var(--icon-scale, 0.6));}
+
+    /* ----- 음료 조사------ */
+    /* 영수증 이미지 수정 */
+    .cd-receipt__bg {max-width: 300px;}
+
+    /* 화살표 수정 */
+    .cd-receipt__arrow {width: 40px; height: 40px;}
+    .cd-receipt__arrow--prev { left: 24px; }
+    .cd-receipt__arrow--next { right: 24px;}
+    
+    /* 영수증 안의 내용 */
+    .cd-receipt__content { transform: translateY(10px) translateX(10px);; padding: 30% 24% 24%;}
+
+    /* receipt */
+    .cd-receipt__label {font-size: 30px; margin-bottom: 8px;}
+    /* 질문 텍스트 */
+    .cd-receipt__question {font-size: 11px; margin-bottom: 25px;}
+    /* 옵션 목록 — 스크롤 영역 */
+    .cd-receipt__options {padding: 0 10px; width: 100%; height: 100px; margin-bottom: 20px; } 
+    /* 옵션 글자 사이즈 조정 */
+    .cd-receipt__option label {font-size: 10px;}
+    .cd-receipt__custom-input {font-size: 10px;}
+    /* 바코드 */
+    .cd-receipt__barcode {font-size: 30px;}
+
+
+    /* ----- 수면, 몸무게 조사 ------ */
+
+    /* 이전 버튼 수정 */
+    .cd-survey-final__arrow {width: 40px; height: 40px; left: 24px;}
+
+    /* 레이아웃 범위 수정 */
+    .cd-survey-final__content { min-width: 0; width: 80vw; max-width: 300px; }
+
+    /* 말풍선 위치 조정 */
+    .cd-survey-final__bubble { width: 200px; }
+    .cd-survey-final__bubble--top { transform: translateX(-10px); }
+    .cd-survey-final__bubble--bottom { transform: translateX(10px); }
  
+    /* 말풍선과 입력 필드 사이의 간격 조절 */
+    .cd-survey-final__field--time { transform: translateX(50px); margin-bottom: 10px;}
+    .cd-survey-final__field--weight { transform: translateX(50px); }
+
+    /* 입력 필드 폰트 사이즈 조정 */
+    .cd-survey-final__field label, 
+    .cd-survey-final__input, 
+    .cd-survey-final__input::placeholder {font-size: 15px;}
+
+    .cd-survey-final__submit-wrap {top: 75%; left: 35%; transform: translateY(0%);}
+    .cd-survey-submit-btn{
+        padding: 10px 30px;
+        background-color: var(--cd-cream);
+        border: none;
+        border-radius: 20px;
+        font-size: 20px;
+        color: var(--cd-brown-dark);
+        font-weight: 800;
+        font-family: var(--cd-font-display);
+        margin-top: 50px;
+    } 
+}
