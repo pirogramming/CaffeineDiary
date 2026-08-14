@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>CaffeineDiary 백엔드 API 구조</title>
+</head>
+<body>
+
+<h1>CaffeineDiary 백엔드 API 구조</h1>
+<p>기준 커밋: <code>8b7c1d9 feat: drink api 구현</code> (branch: feature/drink-api)</p>
+<p>브라우저에서 직접 확인할 때는 로그인 세션 상태에서 각 GET URL을 열면 DRF Browsable API 화면으로 응답을 볼 수 있습니다.</p>
+
+<h2>목차</h2>
+<ul>
+  <li><a href="#routing">1. 전체 URL 라우팅</a></li>
+  <li><a href="#accounts">2. accounts 앱 - 인증 API</a></li>
+  <li><a href="#diary">3. diary 앱 - 음료(Drink) API</a></li>
+  <li><a href="#flow">4. 사용자 흐름</a></li>
+  <li><a href="#todo">5. 모델은 있지만 API가 없는 부분</a></li>
+  <li><a href="#note">6. 확인이 필요한 부분</a></li>
+</ul>
+
+<hr>
+
+<h2 id="routing">1. 전체 URL 라우팅 (config/urls.py)</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<thead>
+<tr><th>Path</th><th>연결</th><th>설명</th></tr>
+</thead>
+<tbody>
+<tr><td>/admin/</td><td>Django admin</td><td>기본 관리자 페이지</td></tr>
+<tr><td>/</td><td>config.views.home (함수)</td><td>JsonResponse({"is_authenticated": bool}) - TODO: SPA index로 교체 예정</td></tr>
+<tr><td>/login</td><td>config.views.login_placeholder (함수)</td><td>JsonResponse({"error": ...}) - TODO: 로그인 페이지로 교체 예정</td></tr>
+<tr><td>/auth/...</td><td>accounts.urls</td><td>아래 2번 참고</td></tr>
+<tr><td>/auth/social/...</td><td>allauth.urls</td><td>소셜 로그인 - 6번 "확인이 필요한 부분" 참고</td></tr>
+<tr><td>/users/me/drinks/...</td><td>diary.urls</td><td>아래 3번 참고</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2 id="accounts">2. accounts 앱 - 인증 API</h2>
+<p>전부 <code>@api_view</code> 함수형 뷰 (accounts/views.py). 세션 인증(SessionAuthentication) 기반.</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+<thead>
+<tr><th>Method</th><th>URL</th><th>권한</th><th>Request Body</th><th>성공 응답</th><th>실패 응답</th></tr>
+</thead>
+<tbody>
+
+<tr>
+<td>POST</td>
+<td>/auth/signup/</td>
+<td>AllowAny</td>
+<td>{"username": str, "password": str}</td>
+<td>201<br>{"user_id": int, "username": str, "has_profile": false, "next": "/signup/profile"}</td>
+<td>- (입력 검증 TODO 미구현: username 중복, 빈값 등 아직 안 막힘)</td>
+</tr>
+
+<tr>
+<td>POST</td>
+<td>/auth/login/</td>
+<td>AllowAny</td>
+<td>{"username": str, "password": str}</td>
+<td>200<br>{"user_id": int, "username": str, "has_profile": bool, "next": "/" or "/signup/profile"}</td>
+<td>400 {"code": "INVALID_INPUT", "message": "..."} (필드 누락)<br>401 {"code": "INVALID_CREDENTIALS", "message": "..."} (인증 실패)</td>
+</tr>
+
+<tr>
+<td>POST</td>
+<td>/auth/logout/</td>
+<td>IsAuthenticated</td>
+<td>-</td>
+<td>200<br>{"success": true, "night_session_active": true, "next": "/login"}</td>
+<td>401 {"code": "NOT_AUTHENTICATED", "message": "로그인 상태가 아닙니다."} (미로그인)</td>
+</tr>
+
+<tr>
+<td>GET</td>
+<td>/auth/session/</td>
+<td>AllowAny (+ CSRF 쿠키 발급)</td>
+<td>-</td>
+<td>200<br>미인증: {"is_authenticated": false, "user_id": null, "has_profile": false, "next": "/login"}<br>인증됨: {"is_authenticated": true, "user_id": int, "has_profile": bool, "next": "/" or "/signup/profile"}</td>
+<td>-</td>
+</tr>
+
+</tbody>
+</table>
+
+<p><b>has_profile</b>은 accounts/views.py의 <code>_has_profile()</code>이 계산하는데, 지금은 <code>TODO</code> 상태로 <b>항상 False</b>를 반환합니다. UserProfile 모델(body_weight_kg, target_sleeptime, profile_image)은 만들어져 있지만 실제 존재 여부를 확인하는 로직은 아직 없습니다.</p>
+<p><b>logout의 night_session_active</b>도 로직 없이 항상 true로 고정된 값입니다. (allnight 기능 연동 전 임시값으로 보임)</p>
+
+<hr>
+
+<h2 id="diary">3. diary 앱 - 음료(Drink) API</h2>
+<p>DRF 제네릭 클래스 뷰 (diary/views.py). 전부 <code>IsAuthenticated</code> 필요, 응답은 요청 유저 소유 데이터로 자동 필터링됩니다.</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+<thead>
+<tr><th>Method</th><th>URL</th><th>View</th><th>Request Body</th><th>성공 응답</th><th>비고</th></tr>
+</thead>
+<tbody>
+
+<tr>
+<td>GET</td>
+<td>/users/me/drinks/</td>
+<td>DrinkListCreateView</td>
+<td>-</td>
+<td>200<br>[DrinkSerializer, ...] (즐겨찾기 우선 → 최신순)</td>
+<td>본인의 is_active=True 음료만</td>
+</tr>
+
+<tr>
+<td>POST</td>
+<td>/users/me/drinks/</td>
+<td>DrinkListCreateView</td>
+<td>{"type": str, "brand": str, "name": str, "size": str, "caffeine_mg": int, "is_favorite"?: bool}</td>
+<td>201 DrinkSerializer</td>
+<td>이름/사이즈/카페인량 전부 직접 입력. 프리셋 브랜드를 골랐다면 size는 해당 브랜드 라벨과 일치해야 함(그 외 검증은 없음)</td>
+</tr>
+
+<tr>
+<td>GET</td>
+<td>/users/me/drinks/&lt;id&gt;/</td>
+<td>DrinkDetailView</td>
+<td>-</td>
+<td>200 DrinkSerializer</td>
+<td>남의 음료거나 삭제된 음료면 404</td>
+</tr>
+
+<tr>
+<td>PATCH</td>
+<td>/users/me/drinks/&lt;id&gt;/</td>
+<td>DrinkDetailView</td>
+<td>수정할 필드만 (예: {"is_favorite": true})</td>
+<td>200 DrinkSerializer</td>
+<td>-</td>
+</tr>
+
+<tr>
+<td>DELETE</td>
+<td>/users/me/drinks/&lt;id&gt;/</td>
+<td>DrinkDetailView</td>
+<td>-</td>
+<td>204 No Content</td>
+<td>실제 삭제 아님. is_active=False로 소프트 삭제 (CaffeineLog의 drink_id 참조 유지 목적)</td>
+</tr>
+
+<tr>
+<td>GET</td>
+<td>/users/me/drinks/presets/</td>
+<td>PresetDrinkListView</td>
+<td>쿼리파라미터 ?brand=starbucks (생략 시 전체)</td>
+<td>200<br>[{"brand","brand_name","type","name","size","caffeine_mg"}, ...]</td>
+<td>DB 아님. presets 패키지의 상수 카탈로그. 카페인량 미입력 사이즈는 자동 제외</td>
+</tr>
+
+<tr>
+<td>POST</td>
+<td>/users/me/drinks/from-preset/</td>
+<td>DrinkFromPresetView</td>
+<td>{"brand": str, "name": str, "size"?: str, "is_favorite"?: bool}</td>
+<td>201 DrinkSerializer (id, caffeine_mg 자동 포함)</td>
+<td>caffeine_mg는 절대 클라이언트가 안 보냄. 서버가 카탈로그(find_preset)에서 채움. 이미 같은 음료를 삭제했었다면 새로 만들지 않고 되살림</td>
+</tr>
+
+</tbody>
+</table>
+
+<p><b>DrinkSerializer 응답 필드:</b> id, type, type_display, brand, brand_display, name, size, caffeine_mg, is_favorite, is_recent, created_at</p>
+<p><b>지원 브랜드 (프리셋 있음):</b> starbucks, compose, baik, mammoth, ediya, mega, gongcha, pepsi, cocacola / <b>custom</b>은 프리셋 없이 자유 입력용</p>
+
+<hr>
+
+<h2 id="flow">4. 사용자 흐름</h2>
+
+<h3>가입 ~ 로그인</h3>
+<pre>
+POST /auth/signup/  또는  POST /auth/login/
+   -> 세션 쿠키 생성, has_profile로 다음 화면 안내(next)
+
+새로고침 / 앱 재진입 시
+GET /auth/session/  -> 로그인 유지 여부 확인
+</pre>
+
+<h3>음료 등록 (두 갈래 중 선택)</h3>
+<pre>
+[A] 카탈로그에서 선택
+  GET  /users/me/drinks/presets/?brand=starbucks   -> 목록에서 이름/사이즈 고르기
+  POST /users/me/drinks/from-preset/ {brand,name,size}
+       -> caffeine_mg는 서버가 자동으로 채워서 응답
+
+[B] 프리셋에 없는 음료를 직접 입력
+  POST /users/me/drinks/ {type,brand,name,size,caffeine_mg}
+       -> 전부 수동 입력
+</pre>
+
+<h3>등록 이후 공통</h3>
+<pre>
+GET    /users/me/drinks/          -> 내 음료 목록 (즐겨찾기 우선)
+PATCH  /users/me/drinks/&lt;id&gt;/    -> 즐겨찾기 토글 등 수정
+DELETE /users/me/drinks/&lt;id&gt;/    -> 소프트 삭제
+</pre>
+
+<hr>
+
+<h2 id="todo">5. 모델은 있지만 API가 없는 부분</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<thead>
+<tr><th>앱</th><th>모델 / 모듈</th><th>상태</th></tr>
+</thead>
+<tbody>
+<tr><td>accounts</td><td>UserProfile (body_weight_kg, target_sleeptime, profile_image)</td><td>모델만 존재. 조회/수정 API 없음. has_profile 판별 로직도 TODO</td></tr>
+<tr><td>diary</td><td>CaffeineLog (caffeine_mg 스냅샷, drink FK)</td><td>모델만 존재. 로그 남기기/조회 API 없음</td></tr>
+<tr><td>diary</td><td>SleepLog (sleep_quality, actual_bedtime, wakeup_time)</td><td>모델만 존재. API 없음</td></tr>
+<tr><td>allnight</td><td>AllNightSession (status, started_at, ended_at, target_time)</td><td>모델만 존재. views.py / urls.py가 빈 stub(<code>render</code> import만 있음). URL 자체가 config/urls.py에 include도 안 돼있음</td></tr>
+<tr><td>calcs</td><td>pharmacokinetics.py, cutoff.py, allowance.py, marginal_utility.py, night_schedule.py, personalization.py</td><td>순수 계산 함수 모음. 어느 뷰에서도 아직 호출하지 않음 (엔드포인트로 연결 안 됨)</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2 id="note">6. 확인이 필요한 부분</h2>
+<ul>
+<li><b>/auth/social/ (django-allauth)</b>: config/urls.py에 <code>include('allauth.urls')</code>가 있지만, <code>allauth</code> 계열 앱이 INSTALLED_APPS에 없고 requirements.txt에도 없습니다(venv에는 설치되어 있음). SITE_ID, AUTHENTICATION_BACKENDS, allauth 미들웨어도 settings.py에 없어서 이 경로는 현재 서버 구동/요청 시 에러가 날 가능성이 있습니다. 실제로 열어보기 전엔 "구현됨"으로 보지 않는 게 안전합니다.</li>
+<li>accounts/serializers.py 파일은 존재하지만 내용이 비어 있습니다. 지금 accounts 뷰들은 serializer 없이 request.data를 직접 다룹니다.</li>
+</ul>
+
+</body>
+</html>

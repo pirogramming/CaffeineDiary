@@ -83,7 +83,6 @@
     text-align: center;
     line-height: 110px;
     color: var(--cd-cream);
-
 }
 
 /* 로그인 + 회원가입 */
@@ -120,4 +119,29 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cd-landing__btn { transition: none; }
+}
+
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+    .cd-landing__art {display: none;}
+    .cd-landing-body {background: var(--cd-brown-dark);}
+    .cd-landing__bean { width: 200px;}
+    .cd-landing__logo {font-size: 90px; line-height: 80px;}
+    .cd-landing__btn {width: 121px; padding: 11px 20px 12px 20px; font-size: 16px;}
+}
+
+
+@media (max-width: 480px) {
+    .cd-landing__art {display: none;}
+    .cd-landing-body {background: var(--cd-brown-dark);}
+    .cd-landing__bean { width: 180px;}
+    .cd-landing__logo {font-size: 70px; line-height: 65px;}
+    .cd-landing__btn {
+        width: 100px; padding: 11px 10px 12px 10px; font-size: 15px; margin-top: 40px;
+    }
+
 }
