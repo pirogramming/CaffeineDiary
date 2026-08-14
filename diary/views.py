@@ -184,3 +184,13 @@ class FeedView(LoginRequiredMixin, TemplateView):
     login_url = "/login"
     template_name = "diary/feed.html"
     extra_context = {"page_title": "피드 화면"}
+
+# 수면 설문
+class SleepLogTimeView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/daily_time.html"
+
+
+class SleepLogRatingView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/daily_rating.html"

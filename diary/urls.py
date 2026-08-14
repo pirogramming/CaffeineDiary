@@ -48,4 +48,8 @@ urlpatterns = [
 
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
+
+    # 수면 설문 임시로 추가
+   path("sleep-logs/time", views.SleepLogTimeView.as_view(), name="sleep-log-time"),
+   path("sleep-logs/rating", views.SleepLogRatingView.as_view(), name="sleep-log-rating"),
 ]

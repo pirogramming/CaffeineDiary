@@ -1,0 +1,75 @@
+{% extends "diary/daily_base.html" %}
+{% load static %}
+
+{% block title %}수면 체크인 · Caffeine Diary{% endblock %}
+
+{% block daily_content %}
+<div class="cd-daily-rating">
+
+  <div class="cd-daily-rating__prompt">
+    <div class="cd-daily-rating__bot-profile">
+      <!-- TODO: 로고 이미지 준비되면 이 빈 원 안에 background-image로 넣으면 됨 -->
+      <div class="cd-daily-rating__bot-avatar" aria-hidden="true"></div>
+      <span class="cd-daily-rating__bot-name">caffeine</span>
+    </div>
+
+    <div class="cd-daily-rating__bubble">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 286 71" fill="none" class="cd-daily-rating__bubble-svg" aria-hidden="true">
+        <path d="M14.2998 71L18.4736 52.4834H20C8.95431 52.4834 0 43.5291 0 32.4834V20C6.92722e-06 8.95431 8.95431 0 20 0H266C277.046 1.03081e-06 286 8.95431 286 20V32.4834C286 43.5291 277.046 52.4834 266 52.4834H38.624L14.2998 71Z" fill="#775151"/>
+      </svg>
+      <p class="cd-daily-rating__bubble-text">오늘의 수면은 어땠나요?</p>
+    </div>
+  </div>
+
+  <form class="cd-daily-rating__scale" id="cdDailyRatingForm">
+    {% csrf_token %}
+    <span class="cd-daily-rating__label cd-daily-rating__label--low">별로였음 ㅜㅜ</span>
+
+    <div class="cd-daily-rating__beans" data-rating-beans>
+      {% for i in "12345" %}
+      <label class="cd-daily-rating__bean" data-bean-index="{{ forloop.counter }}">
+        <input type="radio" name="rating" value="{{ i }}" class="cd-daily-rating__bean-input">
+        <img src="{% static 'images/coffebean-rating.png' %}" alt="{{ i }}점" class="cd-daily-rating__bean-icon">
+      </label>
+      {% endfor %}
+    </div>
+
+    <span class="cd-daily-rating__label cd-daily-rating__label--high">좋았음 :)</span>
+  </form>
+
+  <p class="cd-field__error" id="cdDailyRatingError" hidden></p>
+
+  <button type="submit" form="cdDailyRatingForm" class="cd-daily-rating__next" id="cdDailyRatingSubmit">
+    submit
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" fill="none" class="cd-daily-rating__next-icon" aria-hidden="true">
+        <g clip-path="url(#cd-daily-rating-next-clip)">
+        <path d="M21 0C26.5695 0 31.911 2.21249 35.8492 6.15076C39.7875 10.089 42 15.4305 42 21C42 26.5695 39.7875 31.911 35.8492 35.8492C31.911 39.7875 26.5695 42 21 42C15.4305 42 10.089 39.7875 6.15076 35.8492C2.21249 31.911 0 26.5695 0 21C0 15.4305 2.21249 10.089 6.15076 6.15076C10.089 2.21249 15.4305 0 21 0ZM11.8125 19.6875C11.4644 19.6875 11.1306 19.8258 10.8844 20.0719C10.6383 20.3181 10.5 20.6519 10.5 21C10.5 21.3481 10.6383 21.6819 10.8844 21.9281C11.1306 22.1742 11.4644 22.3125 11.8125 22.3125H27.0191L21.3832 27.9457C21.2612 28.0678 21.1644 28.2127 21.0984 28.3721C21.0323 28.5315 20.9983 28.7024 20.9983 28.875C20.9983 29.0476 21.0323 29.2185 21.0984 29.3779C21.1644 29.5373 21.2612 29.6822 21.3832 29.8043C21.5053 29.9263 21.6502 30.0231 21.8096 30.0891C21.969 30.1552 22.1399 30.1892 22.3125 30.1892C22.4851 30.1892 22.656 30.1552 22.8154 30.0891C22.9748 30.0231 23.1197 29.9263 23.2418 29.8043L31.1168 21.9293C31.239 21.8073 31.336 21.6625 31.4021 21.503C31.4683 21.3436 31.5023 21.1726 31.5023 21C31.5023 20.8274 31.4683 20.6564 31.4021 20.497C31.336 20.3375 31.239 20.1927 31.1168 20.0707L23.2418 12.1957C22.9953 11.9493 22.661 11.8108 22.3125 11.8108C21.964 11.8108 21.6297 11.9493 21.3832 12.1957C21.1368 12.4422 20.9983 12.7765 20.9983 13.125C20.9983 13.4735 21.1368 13.8078 21.3832 14.0543L27.0191 19.6875H11.8125Z" fill="#775151"/>
+        </g>
+        <defs>
+        <clipPath id="cd-daily-rating-next-clip">
+            <rect width="42" height="42" fill="white" transform="matrix(-1 0 0 1 42 0)"/>
+        </clipPath>
+        </defs>
+    </svg>
+  </button>
+
+  <button type="button" class="cd-daily-rating__back" id="cdDailyRatingBack">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" fill="none" class="cd-daily-rating__back-icon" aria-hidden="true">
+        <g clip-path="url(#cd-daily-rating-back-clip)">
+        <path d="M21 0C26.5695 0 31.911 2.21249 35.8492 6.15076C39.7875 10.089 42 15.4305 42 21C42 26.5695 39.7875 31.911 35.8492 35.8492C31.911 39.7875 26.5695 42 21 42C15.4305 42 10.089 39.7875 6.15076 35.8492C2.21249 31.911 0 26.5695 0 21C0 15.4305 2.21249 10.089 6.15076 6.15076C10.089 2.21249 15.4305 0 21 0ZM11.8125 19.6875C11.4644 19.6875 11.1306 19.8258 10.8844 20.0719C10.6383 20.3181 10.5 20.6519 10.5 21C10.5 21.3481 10.6383 21.6819 10.8844 21.9281C11.1306 22.1742 11.4644 22.3125 11.8125 22.3125H27.0191L21.3832 27.9457C21.2612 28.0678 21.1644 28.2127 21.0984 28.3721C21.0323 28.5315 20.9983 28.7024 20.9983 28.875C20.9983 29.0476 21.0323 29.2185 21.0984 29.3779C21.1644 29.5373 21.2612 29.6822 21.3832 29.8043C21.5053 29.9263 21.6502 30.0231 21.8096 30.0891C21.969 30.1552 22.1399 30.1892 22.3125 30.1892C22.4851 30.1892 22.656 30.1552 22.8154 30.0891C22.9748 30.0231 23.1197 29.9263 23.2418 29.8043L31.1168 21.9293C31.239 21.8073 31.336 21.6625 31.4021 21.503C31.4683 21.3436 31.5023 21.1726 31.5023 21C31.5023 20.8274 31.4683 20.6564 31.4021 20.497C31.336 20.3375 31.239 20.1927 31.1168 20.0707L23.2418 12.1957C22.9953 11.9493 22.661 11.8108 22.3125 11.8108C21.964 11.8108 21.6297 11.9493 21.3832 12.1957C21.1368 12.4422 20.9983 12.7765 20.9983 13.125C20.9983 13.4735 21.1368 13.8078 21.3832 14.0543L27.0191 19.6875H11.8125Z" fill="#775151"/>
+        </g>
+        <defs>
+        <clipPath id="cd-daily-rating-back-clip">
+            <rect width="42" height="42" fill="white" transform="matrix(-1 0 0 1 42 0)"/>
+        </clipPath>
+        </defs>
+    </svg>
+    back
+    </button>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/daily_rating.js' %}"></script>
+{% endblock %}
