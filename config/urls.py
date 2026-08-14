@@ -48,6 +48,7 @@ urlpatterns = [
     path('allnight_mode/', TemplateView.as_view(template_name='allnight_mode.html'), name='allnight_mode'),
     path('allnight_setup/', TemplateView.as_view(template_name='allnight_setup.html'), name='allnight_setup'),
     path('', include('diary.urls')),
+    path('', include('allnight.urls')),
 ]
 
 if settings.DEBUG:

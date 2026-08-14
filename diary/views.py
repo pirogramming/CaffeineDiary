@@ -11,6 +11,8 @@
     아예 제외한다(404로 떨어진다).
 """
 
+from datetime import timedelta
+
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from rest_framework import generics, permissions, status
@@ -382,10 +384,9 @@ class FeedStatusView(APIView):
     def _sleep_survey_required(user, local_now, today, day_start):
         """SLEEP-001: 수면설문 노출 판정.
 
-        가입 당일, 서비스일 경계(05:00) 이전, 오늘자 SleepLog가 이미 있으면
-        노출하지 않는다. "전날 밤샘모드면 건너뛴다"는 명세 조건은 AllNightSession과
-        CaffeineLog를 잇는 연결이 아직 없어 반영하지 못한다 — 밤샘모드 API를
-        만들 때 마저 구현해야 한다.
+        가입 당일, 서비스일 경계(05:00) 이전, 오늘자 SleepLog가 이미 있거나,
+        전날(어제 서비스일) 밤샘모드였으면 노출하지 않는다 — 밤샘일은 수면
+        데이터가 없으므로 다음날 설문을 건너뛴다(NIGHT-003).
 
         local_now는 서버 로컬시각(Asia/Seoul)으로 변환된 값이어야 한다.
         date_joined는 DB에 UTC로 저장되므로 비교 전에 같은 방식으로 변환한다.
@@ -395,6 +396,11 @@ class FeedStatusView(APIView):
         if local_now.hour < SERVICE_DAY_START_HOUR:
             return False
         if SleepLog.objects.filter(user=user, created_at__gte=day_start).exists():
+            return False
+        yesterday_start = day_start - timedelta(hours=24)
+        if AllNightSession.objects.filter(
+            user=user, started_at__gte=yesterday_start, started_at__lt=day_start
+        ).exists():
             return False
         return True
 

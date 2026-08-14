@@ -539,3 +539,22 @@ class FeedStatusAPITests(APITestCase):
         with patch("diary.views.timezone.now", return_value=fixed_now):
             res = self.client.get(self.url)
         self.assertTrue(res.data["sleep_survey_required"])
+
+    def test_sleep_survey_required_false_after_all_nighter(self):
+        """전날 밤샘모드였으면(NIGHT-003) 수면설문을 건너뛴다."""
+        self._create_profile()
+        User.objects.filter(id=self.user.id).update(
+            date_joined=timezone.now() - timedelta(days=5)
+        )
+        self.user.refresh_from_db()
+        fixed_now = timezone.now().replace(hour=10, minute=0, second=0, microsecond=0)
+        AllNightSession.objects.create(
+            user=self.user,
+            status=AllNightSession.Status.COMPLETED,
+            started_at=fixed_now - timedelta(hours=20),
+            target_time=fixed_now - timedelta(hours=14),
+            ended_at=fixed_now - timedelta(hours=14),
+        )
+        with patch("diary.views.timezone.now", return_value=fixed_now):
+            res = self.client.get(self.url)
+        self.assertFalse(res.data["sleep_survey_required"])
