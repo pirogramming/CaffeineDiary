@@ -48,6 +48,7 @@ class CaffeineLog(models.Model):
         null=True, blank=True,
         related_name="logs",
     )
+    name = models.CharField(max_length=100, blank=True)  # 스냅샷: 기록 시점 음료명(커스텀/Drink 삭제 대비)
     caffeine_mg = models.FloatField()        # 스냅샷: 기록 시점 카페인량
 
     created_at = models.DateTimeField(auto_now_add=True)

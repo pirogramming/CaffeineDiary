@@ -35,6 +35,17 @@ urlpatterns = [
         name="drink-detail",
     ),
 
+    path(
+        "caffeine-logs/",
+        views.CaffeineLogListCreateView.as_view(),
+        name="log-list",
+    ),
+    path(
+        "caffeine-logs/<int:pk>/",
+        views.CaffeineLogDetailView.as_view(),
+        name="log-detail",
+    ),
+
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
 
