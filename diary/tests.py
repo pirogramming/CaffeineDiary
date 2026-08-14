@@ -71,7 +71,7 @@ class CaffeineLogAPITests(APITestCase):
         """커스텀은 caffeine_mg가 없으면 400."""
         res = self.client.post(self.list_url, {"name": "이름만"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("caffeine_mg", res.data)
+        self.assertIn("caffeine_mg", res.data["errors"])
 
     def test_create_custom_rejects_out_of_range(self):
         """카페인량이 범위(1~1000)를 벗어나면 400."""
@@ -79,7 +79,7 @@ class CaffeineLogAPITests(APITestCase):
             self.list_url, {"caffeine_mg": 5000, "name": "과다"}, format="json"
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("caffeine_mg", res.data)
+        self.assertIn("caffeine_mg", res.data["errors"])
 
     def test_cannot_log_with_others_drink(self):
         """타인 소유 drink_id로는 기록할 수 없다(후보군에서 제외되어 400)."""
@@ -310,7 +310,7 @@ class SleepLogAPITests(APITestCase):
         """수면질은 1~5 범위를 벗어나면 400."""
         res = self.client.post(self.list_url, {"sleep_quality": 7}, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("sleep_quality", res.data)
+        self.assertIn("sleep_quality", res.data["errors"])
 
     def test_wakeup_before_bedtime_rejected(self):
         """기상 시각이 취침 시각보다 앞서면 400."""
@@ -324,7 +324,7 @@ class SleepLogAPITests(APITestCase):
             format="json",
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("wakeup_time", res.data)
+        self.assertIn("wakeup_time", res.data["errors"])
 
     def test_future_bedtime_rejected(self):
         """미래 시각의 actual_bedtime은 400."""
@@ -333,7 +333,7 @@ class SleepLogAPITests(APITestCase):
             self.list_url, {"actual_bedtime": future.isoformat()}, format="json"
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("actual_bedtime", res.data)
+        self.assertIn("actual_bedtime", res.data["errors"])
 
     def test_patch_future_bedtime_rejected(self):
         """수정 시에도 미래 actual_bedtime은 400."""
@@ -558,3 +558,33 @@ class FeedStatusAPITests(APITestCase):
         with patch("diary.views.timezone.now", return_value=fixed_now):
             res = self.client.get(self.url)
         self.assertFalse(res.data["sleep_survey_required"])
+
+
+class CommonErrorFormatAPITests(APITestCase):
+    """API 명세서 공통 에러 포맷({code, message, errors}) 계약.
+
+    config/exception_handlers.py가 DRF 기본 예외를 이 포맷으로 바꿔주는지
+    확인한다. 개별 앱 테스트가 아니라 프로젝트 전역 동작이라 여기 모아둔다.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="tester", password="pw12345!")
+        self.client.force_authenticate(self.user)
+
+    def test_validation_error_uses_common_format(self):
+        """400(ValidationError)은 {code, message, errors} 형태로 나간다."""
+        res = self.client.post(
+            reverse("diary:log-list"), {"caffeine_mg": 5000, "name": "과다"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.data["code"], "INVALID_INPUT")
+        self.assertIn("message", res.data)
+        self.assertIn("caffeine_mg", res.data["errors"])
+        self.assertIsInstance(res.data["errors"]["caffeine_mg"], str)
+
+    def test_generic_not_found_uses_common_format(self):
+        """제네릭 뷰의 404(Http404)도 {code, message} 형태로 나간다."""
+        res = self.client.get(reverse("diary:log-detail", args=[999999]))
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(res.data["code"], "NOT_FOUND")
+        self.assertIn("message", res.data)
