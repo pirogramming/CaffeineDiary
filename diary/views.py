@@ -235,6 +235,12 @@ class SleepLogListCreateView(generics.ListCreateAPIView):
         생성에 성공하면, 방금 만든 기록까지 반영한 개인화 진행도(θ, 설문
         누적 수, 가중치)를 응답에 함께 실어 CALC-005 갱신 결과를 바로
         보여준다.
+
+        경계는 "서비스일 시작 이후 생성된 행"이라는 계산값이라(저장된 컬럼이
+        아니다) DB UniqueConstraint로 못 막는다. 동시에 두 번 요청하면 이론상
+        둘 다 생성될 수 있다 — Drink._create_or_revive의 최초 생성 경합과
+        같은 급의, 확률이 매우 낮고 결과도 파괴적이지 않은(개인화 평균이
+        하루치 더 들어가는 정도) 레이스라 지금은 감수한다.
         """
         today, day_start = service_day_bounds(timezone.now())
         if SleepLog.objects.filter(user=request.user, created_at__gte=day_start).exists():

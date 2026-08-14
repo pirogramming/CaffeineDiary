@@ -175,7 +175,15 @@ def profile(request):
             )
         serializer = UserProfileSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        new_profile = serializer.save()
+        # 위 existing 체크와 이 save() 사이의 경합은 UserProfile.user가 OneToOneField라
+        # DB 차원에서 이미 유일하다 — 동시 요청이 둘 다 통과해도 하나는 여기서 걸린다.
+        try:
+            new_profile = serializer.save()
+        except IntegrityError:
+            return Response(
+                {"code": "PROFILE_ALREADY_EXISTS", "message": "이미 프로필이 생성되어 있습니다."},
+                status=status.HTTP_409_CONFLICT,
+            )
         data = _serialize_profile(new_profile, include_calc=False)
         data["drinks"] = [
             {"drink_id": d.id, "name": d.name, "caffeine_mg": d.caffeine_mg}

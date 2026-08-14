@@ -6,6 +6,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -82,6 +83,29 @@ class NightSessionStartAPITests(APITestCase):
             ).count(),
             1,
         )
+
+    def test_duplicate_active_session_blocked_at_db_level(self):
+        """uniq_active_session_per_user 제약 확인.
+
+        존재 확인(filter 체크)과 생성 사이의 경합에서 view의 try/except가
+        기대는 바로 이 제약이다.
+        """
+        self._create_profile()
+        now = timezone.now()
+        AllNightSession.objects.create(
+            user=self.user,
+            status=AllNightSession.Status.ACTIVE,
+            started_at=now,
+            target_time=now + timedelta(hours=5),
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                AllNightSession.objects.create(
+                    user=self.user,
+                    status=AllNightSession.Status.ACTIVE,
+                    started_at=now,
+                    target_time=now + timedelta(hours=6),
+                )
 
     def test_requires_authentication(self):
         """비로그인 요청은 거부된다."""

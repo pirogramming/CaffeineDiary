@@ -8,6 +8,7 @@
 계산해서 돌려준다(사용자가 스케줄과 다르게 마셔도 다음 호출 때 보정된다).
 """
 
+from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -98,12 +99,27 @@ class NightSessionStartView(APIView):
         serializer = NightSessionStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        session = AllNightSession.objects.create(
-            user=user,
-            status=AllNightSession.Status.ACTIVE,
-            started_at=timezone.now(),
-            target_time=serializer.validated_data["target_awake_until"],
-        )
+        # 위 .filter().first() 체크와 아래 생성 사이의 경합은 uniq_active_session_per_user
+        # 제약(모델 Meta)이 막는다 — 동시 요청이 둘 다 통과해도 하나는 여기서 걸린다.
+        try:
+            session = AllNightSession.objects.create(
+                user=user,
+                status=AllNightSession.Status.ACTIVE,
+                started_at=timezone.now(),
+                target_time=serializer.validated_data["target_awake_until"],
+            )
+        except IntegrityError:
+            active = AllNightSession.objects.get(
+                user=user, status=AllNightSession.Status.ACTIVE
+            )
+            return Response(
+                {
+                    "code": "NIGHT_SESSION_ALREADY_ACTIVE",
+                    "message": "이미 진행 중인 밤샘모드가 있습니다.",
+                    "session_id": active.id,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
         return Response(_session_data(session), status=status.HTTP_201_CREATED)
 
 

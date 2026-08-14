@@ -15,6 +15,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
+from calcs.pharmacokinetics import W_MAX_KG, W_MIN_KG
 from diary.constants import Brand, DrinkType
 from diary.models import Drink
 
@@ -108,11 +109,36 @@ class UserProfileSerializer(serializers.ModelSerializer):
     target_bedtime = serializers.TimeField(
         source="target_sleeptime", format="%H:%M", input_formats=["%H:%M", "%H:%M:%S"]
     )
+    # 모델 필드(body_weight_kg = FloatField(null=True))는 선택값이라 ModelSerializer가
+    # 자동 생성하면 required=False가 된다. 명세(PROF-001)는 생성 시 필수라서 명시적으로
+    # 다시 선언한다 — target_bedtime과 같은 이유. PATCH(partial=True)에서는 DRF가 이
+    # required를 무시하므로 그대로 선택값으로 동작한다.
+    body_weight_kg = serializers.FloatField()
     drinks = ProfileDrinkSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = UserProfile
         fields = ["target_bedtime", "body_weight_kg", "drinks"]
+
+    def validate_body_weight_kg(self, value):
+        """calcs 엔진이 clamp_weight()로 내부적으로 [W_MIN_KG, W_MAX_KG]로 잘라내는데,
+        API 경계에서 걸러야 할 값(음수·0·비현실적인 값)을 그냥 통과시키지 않기 위해
+        같은 범위를 여기서도 검증한다.
+
+        Args:
+            value (float): 입력된 체중(kg)
+
+        Returns:
+            float: 검증을 통과한 값
+
+        Raises:
+            serializers.ValidationError: W_MIN_KG~W_MAX_KG 범위를 벗어난 경우
+        """
+        if not W_MIN_KG <= value <= W_MAX_KG:
+            raise serializers.ValidationError(
+                f"체중은 {W_MIN_KG:.0f}~{W_MAX_KG:.0f}kg 사이여야 합니다."
+            )
+        return value
 
     def validate_drinks(self, value):
         """최초 생성 시에는 즐겨찾는 음료가 최소 1개 필요하고, 이름 중복도 막는다.

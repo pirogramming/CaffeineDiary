@@ -8,6 +8,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -136,6 +137,35 @@ class UserProfileAPITests(APITestCase):
         self._create_profile()
         res = self._create_profile()
         self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+
+    def test_duplicate_profile_blocked_at_db_level(self):
+        """UserProfile.user는 OneToOneField라 DB 차원에서 유일하다.
+
+        존재 확인(exists 체크)과 생성 사이의 경합에서 view의 try/except가
+        기대는 바로 이 제약이다.
+        """
+        self._create_profile()
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                UserProfile.objects.create(
+                    user=self.user, target_sleeptime=timezone.now().time(), body_weight_kg=60
+                )
+
+    def test_post_requires_body_weight_kg(self):
+        """체중이 없으면 400 (명세 PROF-001: 생성 시 필수)."""
+        res = self.client.post(
+            self.url,
+            {"target_bedtime": "23:30", "drinks": [{"name": "a", "caffeine_mg": 100}]},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("body_weight_kg", res.data["errors"])
+
+    def test_post_rejects_out_of_range_body_weight(self):
+        """비현실적인 체중(음수 등)은 400."""
+        res = self._create_profile(body_weight_kg=-5)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("body_weight_kg", res.data["errors"])
 
     # ------------------------------------------------------------------ 조회
 
