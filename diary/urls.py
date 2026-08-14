@@ -8,7 +8,7 @@ config/urls.py에서 path("", include("diary.urls"))로 루트에 마운트된�
 """
 
 from django.urls import path
-
+from django.views.generic import TemplateView
 from . import views
 
 app_name = "diary"
@@ -48,4 +48,5 @@ urlpatterns = [
 
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
+    path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
 ]
