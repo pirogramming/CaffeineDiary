@@ -61,8 +61,6 @@ class SignupSerializer(serializers.Serializer):
             serializers.ValidationError: 비밀번호 불일치이거나 정책 위반인 경우
         """
         password = attrs.get("password")
-        # password_confirm은 선택 입력이다. 보냈을 때만 일치 검사하고,
-        # 안 보냈으면(현재 프론트 폼) 재확인 검사를 건너뛴다.
         confirm = attrs.get("password_confirm")
         if confirm is not None and password != confirm:
             raise serializers.ValidationError(
