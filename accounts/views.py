@@ -98,7 +98,7 @@ def login(request):
 def logout(request):
     auth_logout(request)  # 세션 삭제
     return Response(
-        {"success": True, "night_session_active": True, "next": "/login"}, 
+        {"success": True, "night_session_active": True, "next": "/auth/login"},
         status=status.HTTP_200_OK
     )
 
@@ -110,8 +110,8 @@ def session(request):
     # 미인증
     if not request.user.is_authenticated:
         return Response(
-            {"is_authenticated": False, "user_id": None, 
-             "has_profile": False, "next": "/login"},
+            {"is_authenticated": False, "user_id": None,
+             "has_profile": False, "next": "/auth/login"},
             status=status.HTTP_200_OK,
         )
 
