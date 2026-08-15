@@ -27,6 +27,12 @@ from .serializers import (
 # 임시로 추가
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from django.views.generic import RedirectView
+from django.shortcuts import redirect
+from django.urls import reverse
+
+from .constants import DrinkType
+from .presets import brands_for_type, menus_for_brand_and_type, sizes_for_drink
 
 
 class DrinkListCreateView(generics.ListCreateAPIView):
@@ -175,7 +181,7 @@ class CaffeineLogDetailView(generics.RetrieveUpdateDestroyAPIView):
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
 class MainView(LoginRequiredMixin, TemplateView):
     login_url = "/login"
-    template_name = "diary/base.html"
+    template_name = "diary/main.html"
     extra_context = {"page_title": "메인 화면"}
 
 
@@ -194,3 +200,103 @@ class SleepLogTimeView(LoginRequiredMixin, TemplateView):
 class SleepLogRatingView(LoginRequiredMixin, TemplateView):
     login_url = "/auth/login"
     template_name = "diary/daily_rating.html"
+   
+# intial_survey view 추가 (임시)
+
+class SurveyStartView(LoginRequiredMixin, RedirectView):
+    login_url = "/auth/login"
+    pattern_name = "diary:survey-category"
+
+
+class SurveyCategoryView(LoginRequiredMixin, TemplateView):
+    """1단계: 음료 카테고리 선택. 첫 단계라 prev_url을 안 넣는다 """
+
+    login_url = "/auth/login"
+    template_name = "diary/survey_category.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["options"] = DrinkType.choices
+        return context
+
+    def post(self, request, *args, **kwargs):
+        request.session["survey_category"] = request.POST.get("choice")
+        for key in ("survey_brand", "survey_menu", "survey_size"):
+            request.session.pop(key, None)
+        return redirect("diary:survey-brand")
+
+
+class SurveyBrandView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/survey_brand.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.session.get("survey_category"):
+            return redirect("diary:survey-category")
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = self.request.session.get("survey_category")
+        brands = brands_for_type(category) if category else []
+        context["options"] = [(b["code"], b["name"]) for b in brands]
+        context["prev_url"] = reverse("diary:survey-category")
+        return context
+
+    def post(self, request, *args, **kwargs):
+        request.session["survey_brand"] = request.POST.get("choice")
+        for key in ("survey_menu", "survey_size"):
+            request.session.pop(key, None)
+        return redirect("diary:survey-menu")
+
+
+class SurveyMenuView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/survey_menu.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.session.get("survey_brand"):
+            return redirect("diary:survey-brand")
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = self.request.session.get("survey_category")
+        brand = self.request.session.get("survey_brand")
+        menus = menus_for_brand_and_type(brand, category) if brand and category else []
+        context["options"] = [(d["name"], d["name"]) for d in menus]
+        context["prev_url"] = reverse("diary:survey-brand")
+        return context
+
+    def post(self, request, *args, **kwargs):
+        request.session["survey_menu"] = request.POST.get("choice")
+        request.session.pop("survey_size", None)
+        return redirect("diary:survey-size")
+
+
+class SurveySizeView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/survey_size.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.session.get("survey_menu"):
+            return redirect("diary:survey-menu")
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        brand = self.request.session.get("survey_brand")
+        menu = self.request.session.get("survey_menu")
+        sizes = sizes_for_drink(brand, menu) if brand and menu else []
+        context["options"] = [(s["code"], s["label"]) for s in sizes]
+        context["prev_url"] = reverse("diary:survey-menu")
+        return context
+
+    def post(self, request, *args, **kwargs):
+        request.session["survey_size"] = request.POST.get("choice")
+        return redirect("diary:survey-sleep")
+
+
+class SurveySleepView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/survey_sleep.html"
