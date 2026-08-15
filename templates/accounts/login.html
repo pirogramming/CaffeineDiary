@@ -1,0 +1,23 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}로그인 · Caffeine Diary{% endblock %}
+
+{% block auth_title %}login{% endblock %}
+
+{% block auth_fields %}
+<div class="cd-auth__field">
+  <input type="text" id="cd-login-username" name="username" class="cd-auth__input" placeholder="id :" autocomplete="username" required>
+</div>
+
+<div class="cd-auth__field">
+  <input type="password" id="cd-login-password" name="password" class="cd-auth__input" placeholder="password:" autocomplete="current-password" required>
+</div>
+{% endblock %}
+
+{% block auth_submit_label %}로그인하기{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('cd-auth-form')?.setAttribute('data-auth-mode', 'login');
+</script>
+{% endblock %}

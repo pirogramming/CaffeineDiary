@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[음료 상세] 화면</title>
+</head>
+<body>
+
+<h1>[음료 상세] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p>id: <span id="current-id">-</span> (<a href="/testpages/drinks.html">목록으로</a>)</p>
+
+<h2>GET /users/me/drinks/&lt;id&gt;/</h2>
+<pre id="detail-result">로딩중...</pre>
+
+<hr>
+
+<h2>PATCH /users/me/drinks/&lt;id&gt;/</h2>
+<p>수정할 필드만 JSON으로 입력 (예: {"is_favorite": true})</p>
+<textarea id="patch-body" rows="4" cols="50">{"is_favorite": true}</textarea><br><br>
+<button onclick="doPatch()">수정 적용</button>
+<pre id="patch-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>DELETE /users/me/drinks/&lt;id&gt;/</h2>
+<p>실제 삭제가 아니라 is_active=False로 바뀌는 소프트 삭제입니다.</p>
+<button onclick="doDelete()">삭제</button>
+<pre id="delete-result">(아직 요청 없음)</pre>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+const id = new URLSearchParams(location.search).get("id");
+document.getElementById("current-id").textContent = id || "(없음 - drinks.html에서 링크로 진입하세요)";
+
+async function loadDetail() {
+  if (!id) return;
+  const result = await apiFetch("/users/me/drinks/" + id + "/");
+  renderResult("detail-result", result);
+}
+
+async function doPatch() {
+  if (!id) return;
+  let body;
+  try {
+    body = JSON.parse(document.getElementById("patch-body").value);
+  } catch (e) {
+    alert("JSON 형식이 올바르지 않습니다: " + e.message);
+    return;
+  }
+  const result = await apiFetch("/users/me/drinks/" + id + "/", "PATCH", body);
+  renderResult("patch-result", result);
+  loadDetail();
+}
+
+async function doDelete() {
+  if (!id) return;
+  if (!confirm("정말 삭제(소프트 삭제)하시겠습니까?")) return;
+  const result = await apiFetch("/users/me/drinks/" + id + "/", "DELETE");
+  renderResult("delete-result", result);
+}
+
+window.addEventListener("DOMContentLoaded", loadDetail);
+</script>
+
+</body>
+</html>
