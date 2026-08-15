@@ -25,7 +25,6 @@ from django.views.generic import TemplateView #임시
 
 from accounts import views as accounts_views
 
-def home(request):
 from diary import views as diary_views # 메인 view 연결
 
 # def home(request):
