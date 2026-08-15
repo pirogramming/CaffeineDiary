@@ -15,7 +15,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from .constants import Brand, DrinkType
-from .models import Drink
+from .models import CaffeineLog, Drink
 from .presets import find_preset, size_labels
 
 
@@ -268,6 +268,109 @@ class DrinkFromPresetSerializer(serializers.Serializer):
             dict: DrinkSerializer 직렬화 결과
         """
         return DrinkSerializer(instance, context=self.context).data
+
+
+class CaffeineLogSerializer(serializers.ModelSerializer):
+    """카페인 섭취기록 조회/생성/수정.
+
+    두 가지 기록 방식을 하나의 스키마로 받는다.
+      - 한잔  : drink_id로 등록된 음료를 지목한다. caffeine_mg와 name은
+                서버가 해당 Drink에서 스냅샷으로 박제하며, 클라이언트가 보낸
+                값은 무시한다("스타벅스 라떼 = 5mg" 같은 위조를 막는다).
+      - 커스텀: drink_id 없이 caffeine_mg와 name을 직접 입력한다.
+
+    스냅샷 정책: 기록 이후 Drink가 수정/삭제되어도 이 로그의 값은 보존된다.
+    drink는 SET_NULL이라 연결이 끊길 수 있으므로 name도 함께 박제한다.
+
+    user는 fields에서 제외했다. 클라이언트가 보낸 값을 신뢰하면 다른 계정에
+    기록을 남길 수 있으므로, create에서 context의 request.user로만 주입한다.
+    """
+
+    drink_id = serializers.PrimaryKeyRelatedField(
+        source="drink",
+        queryset=Drink.objects.none(),  # __init__에서 요청 사용자 소유로 좁힌다
+        required=False,
+        allow_null=True,
+    )
+    caffeine_mg = serializers.FloatField(required=False)
+
+    class Meta:
+        model = CaffeineLog
+        fields = ["id", "drink_id", "name", "caffeine_mg", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def __init__(self, *args, **kwargs):
+        """drink_id 후보를 요청 사용자의 활성 음료로 제한한다.
+
+        queryset을 좁히면 타인 소유 drink_id는 존재하지 않는 값으로 취급되어
+        검증 단계에서 걸러진다(다른 사람 음료로 기록을 남길 수 없다).
+        """
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None and getattr(request.user, "is_authenticated", False):
+            self.fields["drink_id"].queryset = Drink.objects.filter(
+                user=request.user, is_active=True
+            )
+
+    def validate(self, attrs):
+        """한잔/커스텀을 구분해 스냅샷을 채우거나 입력값을 검증한다.
+
+        이번 요청에 drink가 지정되면 '한잔'으로 보고 서버가 caffeine_mg/name을
+        박제한다. drink가 없으면 '커스텀'이며, 생성 시에는 두 값이 필수다.
+        drink를 보내지 않는 PATCH에서는 기존 스냅샷을 임의로 다시 덮어쓰지
+        않는다(과거 기록의 caffeine_mg 불변성을 지키기 위해서다).
+
+        Args:
+            attrs (dict): 필드 단위 검증을 통과한 값들
+
+        Returns:
+            dict: 스냅샷이 채워졌거나 정리된 attrs
+
+        Raises:
+            serializers.ValidationError: 커스텀 생성에 필수값이 없거나,
+                카페인량이 범위를 벗어나거나, 이름이 공백인 경우
+        """
+        if attrs.get("drink") is not None:
+            drink = attrs["drink"]
+            attrs["caffeine_mg"] = drink.caffeine_mg
+            attrs["name"] = drink.name
+            return attrs
+
+        if self.instance is None:  # 커스텀 생성
+            if attrs.get("caffeine_mg") is None:
+                raise serializers.ValidationError(
+                    {"caffeine_mg": "카페인량을 입력해주세요."}
+                )
+            if not (attrs.get("name") or "").strip():
+                raise serializers.ValidationError({"name": "음료 이름을 입력해주세요."})
+
+        # 넘어온 값만 범위/공백 검증한다(생성·수정 공통).
+        if attrs.get("caffeine_mg") is not None and not 0 < attrs["caffeine_mg"] <= 1000:
+            raise serializers.ValidationError(
+                {"caffeine_mg": "카페인량은 1~1000mg 사이여야 합니다."}
+            )
+        if "name" in attrs:
+            name = attrs["name"].strip()
+            if not name:
+                raise serializers.ValidationError({"name": "음료 이름을 입력해주세요."})
+            attrs["name"] = name
+        return attrs
+
+    def create(self, validated_data):
+        """요청 사용자 소유로 기록을 생성하고 참조 음료를 '최근'으로 표시한다.
+
+        Args:
+            validated_data (dict): 스냅샷이 채워진 검증 결과
+
+        Returns:
+            CaffeineLog: 생성된 인스턴스
+        """
+        validated_data["user"] = self.context["request"].user
+        log = super().create(validated_data)
+        if log.drink_id and not log.drink.is_recent:
+            log.drink.is_recent = True
+            log.drink.save(update_fields=["is_recent"])
+        return log
 
 
 @transaction.atomic

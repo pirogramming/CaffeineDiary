@@ -11,11 +11,14 @@
     아예 제외한다(404로 떨어진다).
 """
 
+from django.utils.dateparse import parse_date
 from rest_framework import generics, permissions
+from rest_framework.pagination import PageNumberPagination
 
-from .models import Drink
+from .models import CaffeineLog, Drink
 from .presets import iter_presets
 from .serializers import (
+    CaffeineLogSerializer,
     DrinkFromPresetSerializer,
     DrinkSerializer,
     PresetDrinkSerializer,
@@ -111,10 +114,68 @@ class DrinkFromPresetView(generics.CreateAPIView):
     serializer_class = DrinkFromPresetSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class CaffeineLogPagination(PageNumberPagination):
+    """섭취기록 목록 페이지네이션.
+
+    page_size_query_param을 열어 클라이언트가 page_size로 페이지 크기를
+    조절할 수 있게 한다(명세: page, page_size). max_page_size로 과도한
+    조회를 막는다.
+    """
+
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class CaffeineLogListCreateView(generics.ListCreateAPIView):
+    """섭취기록 목록 조회 / 생성(한잔·커스텀).
+
+    GET  /caffeine-logs/   - 본인 기록 목록(최신순). start_date~end_date로
+                             기간을 좁히고 page/page_size로 페이지네이션한다.
+    POST /caffeine-logs/   - 한잔(drink_id) 또는 커스텀(caffeine_mg+name) 기록
+
+    기간 필터는 created_at의 날짜(UTC) 기준이다. start_date/end_date는
+    YYYY-MM-DD 형식이며 파싱에 실패하면 무시한다.
+    """
+
+    serializer_class = CaffeineLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CaffeineLogPagination
+
+    def get_queryset(self):
+        """본인 기록만 최신순으로, 요청된 기간으로 좁혀 반환한다."""
+        qs = CaffeineLog.objects.filter(user=self.request.user).order_by("-created_at")
+
+        start = parse_date(self.request.query_params.get("start_date", "") or "")
+        end = parse_date(self.request.query_params.get("end_date", "") or "")
+        if start:
+            qs = qs.filter(created_at__date__gte=start)
+        if end:
+            qs = qs.filter(created_at__date__lte=end)
+        return qs
+
+
+class CaffeineLogDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """섭취기록 상세 조회 / 수정 / 삭제.
+
+    GET    /caffeine-logs/<id>/   - 상세 조회
+    PATCH  /caffeine-logs/<id>/   - 수정(커스텀 값 정정 등)
+    DELETE /caffeine-logs/<id>/   - 삭제
+
+    쿼리셋을 본인 소유로 제한하므로 타인의 기록에 접근하면 404가 된다.
+    """
+
+    serializer_class = CaffeineLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CaffeineLog.objects.filter(user=self.request.user)
+
+
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
 class MainView(LoginRequiredMixin, TemplateView):
     login_url = "/login"
-    template_name = "diary/base.html"
+    template_name = "diary/main.html"
     extra_context = {"page_title": "메인 화면"}
 
 

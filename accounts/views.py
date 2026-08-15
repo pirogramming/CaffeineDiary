@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 
+from django.views.generic import TemplateView
+
 # Create your views here.
 
 def _has_profile(user) -> bool:
@@ -96,3 +98,10 @@ def session(request):
          "has_profile": has_profile, "next": "/" if has_profile else "/signup/profile"},
         status=status.HTTP_200_OK,
     )
+
+class LoginPageView(TemplateView): #login page view 추가 
+    template_name = "accounts/login.html"
+
+
+class SignupPageView(TemplateView): #signup page view 추가
+    template_name = "accounts/signup.html"
