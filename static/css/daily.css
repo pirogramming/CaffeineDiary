@@ -1,0 +1,434 @@
+/* ==========================================================
+   daily.css — 수면 설문 공통
+   ========================================================== */
+
+/* 전체 배경 색 */
+.cd-daily-body {
+    margin: 0;
+    background: var(--cd-brown-dark);
+}
+
+.cd-daily-page {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ---- 흩뿌려진 배경 아이콘 (survey.css와 같은 패턴) ---- */
+.cd-bg-icons {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.cd-bg-icons__icon {
+    position: absolute;
+    top: var(--icon-top, 0);
+    left: var(--icon-left, 0);
+    width: var(--icon-w, 40px);
+    height: var(--icon-h, 40px);
+    transform: rotate(var(--icon-rotate, 0deg)) scale(var(--icon-scale, 0.8));
+}
+
+/* ---- 흰색 종이 카드 ---- */
+.cd-daily__paper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 1;
+    pointer-events: none;
+    transform: translateY(-150px);
+}
+
+/* 내용 박스 */
+.cd-daily__content {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 12%;
+    transform: translateY(40px);
+}
+
+/* ==========================================================
+   1페이지 — 취침 시각 입력 (팝업 메시지 형태)
+   ========================================================== */
+
+.cd-daily-time {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 480px;
+}
+
+/* 1. 질문 */
+.cd-daily-time__prompt {
+    display: flex;
+    align-items: flex-end;
+    animation: cd-daily-pop-in 0.25s ease;
+}
+
+.cd-daily-time__bot-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.cd-daily-time__bot-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--cd-cream-soft);
+    border: 2px solid var(--cd-brown-deep);
+}
+
+.cd-daily-time__bot-icon { width: 48px; height: 48px; }
+.cd-daily-time__bot-name {
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 20px;
+    color: var(--cd-brown-ink);
+}
+
+.cd-daily-time__bubble {
+    position: relative;
+    width: 100%; /* 질문 말풍선 너비 */
+    margin-left: 15px; /* 아이콘과 말풍선 사이 간격 */
+    transform: translateY(-10px);
+}
+
+.cd-daily-time__bubble-svg {
+    display: block;
+    width: 100%;
+  height: auto;
+}
+.cd-daily-time__bubble-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 26%; /* SVG 전체 높이 중 꼬리 부분을 제외한 둥근 사각형 영역에만 텍스트 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 26px;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+/* 3. 사용자가 보낸 답변이 말풍선(팝업)으로 등장 */
+.cd-daily-time__answer-wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding-left: 76px; /* 오른쪽으로 밀어 말풍선 아래에 대략 정렬 */
+    margin-top: -20px;
+}
+
+/* hidden 속성이 있을 땐 위 display:flex보다 우선해서 확실히 숨긴다.
+   (같은 클래스에 display:flex를 무조건 걸어두면 hidden 속성을 덮어써버려서
+   답변 입력 전에도 빈 말풍선이 보이는 버그가 있었다) */
+.cd-daily-time__answer-wrap[hidden] {
+   display: none;
+}
+.cd-daily-time__answer {
+    position: relative;
+    width: 90px;
+}
+.cd-daily-time__answer-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.cd-daily-time__answer-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 23%; /* SVG 전체 높이 중 꼬리 부분을 제외한 둥근 사각형 영역에만 텍스트 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: var(--cd-brown-ink);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+.cd-daily-time__answer-wrap.is-visible {
+    animation: cd-daily-pop-in 0.25s ease;
+}
+
+@keyframes cd-daily-pop-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* 2. 시간 입력 */
+.cd-daily-time__input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.cd-daily-time__input {
+    flex: 1;
+    border-radius: 20px;
+    padding: 12px 18px;
+    font-size: 16px;
+    border: none;
+    background: #fff;
+    color: var(--cd-brown-ink)
+}
+
+.cd-daily-time__input:focus { background-color: var(--cd-brown-light); outline: none;}
+
+.cd-daily-time__send {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.cd-daily-time__send img { width: 28px; height: 28px; }
+.cd-daily-time__send:hover { opacity: 0.85; }
+
+/* 4. next 버튼 — 답변 전엔 비활성 */
+.cd-daily-time__next {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 35px;
+    gap:30px;
+    color: var(--cd-brown-dark);
+    cursor: pointer;
+    position: fixed;
+    right: 100px;
+    bottom: 100px;
+}
+
+.cd-daily-time__next-icon { width: 40px; height: 40px; }
+.cd-daily-time__next:hover:not(:disabled) { opacity: 0.85; }
+.cd-daily-time__next:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#cdDailyTimeError {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: var(--cd-space-2);
+}
+
+/* ==========================================================
+   2페이지 — 수면의 질 체크 (원두 1~5점 평점)
+   ========================================================== */
+
+.cd-daily-rating {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    max-width: 520px;
+}
+
+.cd-daily-rating__prompt {
+    display: flex;
+    align-items: flex; /* 말풍선 꼬리가 아바타 쪽 아래로 향하므로 하단 정렬 */
+    justify-content: center;
+}
+
+.cd-daily-rating__bot-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* 로고 이미지가 들어갈 빈 원. 나중에 background-image로 채우면 됨. */
+.cd-daily-rating__bot-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--cd-cream-soft);
+    border: 2px solid var(--cd-brown-deep);
+}
+
+.cd-daily-rating__bot-name {
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 20px;
+    color: var(--cd-brown-ink);
+}
+
+/* SVG 말풍선 — 이미지 자체가 배경이고, 텍스트는 그 위에 겹쳐 올린다. */
+.cd-daily-rating__bubble {
+    position: relative;
+    margin-left: 15px; /* 아이콘과 말풍선 사이 간격 */
+    transform: translateY(-10px);
+    justify-self: center;
+    align-self: center;
+}
+
+.cd-daily-rating__bubble-svg {
+    display: block;
+    width: 286px;
+    height: auto;
+}
+.cd-daily-rating__bubble-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 26%; /* SVG 전체 높이 중 꼬리 부분을 제외한 둥근 사각형 영역에만 텍스트가 오도록 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 26px;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.cd-daily-rating__scale {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cd-daily-rating__label {
+    font-size: 16px;
+    padding: 0 5px;
+    color: var(--cd-brown-ink);
+    white-space: nowrap;
+}
+
+.cd-daily-rating__beans {
+    display: flex;
+    gap: 10px;
+}
+
+.cd-daily-rating__bean { cursor: pointer; }
+.cd-daily-rating__bean-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cd-daily-rating__bean-icon {
+    width: 120px;
+    height: auto;
+    opacity: 0.35; /* 기본: 반투명(미선택) */
+    transition: opacity 0.15s ease;
+}
+
+/* daily_rating.js가 클릭된 원두 이하 전부에 이 클래스를 붙인다 —
+   선택된 원두는 투명도 0(완전 불투명)이 된다. */
+.cd-daily-rating__bean.is-selected .cd-daily-rating__bean-icon {
+    opacity: 1;
+}
+
+.cd-daily-rating__next {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 35px;
+    gap:30px;
+    color: var(--cd-brown-dark);
+    cursor: pointer;
+    position: fixed;
+    right: 100px;
+    bottom: 100px;
+}
+
+.cd-daily-rating__next-icon { width: 40px; height: 40px; }
+.cd-daily-rating__next:hover:not(:disabled) { opacity: 0.85; }
+.cd-daily-rating__next:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.cd-daily-rating__back {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 35px;
+    gap:30px;
+    color: var(--cd-brown-dark);
+    cursor: pointer;
+    position: fixed;
+    left: 100px;
+    bottom: 100px;
+}
+
+.cd-daily-rating__back-icon {
+    width: 40px;
+    height: 40px;
+    transform: scaleX(-1); /* 좌우 반전해서 뒤로가기 방향으로 */
+}
+
+.cd-daily-rating__back:hover:not(:disabled) { opacity: 0.85; }
+.cd-daily-rating__back:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#cdDailyRatingError {
+    font-size: 0.9rem;
+    color: #B4552E;
+    text-align: center;
+    margin-top: -30px;
+}
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .cd-bg-icons__icon {transform: rotate(var(--icon-rotate, 0deg)) scale(var(--icon-scale, 0.6));}
+  .cd-daily__paper {transform: translateY(30px);min-height: 100%;}
+}
+
+@media (max-width: 480px) {
+    .cd-daily__paper {transform: translateY(30px); min-height: 100%;}
+    .cd-daily-rating__beans {gap: 0px;}
+
+    .cd-daily-rating__next-icon, 
+    .cd-daily-time__next-icon, 
+    .cd-daily-rating__back-icon, 
+    .cd-daily-time__back-icon {width: 50px; height: 50px;}
+
+    .cd-daily-rating__next, 
+    .cd-daily-time__next, 
+    .cd-daily-rating__back, 
+    .cd-daily-time__back {font-size:0;}
+
+    .cd-daily-rating__next, 
+    .cd-daily-time__next{right: 50px;}
+    .cd-daily-rating__back, 
+    .cd-daily-time__back {left:50px;}
+}
