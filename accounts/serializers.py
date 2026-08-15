@@ -37,7 +37,7 @@ class SignupSerializer(serializers.Serializer):
 
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True, required=False)
 
     def validate_username(self, value):
         username = value.strip()
@@ -62,7 +62,7 @@ class SignupSerializer(serializers.Serializer):
         """
         password = attrs.get("password")
         confirm = attrs.get("password_confirm")
-        if password != confirm:
+        if confirm is not None and password != confirm:
             raise serializers.ValidationError(
                 {"password_confirm": "비밀번호가 일치하지 않습니다."}
             )
