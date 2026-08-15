@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}마이페이지{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mypage.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="mypage_stage">
+    <img src="{% static 'images/grid_bgimg.svg' %}" alt="" class="grid_bgimg">
+    <img src="{% static 'images/coffee_bgimg.svg' %}" alt="" class="coffee_bgimg">
+    <img src="{% static 'images/pencil_bgimg.svg' %}" alt="" class="pencil_bgimg">
+
+    <div class="mypage_cards">
+        <img src="{% static 'images/mypage_card.svg' %}" alt="" class="mypage_card_bg">
+
+        <div class="mypage_content">
+            <div class="mypage_title">
+                <h2>닉네임 <span>님</span></h2>
+                <div class="edit_wrap">
+                    <img src="{% static 'images/edit_btn.svg' %}" alt="" class="edit_btn_bg">
+                    <button class="edit_btn">
+                        수정
+                        <img src="{% static 'images/edit_icon.svg' %}" alt="수정 아이콘" class="edit_icon">
+                    </button>
+                </div>
+            </div>
+
+            <div class="weight_card">
+                <img src="{% static 'images/myweight_card.svg' %}" alt="" class="card_bg">
+                <p class="weight_value">111 <span class="unit">kg</span></p>
+            </div>
+
+            <div class="sleep_card">
+                <img src="{% static 'images/mytargetsleep_card.svg' %}" alt="" class="card_bg">
+                <p class="sleep_value">7 <span class="unit">시간</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

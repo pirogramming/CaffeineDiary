@@ -57,6 +57,7 @@ urlpatterns = [
     path("initial_survey/menu/", views.SurveyMenuView.as_view(), name="survey-menu"),
     path("initial_survey/size/", views.SurveySizeView.as_view(), name="survey-size"),
     path("initial_survey/sleep/", views.SurveySleepView.as_view(), name="survey-sleep"),
+    path("favorites/", TemplateView.as_view(template_name="diary/favorites.html"), name="favorites"),
     path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
     path("allnight-setup/", TemplateView.as_view(template_name="diary/allnight_setup.html"), name="allnight-setup"),
     path("allnight-mode/", TemplateView.as_view(template_name="diary/allnight_mode.html"), name="allnight-mode"),
