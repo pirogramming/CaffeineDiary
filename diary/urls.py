@@ -53,7 +53,7 @@ urlpatterns = [
     # 수면 설문 임시로 추가
    path("sleep-logs/time", views.SleepLogTimeView.as_view(), name="sleep-log-time"),
    path("sleep-logs/rating", views.SleepLogRatingView.as_view(), name="sleep-log-rating"),
-]
+
     # intial_survey url 임시로추가
     path("initial_survey/", views.SurveyStartView.as_view(), name="survey-start"),
     path("initial_survey/category/", views.SurveyCategoryView.as_view(), name="survey-category"),
