@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caffeine Diary</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- 색상 토큰(--cd-*)은 base.css에 정의돼 있어 여기서도 그대로 가져다 쓴다.
+     이 페이지는 base.html을 상속하지 않는 독립 문서라 명시적으로 링크한다. -->
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body class="cd-landing-body">
+
+<main class="cd-landing">
+
+  <!-- 브라운 블롭 배경. feTurbulence로 미세한 그레인 텍스처를 얹은 SVG.
+       viewBox 내부 좌표계(1188×832)는 그대로 두고, CSS로 화면에 꽉 채운다. -->
+  <svg class="cd-landing__art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1188 832" preserveAspectRatio="xMidYMid slice" fill="none" aria-hidden="true">
+    <g filter="url(#cd-landing-noise)">
+      <path d="M1046.5 171.5C1046.5 92.5 932.5 -31 932.5 -31H-47V832H1188C1188 832 1146.05 780.2 1024 727C901.951 673.8 874.953 561.134 901.5 459.5C915.004 407.802 952.287 367.549 985.665 323.5C1017.9 280.952 1046.5 234.864 1046.5 171.5Z" fill="#775151"/>
+    </g>
+    <defs>
+      <filter id="cd-landing-noise" x="-47" y="-31" width="1235" height="863" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+        <feTurbulence type="fractalNoise" baseFrequency="1 1" stitchTiles="stitch" numOctaves="3" result="noise" seed="8937"/>
+        <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise"/>
+        <feComponentTransfer in="alphaNoise" result="coloredNoise1">
+          <feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+        </feComponentTransfer>
+        <feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped"/>
+        <feFlood flood-color="rgba(0, 0, 0, 0.25)" result="color1Flood"/>
+        <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1"/>
+        <feMerge result="effect1_noise_83_764">
+          <feMergeNode in="shape"/>
+          <feMergeNode in="color1"/>
+        </feMerge>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- 원두 이미지 5개. coffeebean1.png(밝은 톤) / coffebean2.png(어두운 톤) 두 장을
+       위치·회전만 바꿔가며 재사용해 우상단·좌하단·우하단 클러스터를 만든다. -->
+  <img src="{% static 'images/coffeebean1.png' %}" alt="" class="cd-landing__bean cd-landing__bean--tr-light">
+  <img src="{% static 'images/coffebean2.png' %}" alt="" class="cd-landing__bean cd-landing__bean--tr-dark">
+  <img src="{% static 'images/coffebean2.png' %}" alt="" class="cd-landing__bean cd-landing__bean--bl">
+  <img src="{% static 'images/coffeebean1.png' %}" alt="" class="cd-landing__bean cd-landing__bean--br-light">
+
+
+  <div class="cd-landing__content">
+    <h1 class="cd-landing__logo">caffeine<br>diary</h1>
+    <div class="cd-landing__actions">
+      <a href="auth/signup" class="cd-landing__btn">회원가입</a>
+      <a href="auth/login" class="cd-landing__btn">로그인</a>
+    </div>
+  </div>
+</main>
+
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

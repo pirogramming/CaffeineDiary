@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>[프리셋 카탈로그] 화면</title>
+</head>
+
+<body>
+
+  <h1>[프리셋 카탈로그] 화면</h1>
+
+  <nav>
+    <a href="/testpages/index.html">홈</a> |
+    <a href="/testpages/signup.html">회원가입</a> |
+    <a href="/testpages/login.html">로그인</a> |
+    <a href="/testpages/drinks.html">내 음료</a> |
+    <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+    <button onclick="doLogout()">로그아웃</button>
+    &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+  </nav>
+  <hr>
+
+  <h2>프리셋에서 담기 (type → brand → 이름 → 사이즈 순으로 선택)</h2>
+  <p>type을 고르면 그 종류를 취급하는 브랜드만 나타납니다(예: coffee면 펩시·코카콜라 제외). brand를 고르면 그 조합의 이름만, 이름을 고르면 그 이름의 사이즈만 나타납니다.
+    caffeine_mg는 입력값이 아니라 서버가 카탈로그에서 채우는 값이라 사이즈 옆에 미리보기로만 보여줍니다.</p>
+
+  <form id="from-preset-form">
+    <label>type
+      <select id="type-select" required>
+        <option value="">-- 선택 --</option>
+        <option value="coffee">coffee</option>
+        <option value="tea">tea</option>
+        <option value="energy">energy</option>
+        <option value="soda">soda</option>
+        <option value="other">other</option>
+      </select>
+    </label><br><br>
+
+    <label>brand
+      <select id="brand-select" required disabled>
+        <option value="">-- type을 먼저 선택하세요 --</option>
+      </select>
+    </label><br><br>
+
+    <label>name
+      <select id="name-select" disabled>
+        <option value="">-- brand를 먼저 선택하세요 --</option>
+      </select>
+    </label><br><br>
+
+    <label>size
+      <select id="size-select" disabled>
+        <option value="">-- 이름을 먼저 선택하세요 --</option>
+      </select>
+    </label><br><br>
+
+    <label>is_favorite <input type="checkbox" id="is-favorite"></label><br><br>
+
+    <button type="submit">담기 (POST /users/me/drinks/from-preset/)</button>
+  </form>
+
+  <h3>후보 목록 (GET /users/me/drinks/presets/?type=...&brand=... — 백엔드가 type까지 필터)</h3>
+  <pre id="catalog-raw">(type/brand를 모두 선택하세요)</pre>
+
+  <h3>담기 응답</h3>
+  <pre id="from-preset-result">(아직 요청 없음)</pre>
+
+  <p><a href="/testpages/drinks.html">내 음료 목록으로 이동해서 확인</a></p>
+
+  <script src="common.js"></script>
+  <script>
+    initNav();
+
+    const typeSelect = document.getElementById("type-select");
+    const brandSelect = document.getElementById("brand-select");
+    const nameSelect = document.getElementById("name-select");
+    const sizeSelect = document.getElementById("size-select");
+
+    let catalogCache = [];  // 현재 type+brand 조합의 leaf 목록
+
+    function resetBrand() {
+      brandSelect.innerHTML = '<option value="">-- type을 먼저 선택하세요 --</option>';
+      brandSelect.disabled = true;
+    }
+    function resetName() {
+      nameSelect.innerHTML = '<option value="">-- brand를 먼저 선택하세요 --</option>';
+      nameSelect.disabled = true;
+    }
+    function resetSize() {
+      sizeSelect.innerHTML = '<option value="">-- 이름을 먼저 선택하세요 --</option>';
+      sizeSelect.disabled = true;
+    }
+
+    // type 선택 -> 그 종류를 취급하는 브랜드만 드롭다운에 채운다.
+    // 한 브랜드가 여러 종류를 취급하므로(스타벅스=커피/차/탄산) 브랜드 목록은
+    // 하드코딩하지 않고 ?type= 응답에 등장하는 브랜드로 서버 데이터에서 뽑는다.
+    async function onTypeChange() {
+      resetBrand();
+      resetName();
+      resetSize();
+      catalogCache = [];
+      document.getElementById("catalog-raw").textContent = "(type/brand를 모두 선택하세요)";
+
+      const type = typeSelect.value;
+      if (!type) return;
+
+      const result = await apiFetch("/users/me/drinks/presets/?type=" + encodeURIComponent(type));
+      const items = Array.isArray(result.data) ? result.data : [];
+
+      // 브랜드 코드 -> 표시명. 등장 순서대로 유니크하게 유지.
+      const brands = new Map();
+      items.forEach((it) => { if (!brands.has(it.brand)) brands.set(it.brand, it.brand_name); });
+
+      if (brands.size === 0) {
+        brandSelect.innerHTML = '<option value="">-- 해당 종류의 브랜드 없음 --</option>';
+        return;
+      }
+      brandSelect.innerHTML = '<option value="">-- 선택 --</option>';
+      for (const [code, label] of brands) {
+        const opt = document.createElement("option");
+        opt.value = code;
+        opt.textContent = code + " (" + label + ")";
+        brandSelect.appendChild(opt);
+      }
+      brandSelect.disabled = false;
+    }
+
+    // brand 선택 -> type+brand로 이름 목록을 채운다. 백엔드가 type을 이미
+    // 걸러주므로 클라이언트에서 다시 type 필터링하지 않는다.
+    async function onBrandChange() {
+      resetName();
+      resetSize();
+      catalogCache = [];
+
+      const type = typeSelect.value;
+      const brand = brandSelect.value;
+      if (!type || !brand) {
+        document.getElementById("catalog-raw").textContent = "(type/brand를 모두 선택하세요)";
+        return;
+      }
+
+      const result = await apiFetch(
+        "/users/me/drinks/presets/?type=" + encodeURIComponent(type) +
+        "&brand=" + encodeURIComponent(brand)
+      );
+      renderResult("catalog-raw", result);
+      catalogCache = Array.isArray(result.data) ? result.data : [];
+
+      const names = [...new Set(catalogCache.map((item) => item.name))];
+      if (names.length === 0) {
+        nameSelect.innerHTML = '<option value="">-- 해당 조합의 음료 없음 --</option>';
+        return;
+      }
+      nameSelect.innerHTML = '<option value="">-- 선택 --</option>';
+      names.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        nameSelect.appendChild(opt);
+      });
+      nameSelect.disabled = false;
+    }
+
+    function onNameChange() {
+      const name = nameSelect.value;
+      sizeSelect.innerHTML = '<option value="">-- 선택 --</option>';
+
+      if (!name) {
+        sizeSelect.disabled = true;
+        return;
+      }
+
+      const matches = catalogCache.filter((item) => item.name === name);
+      matches.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item.size;
+        opt.textContent = item.size + " (" + item.caffeine_mg + "mg)";
+        sizeSelect.appendChild(opt);
+      });
+      sizeSelect.disabled = matches.length === 0;
+    }
+
+    typeSelect.addEventListener("change", onTypeChange);
+    brandSelect.addEventListener("change", onBrandChange);
+    nameSelect.addEventListener("change", onNameChange);
+
+    document.getElementById("from-preset-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const brand = brandSelect.value;
+      const name = nameSelect.value;
+      const size = sizeSelect.value;
+      const isFavorite = document.getElementById("is-favorite").checked;
+
+      if (!brand || !name || !size) {
+        alert("type/brand/이름/사이즈를 모두 선택하세요.");
+        return;
+      }
+
+      const result = await apiFetch("/users/me/drinks/from-preset/", "POST", {
+        brand,
+        name,
+        size,
+        is_favorite: isFavorite,
+      });
+      renderResult("from-preset-result", result);
+    });
+  </script>
+
+</body>
+
+</html>

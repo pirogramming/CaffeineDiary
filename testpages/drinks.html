@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[내 음료 목록] 화면</title>
+</head>
+<body>
+
+<h1>[내 음료 목록] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p>로그인 필요(IsAuthenticated). 먼저 로그인 화면에서 로그인하세요.</p>
+
+<h2>즐겨찾는 음료 (최대 3개)</h2>
+<button onclick="openAddModal()">+ 추가</button>
+<div id="favorites-list">로딩중...</div>
+
+<hr>
+
+<h2>전체 목록 (GET /users/me/drinks/ 원본)</h2>
+<button onclick="loadList()">새로고침</button>
+<pre id="list-result">로딩중...</pre>
+
+<h3>상세 페이지 바로가기 (id 기준, ★ = 즐겨찾기)</h3>
+<ul id="detail-links">(목록 로딩 후 생성됨)</ul>
+
+<hr>
+
+<dialog id="drink-modal">
+  <h2 id="modal-title">음료 추가</h2>
+  <p>
+    <small>
+      종류/브랜드/이름/사이즈를 모두 카탈로그 값 그대로 선택하면 카페인은 서버가 채웁니다(POST from-preset).
+      이름·사이즈 중 하나라도 "직접입력"으로 바꾸면 카페인을 직접 입력해야 하고, 일반 생성(POST /users/me/drinks/)으로 저장됩니다.
+    </small>
+  </p>
+
+  <form id="drink-form">
+    <label>종류
+      <select id="modal-type" required>
+        <option value="">-- 선택 --</option>
+        <option value="coffee">coffee</option>
+        <option value="tea">tea</option>
+        <option value="energy">energy</option>
+        <option value="soda">soda</option>
+        <option value="other">other</option>
+      </select>
+    </label><br><br>
+
+    <label>브랜드
+      <select id="modal-brand" required>
+        <option value="">-- 선택 --</option>
+        <option value="starbucks">starbucks</option>
+        <option value="compose">compose</option>
+        <option value="baik">baik</option>
+        <option value="mammoth">mammoth</option>
+        <option value="ediya">ediya</option>
+        <option value="mega">mega</option>
+        <option value="gongcha">gongcha</option>
+        <option value="pepsi">pepsi</option>
+        <option value="cocacola">cocacola</option>
+        <option value="custom">custom (직접 입력)</option>
+      </select>
+      <input type="text" id="modal-brand-name-custom" placeholder="브랜드명 직접 입력 (예: 동네카페)">
+    </label><br><br>
+
+    <label>이름
+      <select id="modal-name-select"></select>
+      <input type="text" id="modal-name-custom" placeholder="음료 이름 직접 입력">
+    </label><br><br>
+
+    <label>사이즈
+      <select id="modal-size-select"></select>
+      <input type="text" id="modal-size-custom" placeholder="사이즈 직접 입력">
+    </label><br><br>
+
+    <label>카페인(mg)
+      <input type="number" id="modal-caffeine" min="1" max="1000" required>
+    </label>
+    <small>(카탈로그와 정확히 일치하면 자동으로 채워지고 수정할 수 없습니다)</small><br><br>
+
+    <label>즐겨찾기 <input type="checkbox" id="modal-favorite"></label><br><br>
+
+    <button type="submit" id="modal-submit-btn">추가</button>
+  </form>
+
+  <h3>응답</h3>
+  <pre id="modal-result">(아직 요청 없음)</pre>
+
+  <button type="button" id="modal-close-btn">닫기</button>
+</dialog>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+const CUSTOM_OPTION = "__custom__";
+
+let modalMode = "add"; // "add" | "edit"
+let editingId = null;
+let catalogCache = []; // 현재 선택된 브랜드의 전체 프리셋 목록
+
+const modal = document.getElementById("drink-modal");
+const typeSelect = document.getElementById("modal-type");
+const brandSelect = document.getElementById("modal-brand");
+const brandNameCustom = document.getElementById("modal-brand-name-custom");
+const nameSelect = document.getElementById("modal-name-select");
+const nameCustom = document.getElementById("modal-name-custom");
+const sizeSelect = document.getElementById("modal-size-select");
+const sizeCustom = document.getElementById("modal-size-custom");
+const caffeineInput = document.getElementById("modal-caffeine");
+const favoriteInput = document.getElementById("modal-favorite");
+const form = document.getElementById("drink-form");
+const submitBtn = document.getElementById("modal-submit-btn");
+
+function isPresetBrand(brand) {
+  return !!brand && brand !== "custom";
+}
+
+async function loadCatalogForBrand(brand) {
+  if (!isPresetBrand(brand)) {
+    catalogCache = [];
+    return;
+  }
+  const result = await apiFetch("/users/me/drinks/presets/?brand=" + encodeURIComponent(brand));
+  catalogCache = Array.isArray(result.data) ? result.data : [];
+}
+
+function populateNameSelect(preselectName) {
+  if (!isPresetBrand(brandSelect.value)) {
+    nameSelect.innerHTML = "";
+    nameSelect.style.display = "none";
+    nameCustom.style.display = "";
+    nameCustom.value = preselectName || "";
+    return;
+  }
+
+  const type = typeSelect.value;
+  const names = [...new Set(catalogCache.filter((i) => i.type === type).map((i) => i.name))];
+
+  nameSelect.style.display = "";
+  nameSelect.innerHTML = '<option value="">-- 선택 --</option>';
+  names.forEach((n) => {
+    const opt = document.createElement("option");
+    opt.value = n;
+    opt.textContent = n;
+    nameSelect.appendChild(opt);
+  });
+  const customOpt = document.createElement("option");
+  customOpt.value = CUSTOM_OPTION;
+  customOpt.textContent = "직접입력 (새 음료)";
+  nameSelect.appendChild(customOpt);
+
+  if (preselectName && names.includes(preselectName)) {
+    nameSelect.value = preselectName;
+    nameCustom.style.display = "none";
+    nameCustom.value = "";
+  } else if (preselectName) {
+    nameSelect.value = CUSTOM_OPTION;
+    nameCustom.style.display = "";
+    nameCustom.value = preselectName;
+  } else {
+    nameSelect.value = "";
+    nameCustom.style.display = "none";
+    nameCustom.value = "";
+  }
+}
+
+function populateSizeSelect(preselectSize) {
+  if (!isPresetBrand(brandSelect.value)) {
+    sizeSelect.innerHTML = "";
+    sizeSelect.style.display = "none";
+    sizeCustom.style.display = "";
+    sizeCustom.value = preselectSize || "";
+    return;
+  }
+
+  const labels = [...new Set(catalogCache.map((i) => i.size))];
+
+  sizeSelect.style.display = "";
+  sizeSelect.innerHTML = '<option value="">-- 선택 --</option>';
+  labels.forEach((label) => {
+    const opt = document.createElement("option");
+    opt.value = label;
+    opt.textContent = label;
+    sizeSelect.appendChild(opt);
+  });
+  const customOpt = document.createElement("option");
+  customOpt.value = CUSTOM_OPTION;
+  customOpt.textContent = "직접입력";
+  sizeSelect.appendChild(customOpt);
+
+  if (preselectSize && labels.includes(preselectSize)) {
+    sizeSelect.value = preselectSize;
+    sizeCustom.style.display = "none";
+    sizeCustom.value = "";
+  } else if (preselectSize) {
+    sizeSelect.value = CUSTOM_OPTION;
+    sizeCustom.style.display = "";
+    sizeCustom.value = preselectSize;
+  } else {
+    sizeSelect.value = "";
+    sizeCustom.style.display = "none";
+    sizeCustom.value = "";
+  }
+}
+
+function isNameCustom() {
+  return !isPresetBrand(brandSelect.value) || nameSelect.value === CUSTOM_OPTION;
+}
+function isSizeCustom() {
+  return !isPresetBrand(brandSelect.value) || sizeSelect.value === CUSTOM_OPTION;
+}
+function getName() {
+  return isNameCustom() ? nameCustom.value.trim() : nameSelect.value;
+}
+function getSize() {
+  return isSizeCustom() ? sizeCustom.value.trim() : sizeSelect.value;
+}
+
+function findExactMatch() {
+  if (isNameCustom() || isSizeCustom()) return null;
+  const type = typeSelect.value;
+  const name = getName();
+  const size = getSize();
+  if (!name || !size) return null;
+  return catalogCache.find((i) => i.type === type && i.name === name && i.size === size) || null;
+}
+
+function updateCaffeineField() {
+  const match = findExactMatch();
+  if (match) {
+    caffeineInput.value = match.caffeine_mg;
+    caffeineInput.readOnly = true;
+  } else {
+    caffeineInput.readOnly = false;
+  }
+}
+
+typeSelect.addEventListener("change", () => {
+  populateNameSelect();
+  populateSizeSelect();
+  updateCaffeineField();
+});
+
+brandSelect.addEventListener("change", async () => {
+  brandNameCustom.style.display = brandSelect.value === "custom" ? "" : "none";
+  brandNameCustom.value = "";
+  await loadCatalogForBrand(brandSelect.value);
+  populateNameSelect();
+  populateSizeSelect();
+  updateCaffeineField();
+});
+
+nameSelect.addEventListener("change", () => {
+  nameCustom.style.display = nameSelect.value === CUSTOM_OPTION ? "" : "none";
+  updateCaffeineField();
+});
+sizeSelect.addEventListener("change", () => {
+  sizeCustom.style.display = sizeSelect.value === CUSTOM_OPTION ? "" : "none";
+  updateCaffeineField();
+});
+nameCustom.addEventListener("input", updateCaffeineField);
+sizeCustom.addEventListener("input", updateCaffeineField);
+
+function resetForm() {
+  typeSelect.value = "";
+  brandSelect.value = "";
+  brandNameCustom.style.display = "none";
+  brandNameCustom.value = "";
+  catalogCache = [];
+  nameSelect.innerHTML = "";
+  nameSelect.style.display = "none";
+  nameCustom.style.display = "";
+  nameCustom.value = "";
+  sizeSelect.innerHTML = "";
+  sizeSelect.style.display = "none";
+  sizeCustom.style.display = "";
+  sizeCustom.value = "";
+  caffeineInput.value = "";
+  caffeineInput.readOnly = false;
+  favoriteInput.checked = false;
+}
+
+function openAddModal() {
+  modalMode = "add";
+  editingId = null;
+  document.getElementById("modal-title").textContent = "음료 추가";
+  submitBtn.textContent = "추가";
+  resetForm();
+  document.getElementById("modal-result").textContent = "(아직 요청 없음)";
+  modal.showModal();
+}
+
+async function openEditModal(drink) {
+  modalMode = "edit";
+  editingId = drink.id;
+  document.getElementById("modal-title").textContent = "음료 수정 (#" + drink.id + ")";
+  submitBtn.textContent = "수정";
+
+  typeSelect.value = drink.type;
+  brandSelect.value = drink.brand;
+  brandNameCustom.style.display = drink.brand === "custom" ? "" : "none";
+  brandNameCustom.value = drink.custom_brand_name || "";
+  favoriteInput.checked = drink.is_favorite;
+  caffeineInput.value = drink.caffeine_mg;
+  caffeineInput.readOnly = false;
+
+  await loadCatalogForBrand(drink.brand);
+  populateNameSelect(drink.name);
+  populateSizeSelect(drink.size);
+  updateCaffeineField(); // 원본과 정확히 일치하면 자동으로 읽기전용 처리됨
+
+  document.getElementById("modal-result").textContent = "(아직 요청 없음)";
+  modal.showModal();
+}
+
+document.getElementById("modal-close-btn").addEventListener("click", () => modal.close());
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const type = typeSelect.value;
+  const brand = brandSelect.value;
+  const name = getName();
+  const size = getSize();
+  const isFavorite = favoriteInput.checked;
+
+  const customBrandName = brand === "custom" ? brandNameCustom.value.trim() : "";
+
+  if (!brand) { alert("브랜드를 선택하세요."); return; }
+  if (brand === "custom" && !customBrandName) { alert("브랜드명을 직접 입력하세요."); return; }
+  if (!name) { alert("이름을 입력/선택하세요."); return; }
+
+  const exactMatch = findExactMatch();
+  let result;
+
+  if (modalMode === "add" && exactMatch) {
+    // 카탈로그와 완전히 일치 -> 서버가 카페인을 채움 (클라이언트 값은 신뢰하지 않음)
+    result = await apiFetch("/users/me/drinks/from-preset/", "POST", {
+      brand, name, size, is_favorite: isFavorite,
+    });
+  } else {
+    const caffeine = Number(caffeineInput.value);
+    if (!caffeine) { alert("카페인량을 입력하세요."); return; }
+
+    if (modalMode === "add") {
+      result = await apiFetch("/users/me/drinks/", "POST", {
+        type, brand, custom_brand_name: customBrandName, name, size,
+        caffeine_mg: caffeine, is_favorite: isFavorite,
+      });
+    } else {
+      result = await apiFetch("/users/me/drinks/" + editingId + "/", "PATCH", {
+        type, brand, custom_brand_name: customBrandName, name, size,
+        caffeine_mg: caffeine, is_favorite: isFavorite,
+      });
+    }
+  }
+
+  renderResult("modal-result", result);
+  if (result.ok) {
+    modal.close();
+    refreshAll();
+  }
+});
+
+async function loadFavorites() {
+  const result = await apiFetch("/users/me/drinks/");
+  const list = Array.isArray(result.data) ? result.data : [];
+  const favorites = list.filter((d) => d.is_favorite).slice(0, 3);
+
+  const container = document.getElementById("favorites-list");
+  container.innerHTML = "";
+  if (favorites.length === 0) {
+    container.textContent = "즐겨찾는 음료가 없습니다.";
+    return;
+  }
+  favorites.forEach((drink) => {
+    const div = document.createElement("div");
+    div.textContent =
+      "#" + drink.id + " " + drink.name + " / " + drink.brand_display +
+      " / " + (drink.size || "-") + " / " + drink.caffeine_mg + "mg   ";
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "수정";
+    editBtn.addEventListener("click", () => openEditModal(drink));
+    div.appendChild(editBtn);
+    container.appendChild(div);
+  });
+}
+
+async function loadList() {
+  const result = await apiFetch("/users/me/drinks/");
+  renderResult("list-result", result);
+
+  const ul = document.getElementById("detail-links");
+  ul.innerHTML = "";
+  if (Array.isArray(result.data)) {
+    result.data.forEach((drink) => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "/testpages/drink_detail.html?id=" + drink.id;
+      a.textContent =
+        "#" + drink.id + " " + drink.name + " (" + drink.size + ", " + drink.caffeine_mg + "mg)" +
+        (drink.is_favorite ? " ★" : "");
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+  }
+}
+
+function refreshAll() {
+  loadFavorites();
+  loadList();
+}
+
+window.addEventListener("DOMContentLoaded", refreshAll);
+</script>
+
+</body>
+</html>
