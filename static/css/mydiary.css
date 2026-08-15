@@ -1,0 +1,94 @@
+.cd-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 0;
+}
+
+.diary_stage {
+    position: relative;
+    width: fit-content;
+}
+
+/* 카드 배경 */
+.diary_cards {
+    position: relative;
+}
+
+.diary_cards .mydiary_card {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* 배경 장식 */
+.grid_bgimg,
+.coffee_bgimg,
+.pencil_bgimg {
+    position: absolute;
+    height: auto;
+    max-width: none;
+}
+
+.grid_bgimg {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-170%, 0%);
+}
+
+.coffee_bgimg {
+    bottom: 0;
+    left: 50%;
+    transform: translate(140%, -250%);
+}
+
+.pencil_bgimg {
+    bottom: 0;
+    left: 50%;
+    transform: translate(100%, 0%);
+}
+
+/* 카드 공통 */
+.diary_card {
+    position: relative;
+    flex: 1;
+}
+
+.card_bg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.card_title {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.card_title h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+/* 오늘의 카페인, 어제의 수면 */
+.card_row {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    display: flex;
+    gap: 10%;
+}
+
+/* 일주일 그래프 카드 */
+.wide {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    width: 80%;
+}
