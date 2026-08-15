@@ -418,8 +418,8 @@ class FeedStatusView(APIView):
 
 
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
-class MainView(LoginRequiredMixin, TemplateView):
-    login_url = "/auth/login"
+# 로그인 여부와 무관하게 항상 보여야 하는 랜딩 화면이라 로그인 필수 아님
+class MainView(TemplateView):
     template_name = "diary/main.html"
     extra_context = {"page_title": "메인 화면"}
 
