@@ -1,6 +1,6 @@
 /* ==========================================================
-   base.css — Caffeine Diary 앱 공통 
-   로그인 이후 화면들 (feed, 밤샘 모드, 마이페이지 등)이 전부 이 파일을 공유
+    base.css — Caffeine Diary 앱 공통 
+    로그인 이후 화면들 (feed, 밤샘 모드, 마이페이지 등)이 전부 이 파일을 공유
    ========================================================== */
 
 /* ---- 디자인 토큰 ----
@@ -24,8 +24,8 @@
 html, body { margin: 0; padding: 0; }
 
 /* body는 실제 화면이 아니라, 1280×832 캔버스(.cd-app)를 감싸는 "바깥 프레임" 역할.
-   뷰포트가 캔버스보다 크면 이 어두운 배경이 여백으로 보이고, 작으면 body 자체가
-   스크롤되며 캔버스 크기는 항상 그대로 유지. */
+    뷰포트가 캔버스보다 크면 이 어두운 배경이 여백으로 보이고, 작으면 body 자체가
+    스크롤되며 캔버스 크기는 항상 그대로 유지. */
 
 body {
     min-height: 100vh;
@@ -53,7 +53,7 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* ==========================================================
-   1280×832 고정 캔버스
+    1280×832 고정 캔버스
    ========================================================== */
 .cd-app {
     min-height: 100vh;
@@ -62,8 +62,8 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* ==========================================================
-   Header — 좌측 찢어진 종이 로고 카드 + 우측 가로 메뉴
-   base.html에서 {% block header %}로 감싸져 있음
+    Header — 좌측 찢어진 종이 로고 카드 + 우측 가로 메뉴
+    base.html에서 {% block header %}로 감싸져 있음
    ========================================================== */
 .cd-header {
     position: relative;
@@ -105,7 +105,7 @@ img, svg { display: block; max-width: 100%; }
     line-height: 35px; /* 87.5% */
     padding: 10px;
 }
- 
+
 .cd-nav {
     display: flex;
     align-items: center;
@@ -144,15 +144,15 @@ img, svg { display: block; max-width: 100%; }
     outline: 2px solid var(--cd-brown-deep);
     outline-offset: 4px;
 }
- 
+
 /* ==========================================================
-   Content — 페이지별로 {% block content %}만 채우면 되는 영역
+    Content — 페이지별로 {% block content %}만 채우면 되는 영역
    ========================================================== */
 .cd-main {
     flex: 1; /* .cd-app이 column flex라, 헤더를 제외한 나머지 세로 공간을 전부 차지 */
     padding: 48px 20px 64px;
 }
- 
+
 /* 시스템 설정에서 "동작 줄이기"를 켠 사용자를 위한 접근성 대응.
    모든 transition/animation을 즉시 종료 상태로 강제한다. */
 @media (prefers-reduced-motion: reduce) {
