@@ -15,28 +15,28 @@
 </head>
 <body>
 <div class="cd-app">
-  {% block header %}
-  <header class="cd-header">
-    <div class="cd-logo-card">
-      <img src="{% static 'images/logo_background.png' %}" alt="" class="cd-logo-card__bg">
-      <a href="#" class="cd-logo-card__link" aria-label="Caffeine Diary 메인으로">
-        caffeine<br>diary
-      </a>
-    </div>
-    <nav class="cd-nav" aria-label="주 메뉴">
-      <a href="{% url 'home' %}" class="cd-nav__link">메인 화면</a>
-      <a href="{% url 'diary:feed' %}" class="cd-nav__link">나의 다이어리</a>
-      <a href="{% url 'diary:drink-list' %}" class="cd-nav__link">음료 추가</a>
-      <a href="#" class="cd-nav__link">밤샘 모드</a>
-      <button type="button" class="cd-nav__link" id="cd-logout-btn">로그아웃</button>
-      <a href="#" class="cd-nav__link">마이페이지</a>
-    </nav>
-  </header>
-  {% endblock %}
+    {% block header %}
+    <header class="cd-header">
+        <div class="cd-logo-card">
+        <img src="{% static 'images/logo_background.png' %}" alt="" class="cd-logo-card__bg">
+        <a href="#" class="cd-logo-card__link" aria-label="Caffeine Diary 메인으로">
+            caffeine<br>diary
+        </a>
+        </div>
+        <nav class="cd-nav" aria-label="주 메뉴">
+        <a href="#" class="cd-nav__link">메인 화면</a>
+        <a href="{% url 'diary:feed' %}" class="cd-nav__link">나의 다이어리</a>
+        <a href="{% url 'diary:drink-list' %}" class="cd-nav__link">음료 추가</a>
+        <a href="{% url 'diary:allnight-setup' %}" class="cd-nav__link">밤샘 모드</a>
+        <button type="button" class="cd-nav__link" id="cd-logout-btn">로그아웃</button>
+        <a href="{% url 'diary:mypage' %}" class="cd-nav__link">마이페이지</a>
+        </nav>
+    </header>
+    {% endblock %}
 
-  <main class="cd-main">
-    {% block content %}{% endblock %}
-  </main>
+    <main class="cd-main">
+        {% block content %}{% endblock %}
+    </main>
 </div>
 
 <script src="{% static 'js/base.js' %}"></script>
