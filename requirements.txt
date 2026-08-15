@@ -8,5 +8,5 @@ requests==2.34.2
 pillow==12.3.0
 
 # 배포용 (운영 환경)
-mysqlclient==2.2.7   # MySQL 드라이버 (DB_ENGINE=django.db.backends.mysql)
-gunicorn==23.0.0     # WSGI 서버 (nginx 뒤에서 실행)
+mysql-connector-python==9.1.0  # MySQL 드라이버 (Oracle 공식, 순수/C 겸용). ENGINE=mysql.connector.django
+gunicorn==23.0.0               # WSGI 서버 (nginx 뒤에서 실행)
