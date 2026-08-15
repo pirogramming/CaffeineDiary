@@ -37,7 +37,7 @@ class SignupSerializer(serializers.Serializer):
 
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True, required=False)
 
     def validate_username(self, value):
         username = value.strip()
@@ -61,8 +61,10 @@ class SignupSerializer(serializers.Serializer):
             serializers.ValidationError: 비밀번호 불일치이거나 정책 위반인 경우
         """
         password = attrs.get("password")
+        # password_confirm은 선택 입력이다. 보냈을 때만 일치 검사하고,
+        # 안 보냈으면(현재 프론트 폼) 재확인 검사를 건너뛴다.
         confirm = attrs.get("password_confirm")
-        if password != confirm:
+        if confirm is not None and password != confirm:
             raise serializers.ValidationError(
                 {"password_confirm": "비밀번호가 일치하지 않습니다."}
             )
