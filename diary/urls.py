@@ -50,6 +50,13 @@ urlpatterns = [
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
 
+    # intial_survey url 임시로추가
+    path("initial_survey/", views.SurveyStartView.as_view(), name="survey-start"),
+    path("initial_survey/category/", views.SurveyCategoryView.as_view(), name="survey-category"),
+    path("initial_survey/brand/", views.SurveyBrandView.as_view(), name="survey-brand"),
+    path("initial_survey/menu/", views.SurveyMenuView.as_view(), name="survey-menu"),
+    path("initial_survey/size/", views.SurveySizeView.as_view(), name="survey-size"),
+    path("initial_survey/sleep/", views.SurveySleepView.as_view(), name="survey-sleep"),
     path("favorites/", TemplateView.as_view(template_name="diary/favorites.html"), name="favorites"),
     path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
     path("allnight-setup/", TemplateView.as_view(template_name="diary/allnight_setup.html"), name="allnight-setup"),

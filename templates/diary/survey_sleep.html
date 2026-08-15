@@ -1,0 +1,60 @@
+{% extends "diary/survey_base.html" %}
+{% load static %}
+
+{% block title %}회원가입 - 수면 시간, 몸무게 · Caffeine Diary{% endblock %}
+
+{% block survey_card %}
+<div class="cd-survey-final-wrap">
+
+  <a href="{% url 'diary:survey-size' %}" class="cd-survey-final__arrow cd-survey-final__arrow--prev" aria-label="이전 단계">
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72" fill="none" class="cd-arrow-icon">
+      <g clip-path="url(#clip0_204_1410)">
+        <path d="M36 0C45.5478 0 54.7045 3.79285 61.4558 10.5442C68.2072 17.2955 72 26.4522 72 36C72 45.5478 68.2072 54.7045 61.4558 61.4558C54.7045 68.2072 45.5478 72 36 72C26.4522 72 17.2955 68.2072 10.5442 61.4558C3.79285 54.7045 0 45.5478 0 36C0 26.4522 3.79285 17.2955 10.5442 10.5442C17.2955 3.79285 26.4522 0 36 0ZM20.25 33.75C19.6533 33.75 19.081 33.9871 18.659 34.409C18.2371 34.831 18 35.4033 18 36C18 36.5967 18.2371 37.169 18.659 37.591C19.081 38.0129 19.6533 38.25 20.25 38.25H46.3185L36.657 47.907C36.4478 48.1162 36.2819 48.3645 36.1686 48.6379C36.0554 48.9112 35.9972 49.2042 35.9972 49.5C35.9972 49.7958 36.0554 50.0888 36.1686 50.3621C36.2819 50.6355 36.4478 50.8838 36.657 51.093C36.8662 51.3022 37.1145 51.4681 37.3879 51.5814C37.6612 51.6946 37.9542 51.7528 38.25 51.7528C38.5458 51.7528 38.8388 51.6946 39.1121 51.5814C39.3855 51.4681 39.6338 51.3022 39.843 51.093L53.343 37.593C53.5525 37.384 53.7188 37.1357 53.8322 36.8624C53.9456 36.589 54.004 36.296 54.004 36C54.004 35.704 53.9456 35.411 53.8322 35.1376C53.7188 34.8643 53.5525 34.616 53.343 34.407L39.843 20.907C39.4205 20.4845 38.8475 20.2472 38.25 20.2472C37.6525 20.2472 37.0795 20.4845 36.657 20.907C36.2345 21.3295 35.9972 21.9025 35.9972 22.5C35.9972 23.0975 36.2345 23.6705 36.657 24.093L46.3185 33.75H20.25Z" fill="#F4EFE9"/>
+      </g>
+      <defs>
+        <clipPath id="clip0_204_1410">
+          <rect width="72" height="72" fill="white" transform="matrix(-1 0 0 1 72 0)"/>
+        </clipPath>
+      </defs>
+    </svg>
+  </a>
+
+  <div class="cd-survey-final">
+    <div class="cd-survey-final__content">
+      <div class="cd-survey-final__bubble cd-survey-final__bubble--top">
+        <img src="{% static 'images/sleepwhen.png' %}" alt="" class="cd-survey-final__bubble-img">
+      </div>
+
+      <div class="cd-survey-final__field cd-survey-final__field--time">
+        <label for="cd-survey-bedtime">시간:</label>
+        <input type="time" id="cd-survey-bedtime" class="cd-survey-final__input" placeholder="여기에 입력해주세요.">
+      </div>
+
+      <div class="cd-survey-final__bubble cd-survey-final__bubble--bottom">
+        <img src="{% static 'images/aboutweight.png' %}" alt="" class="cd-survey-final__bubble-img">
+      </div>
+
+      <div class="cd-survey-final__field cd-survey-final__field--weight">
+        <label for="cd-survey-weight">몸무게:</label>
+        <input type="number" id="cd-survey-weight" class="cd-survey-final__input" placeholder="여기에 입력해주세요">
+      </div>
+    </div>
+  </div>
+
+  <!-- 화살표(prev/content) 아래에 별도로 배치된 제출 버튼.
+       실제로는 세션에 쌓인 category/brand/menu/size + 이 화면의 수면시간/몸무게를
+       API로 제출해야 하지만, 지금은 구조만 잡아두고 /feed/로 바로 이동한다. -->
+  <div class="cd-survey-final__submit-wrap">
+    <button type="button" class="cd-survey-submit-btn cd-btn--primary" id="cd-survey-submit">submit</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('cd-survey-submit')?.addEventListener('click', () => {
+    // TODO: 실제 연결 시 세션의 설문 응답 + 아래 입력값을 API로 제출 후 이동
+    window.location.href = '/feed/';
+  });
+</script>
+{% endblock %}
