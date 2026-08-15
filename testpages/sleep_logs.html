@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[수면기록] 화면</title>
+</head>
+<body>
+
+<h1>[수면기록] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <a href="/testpages/sleep_logs.html">수면기록</a> |
+  <a href="/testpages/profile.html">프로필</a> |
+  <a href="/testpages/feed_status.html">피드계산</a> |
+  <a href="/testpages/night_session.html">밤샘모드</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p>로그인 필요(IsAuthenticated). 먼저 로그인 화면에서 로그인하세요.</p>
+
+<h2>1) 수면기록 생성 (POST /sleep-logs/)</h2>
+<p><small>actual_bedtime을 입력하면 서버가 그 시각 기준으로 잔류 카페인량(residual_mg_at_sleep)을 계산해 저장합니다. 비워두면 null로 저장됩니다.</small></p>
+<label>취침 시각 <input type="datetime-local" id="bedtime"></label>
+<label>기상 시각 <input type="datetime-local" id="wakeup"></label>
+<label>수면질(1~5) <input type="number" id="quality" min="1" max="5" style="width:4em"></label>
+<button onclick="createLog()">기록 생성</button>
+<pre id="create-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>2) 목록 조회 (GET /sleep-logs/)</h2>
+<label>start_date <input type="date" id="filter-start"></label>
+<label>end_date <input type="date" id="filter-end"></label>
+<label>page <input type="number" id="filter-page" min="1" value="1" style="width:5em"></label>
+<label>page_size <input type="number" id="filter-page-size" min="1" value="20" style="width:5em"></label>
+<button onclick="loadList()">조회</button>
+
+<h3>기록 (수정/삭제)</h3>
+<ul id="log-items">(조회 후 생성됨)</ul>
+
+<h3>원본 응답</h3>
+<pre id="list-result">(아직 요청 없음)</pre>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+async function createLog() {
+  const bedtime = document.getElementById("bedtime").value;
+  const wakeup = document.getElementById("wakeup").value;
+  const quality = document.getElementById("quality").value;
+
+  const body = {};
+  if (bedtime) body.actual_bedtime = bedtime;
+  if (wakeup) body.wakeup_time = wakeup;
+  if (quality) body.sleep_quality = Number(quality);
+
+  const result = await apiFetch("/sleep-logs/", "POST", body);
+  renderResult("create-result", result);
+  if (result.ok) loadList();
+}
+
+function buildListQuery() {
+  const params = new URLSearchParams();
+  const start = document.getElementById("filter-start").value;
+  const end = document.getElementById("filter-end").value;
+  const page = document.getElementById("filter-page").value;
+  const pageSize = document.getElementById("filter-page-size").value;
+  if (start) params.set("start_date", start);
+  if (end) params.set("end_date", end);
+  if (page) params.set("page", page);
+  if (pageSize) params.set("page_size", pageSize);
+  const qs = params.toString();
+  return "/sleep-logs/" + (qs ? "?" + qs : "");
+}
+
+async function loadList() {
+  const result = await apiFetch(buildListQuery());
+  renderResult("list-result", result);
+
+  const ul = document.getElementById("log-items");
+  ul.innerHTML = "";
+  const results = result.data && Array.isArray(result.data.results) ? result.data.results : [];
+  if (results.length === 0) {
+    ul.innerHTML = "<li>(기록 없음)</li>";
+    return;
+  }
+  results.forEach((log) => {
+    const li = document.createElement("li");
+    li.textContent =
+      "#" + log.id +
+      " 취침:" + (log.actual_bedtime || "-") +
+      " 기상:" + (log.wakeup_time || "-") +
+      " 수면질:" + (log.sleep_quality ?? "-") +
+      " 잔류카페인:" + (log.residual_mg_at_sleep ?? "-") + "mg" +
+      " / " + log.created_at + "   ";
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "수면질 수정";
+    editBtn.addEventListener("click", () => editQuality(log));
+    li.appendChild(editBtn);
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "삭제";
+    delBtn.addEventListener("click", () => deleteLog(log.id));
+    li.appendChild(delBtn);
+
+    ul.appendChild(li);
+  });
+}
+
+async function editQuality(log) {
+  const input = prompt("새 수면질(1~5)", log.sleep_quality ?? "");
+  if (input === null) return;
+  const quality = Number(input);
+  if (!quality) { alert("숫자를 입력하세요."); return; }
+  const result = await apiFetch("/sleep-logs/" + log.id + "/", "PATCH", { sleep_quality: quality });
+  if (!result.ok) alert("PATCH 실패\nHTTP " + result.status + "\n" + JSON.stringify(result.data));
+  loadList();
+}
+
+async function deleteLog(id) {
+  if (!confirm("#" + id + " 기록을 삭제할까요?")) return;
+  const result = await apiFetch("/sleep-logs/" + id + "/", "DELETE");
+  if (!result.ok) alert("DELETE 실패\nHTTP " + result.status + "\n" + JSON.stringify(result.data));
+  loadList();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadList();
+});
+</script>
+
+</body>
+</html>
