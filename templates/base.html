@@ -23,7 +23,7 @@
             caffeine<br>diary
         </a>
         </div>
-        <nav class="cd-nav" aria-label="주 메뉴">
+        <nav class="cd-nav" aria-label="주 메뉴" id="cd-nav">
         <a href="#" class="cd-nav__link">메인 화면</a>
         <a href="{% url 'diary:feed' %}" class="cd-nav__link">나의 다이어리</a>
         <a href="{% url 'diary:drink-list' %}" class="cd-nav__link">음료 추가</a>
@@ -31,8 +31,16 @@
         <button type="button" class="cd-nav__link" id="cd-logout-btn">로그아웃</button>
         <a href="{% url 'diary:mypage' %}" class="cd-nav__link">마이페이지</a>
         </nav>
+
+        <!-- 480px 미만에서만 보이는 햄버거 버튼. 평소엔 CSS로 숨겨져 있다. -->
+        <button type="button" class="cd-nav-toggle" id="cd-nav-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="cd-nav">
+          <span></span><span></span><span></span>
+        </button>
     </header>
     {% endblock %}
+
+    <!-- 드로어 열렸을 때 뒤를 덮는 반투명 배경. 클릭하면 드로어가 닫힌다. -->
+    <div class="cd-nav-backdrop" id="cd-nav-backdrop" hidden></div>
 
     <main class="cd-main">
         {% block content %}{% endblock %}
