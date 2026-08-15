@@ -50,6 +50,7 @@ urlpatterns = [
     # feed url 임시로추가
     path("feed/", views.FeedView.as_view(), name="feed"),  
 
+    path("favorites/", TemplateView.as_view(template_name="diary/favorites.html"), name="favorites"),
     path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
     path("allnight-setup/", TemplateView.as_view(template_name="diary/allnight_setup.html"), name="allnight-setup"),
     path("allnight-mode/", TemplateView.as_view(template_name="diary/allnight_mode.html"), name="allnight-mode"),
