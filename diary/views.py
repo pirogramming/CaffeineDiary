@@ -180,14 +180,14 @@ class CaffeineLogDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # main(맨 처음 들어갔을 때 화면) view 추가 (임시)
 class MainView(LoginRequiredMixin, TemplateView):
-    login_url = "/login"
+    login_url = "/auth/login"
     template_name = "diary/main.html"
     extra_context = {"page_title": "메인 화면"}
 
 
 # feed(한잔마시기) view 추가 (임시))
 class FeedView(LoginRequiredMixin, TemplateView):
-    login_url = "/login"
+    login_url = "/auth/login"
     template_name = "diary/feed.html"
     extra_context = {"page_title": "피드 화면"}
 
