@@ -51,6 +51,14 @@ urlpatterns = [
         views.SleepLogListCreateView.as_view(),
         name="sleep-log-list",
     ),
+    # daily_rating.js가 슬래시 없이 POST /sleep-logs를 호출한다(확인됨). Django의
+    # APPEND_SLASH는 POST 요청에는 리다이렉트를 못 해줘서(RuntimeError) 슬래시 없는
+    # 요청도 같은 뷰로 직접 받도록 별도 경로를 하나 더 둔다.
+    path(
+        "sleep-logs",
+        views.SleepLogListCreateView.as_view(),
+        name="sleep-log-list-noslash",
+    ),
     path(
         "sleep-logs/<int:pk>/",
         views.SleepLogDetailView.as_view(),

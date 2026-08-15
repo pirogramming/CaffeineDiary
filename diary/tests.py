@@ -228,6 +228,17 @@ class SleepLogAPITests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(res.data["residual_mg_at_sleep"])
 
+    def test_create_without_trailing_slash_also_works(self):
+        """POST /sleep-logs(슬래시 없이)도 같은 뷰로 정상 처리된다.
+
+        daily_rating.js가 슬래시 없이 호출하는 걸 실서버로 재현해 확인한 문제라,
+        회귀하면 프론트의 수면 설문 제출이 그대로 500으로 죽는다.
+        """
+        res = self.client.post(
+            reverse("diary:sleep-log-list-noslash"), {"sleep_quality": 3}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
     def test_create_computes_residual_from_caffeine_logs(self):
         """취침 5시간 전 100mg 섭취 -> 반감기(5h)만큼 지나 50mg만 남는다."""
         bedtime = timezone.now()
