@@ -1,6 +1,6 @@
 /* ==========================================================
-   base.css — Caffeine Diary 앱 공통 
-   로그인 이후 화면들 (feed, 밤샘 모드, 마이페이지 등)이 전부 이 파일을 공유
+    base.css — Caffeine Diary 앱 공통 
+    로그인 이후 화면들 (feed, 밤샘 모드, 마이페이지 등)이 전부 이 파일을 공유
    ========================================================== */
 
 /* ---- 디자인 토큰 ----
@@ -24,8 +24,8 @@
 html, body { margin: 0; padding: 0; }
 
 /* body는 실제 화면이 아니라, 1280×832 캔버스(.cd-app)를 감싸는 "바깥 프레임" 역할.
-   뷰포트가 캔버스보다 크면 이 어두운 배경이 여백으로 보이고, 작으면 body 자체가
-   스크롤되며 캔버스 크기는 항상 그대로 유지. */
+    뷰포트가 캔버스보다 크면 이 어두운 배경이 여백으로 보이고, 작으면 body 자체가
+    스크롤되며 캔버스 크기는 항상 그대로 유지. */
 
 body {
     min-height: 100vh;
@@ -53,7 +53,7 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* ==========================================================
-   1280×832 고정 캔버스
+    1280×832 고정 캔버스
    ========================================================== */
 .cd-app {
     min-height: 100vh;
@@ -62,8 +62,8 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* ==========================================================
-   Header — 좌측 찢어진 종이 로고 카드 + 우측 가로 메뉴
-   base.html에서 {% block header %}로 감싸져 있음
+    Header — 좌측 찢어진 종이 로고 카드 + 우측 가로 메뉴
+    base.html에서 {% block header %}로 감싸져 있음
    ========================================================== */
 .cd-header {
     position: relative;
@@ -105,13 +105,16 @@ img, svg { display: block; max-width: 100%; }
     line-height: 35px; /* 87.5% */
     padding: 10px;
 }
- 
+
 .cd-nav {
     display: flex;
     align-items: center;
+    row-gap: 10px;
     flex-wrap: wrap; /* 메뉴 항목이 늘어나면 줄바꿈 */
-    gap: 50px;
-    padding: 50px 70px 10px 0; /* 로고 카드의 텍스트 위치와 세로선이 비슷하게 맞도록 상단 여백만 */
+    column-gap: 50px;
+    margin-right: 70px;
+    margin-left: 50px;
+    padding: 50px 0 10px ; /* 로고 카드의 텍스트 위치와 세로선이 비슷하게 맞도록 상단 여백만 */
 }
 .cd-nav__link {
     /* <a>와 <button>(로그아웃) 둘 다 이 클래스 사용 */
@@ -144,18 +147,105 @@ img, svg { display: block; max-width: 100%; }
     outline: 2px solid var(--cd-brown-deep);
     outline-offset: 4px;
 }
- 
+
+/* ---- 햄버거 버튼 (480px 미만에서만 보임) ---- */
+.cd-nav-toggle {
+    display: none; /* 기본(데스크톱)엔 안 보임 — 미디어쿼리에서만 켠다 */
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: 20px; /* 로고 카드 텍스트 위치와 대략 맞춤 */
+}
+.cd-nav-toggle span {
+    display: block;
+    width: 25px;
+    height: 2.5px;
+    background: var(--cd-brown-deep);
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* 열려있을 때 X 모양으로 변형 */
+.cd-nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.cd-nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.cd-nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.cd-nav-backdrop {
+    display: none; /* 데스크톱에선 아예 안 씀 */
+}
+
 /* ==========================================================
-   Content — 페이지별로 {% block content %}만 채우면 되는 영역
+    Content — 페이지별로 {% block content %}만 채우면 되는 영역
    ========================================================== */
 .cd-main {
     flex: 1; /* .cd-app이 column flex라, 헤더를 제외한 나머지 세로 공간을 전부 차지 */
     padding: 48px 20px 64px;
 }
- 
+
 /* 시스템 설정에서 "동작 줄이기"를 켠 사용자를 위한 접근성 대응.
    모든 transition/animation을 즉시 종료 상태로 강제한다. */
 @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
 }
  
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+   /* 특별한 변경사항 X */
+}
+
+@media (max-width: 480px) {
+
+    /* 햄버거 버튼 켜기 */
+    .cd-nav-toggle { display: flex; }
+
+    /* 평소엔 가로로 나열되던 .cd-nav를, 화면 오른쪽에서 슬라이드로
+       나오는 세로 드로어로 전환한다. */
+    .cd-nav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 70%;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        row-gap: 24px;
+        column-gap: 0;
+        margin: 0;
+        background: var(--cd-cream);
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.2);
+        padding: 64px 40px;
+        z-index: 100;
+        transform: translateX(100%); /* 평소엔 화면 밖으로 숨김 */
+        transition: transform 0.25s ease;
+    }
+    .cd-nav.is-open {
+        transform: translateX(0);
+    }
+
+    .cd-nav-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .cd-nav-backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}

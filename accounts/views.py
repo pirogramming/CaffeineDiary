@@ -17,6 +17,7 @@ from diary.models import Drink
 
 from .models import UserProfile
 from .serializers import SignupSerializer, UserProfileSerializer
+from django.views.generic import TemplateView
 
 # Create your views here.
 
@@ -238,3 +239,9 @@ def profile(request):
         timezone.localtime(new_result.cutoff_at).isoformat() if new_result.cutoff_at else None
     )
     return Response(data, status=status.HTTP_200_OK)
+class LoginPageView(TemplateView): #login page view 추가 
+    template_name = "accounts/login.html"
+
+
+class SignupPageView(TemplateView): #signup page view 추가
+    template_name = "accounts/signup.html"

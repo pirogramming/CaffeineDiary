@@ -1,0 +1,11 @@
+{% extends "diary/survey_receipt_base.html" %}
+
+{% load static %}
+
+{% block title %}회원가입 설문 - 브랜드 · Caffeine Diary{% endblock %}
+
+{% block survey_receipt_bg %}
+<img src="{% static 'images/survey_brand.png' %}" alt="" class="cd-receipt__bg cd-receipt__bg--brand">
+{% endblock %}
+
+{% block survey_question %}어떤 브랜드의 음료를 즐겨 마시나요?{% endblock %}

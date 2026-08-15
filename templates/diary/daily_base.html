@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Caffeine Diary{% endblock %}</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/daily.css' %}">
+{% block extra_css %}{% endblock %}
+</head>
+<body class="cd-daily-body">
+
+<main class="cd-daily-page">
+
+  <!-- 아이콘 배경 -->
+  <div class="cd-bg-icons" aria-hidden="true">
+    <!-- 꽃 아이콘 -->
+    <img src="{% static 'images/flower.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 7%; --icon-left: 2%; --icon-w: 62px; --icon-h: 56px; --icon-rotate: -12deg;">
+    <img src="{% static 'images/flower.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 30%; --icon-left: 90%; --icon-w: 62px; --icon-h: 56px; --icon-rotate: -40deg;">
+    <img src="{% static 'images/flower.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 97%; --icon-left: 60%; --icon-w: 62px; --icon-h: 56px; --icon-rotate: 12deg;">
+    <img src="{% static 'images/flower.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 55%; --icon-left: 25%; --icon-w: 62px; --icon-h: 56px; --icon-rotate: -12deg;">
+    <img src="{% static 'images/flower.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 60%; --icon-left: 48%; --icon-w: 62px; --icon-h: 56px; --icon-rotate: -12deg;">
+
+
+    <!-- 얼음 컵 아이콘 -->
+    <img src="{% static 'images/ice_coffee.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 20%; --icon-left: 20%; --icon-w: 57px; --icon-h: 83px; --icon-rotate: -20deg;">
+    <img src="{% static 'images/ice_coffee.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 85%; --icon-left: 78%; --icon-w: 57px; --icon-h: 83px; --icon-rotate: 30deg;">
+
+    <!-- 잎사귀 아이콘 -->
+    <img src="{% static 'images/leaves.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 36%; --icon-left: 4%; --icon-w: 80px; --icon-h: 40px; --icon-rotate: 20deg;">
+    <img src="{% static 'images/leaves.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: -1%; --icon-left: 55%; --icon-w: 80px; --icon-h: 40px; --icon-rotate: -40deg;">
+    <img src="{% static 'images/leaves.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 90%; --icon-left: 22%; --icon-w: 80px; --icon-h: 40px; --icon-rotate: -120deg;">
+    <img src="{% static 'images/leaves.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 88%; --icon-left: 95%; --icon-w: 80px; --icon-h: 40px; --icon-rotate: -170deg;">
+    <img src="{% static 'images/leaves.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 29%; --icon-left: 47%; --icon-w: 80px; --icon-h: 40px; --icon-rotate: -60deg;">
+
+    <!-- 손잡이가 긴 잔 아이콘-->
+    <img src="{% static 'images/long_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 55%; --icon-left: 84%; --icon-w: 80px; --icon-h: 46px; --icon-rotate: -18deg;">
+    <img src="{% static 'images/long_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 12%; --icon-left: 35%; --icon-w: 80px; --icon-h: 46px; --icon-rotate: 0deg;">
+    <img src="{% static 'images/long_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 65%; --icon-left: 8%; --icon-w: 80px; --icon-h: 46px; --icon-rotate: -40deg;">
+
+    <!-- 일반 컵 아이콘 -->
+    <img src="{% static 'images/normal_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 4%; --icon-left: 98%; --icon-w: 55px; --icon-h: 77px; --icon-rotate: 15deg;">
+    <img src="{% static 'images/normal_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 25%; --icon-left: 66%; --icon-w: 55px; --icon-h: 77px; --icon-rotate: 175deg;">
+
+    <!-- 작은 잔 아이콘 -->
+    <img src="{% static 'images/small_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 88%; --icon-left: 42%; --icon-w: 65px; --icon-h: 47px; --icon-rotate: -8deg;">
+    <img src="{% static 'images/small_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 12%; --icon-left: 77%; --icon-w: 65px; --icon-h: 47px; --icon-rotate: -8deg;">
+
+    <!-- 홀더 있는 컵 아이콘 -->
+    <img src="{% static 'images/holder_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 65%; --icon-left: 67%; --icon-w: 60px; --icon-h: 85px; --icon-rotate: -6deg;">
+    <img src="{% static 'images/holder_cup.svg' %}" alt="" class="cd-bg-icons__icon"
+        style="--icon-top: 95%; --icon-left: 3%; --icon-w: 60px; --icon-h: 85px; --icon-rotate: -6deg;">
+  </div>
+
+
+  <!-- 흰색 종이 카드 -->
+  <img src="{% static 'images/cream-paper.png' %}" alt="" class="cd-daily__paper">
+
+  <div class="cd-daily__content">
+    {% block daily_content %}{% endblock %}
+  </div>
+
+</main>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

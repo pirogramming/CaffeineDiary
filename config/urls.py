@@ -26,8 +26,11 @@ from django.views.generic import TemplateView #임시
 from accounts import views as accounts_views
 
 def home(request):
+from diary import views as diary_views # 메인 view 연결
+
+# def home(request):
     # TODO: 프론트엔드 구현 후 SPA index 서빙으로 교체
-    return JsonResponse({"is_authenticated": request.user.is_authenticated})
+   # return JsonResponse({"is_authenticated": request.user.is_authenticated})
 
 
 def login_placeholder(request):
@@ -37,16 +40,10 @@ def login_placeholder(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'),
+    path('', diary_views.MainView.as_view(), name='home'), # 메인 view 연결
     path('login', login_placeholder, name='login-placeholder'),
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
-    # API 명세서 URI가 /users/me/profile(accounts 앱 소유 모델이지만 /auth/ 밖에 있음)라
-    # accounts.urls(prefix: auth/)에 넣지 않고 여기서 직접 마운트한다.
-    path('users/me/profile/', accounts_views.profile, name='user-profile'),
-    path('mypage/', TemplateView.as_view(template_name='mypage.html'), name='mypage'),
-    path('allnight_mode/', TemplateView.as_view(template_name='allnight_mode.html'), name='allnight_mode'),
-    path('allnight_setup/', TemplateView.as_view(template_name='allnight_setup.html'), name='allnight_setup'),
     path('', include('diary.urls')),
     path('', include('allnight.urls')),
 ]

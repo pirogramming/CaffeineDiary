@@ -1,0 +1,65 @@
+{% extends "diary/daily_base.html" %}
+{% load static %}
+
+{% block title %}밤샘모드 설정 · Caffeine Diary{% endblock %}
+
+{% block daily_content %}
+<div class="cd-daily-time" id="cdDailyTime">
+
+  <!-- 1. 질문이 팝업처럼 등장 -->
+  <div class="cd-daily-time__prompt">
+    <div class="cd-daily-rating__bot-profile">
+      <!-- TODO: 로고 이미지 준비되면 이 빈 원 안에 background-image로 넣으면 됨 -->
+      <div class="cd-daily-time__bot-avatar" aria-hidden="true"></div>
+      <span class="cd-daily-time__bot-name">caffeine</span>
+    </div>
+
+    <div class="cd-daily-time__bubble">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 286 71" fill="none" class="cd-daily-time__bubble-svg" aria-hidden="true">
+        <path d="M14.2998 71L18.4736 52.4834H20C8.95431 52.4834 0 43.5291 0 32.4834V20C6.92722e-06 8.95431 8.95431 0 20 0H266C277.046 1.03081e-06 286 8.95431 286 20V32.4834C286 43.5291 277.046 52.4834 266 52.4834H38.624L14.2998 71Z" fill="#775151"/>
+      </svg>
+      <p class="cd-daily-time__bubble-text">어제는 몇시에 주무셨나요?</p>
+    </div>
+  </div>
+
+  <!-- 3. 보낸 내용이 말풍선처럼 등장 (JS가 텍스트만 채워넣음) -->
+  <div class="cd-daily-time__answer-wrap" id="cdDailyTimeAnswerWrap" hidden>
+    <div class="cd-daily-time__answer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="91" height="59" viewBox="0 0 91 59" fill="none">
+        <path d="M19 0C8.50664 0 8.43058e-05 8.50666 0 19V27C0 37.4934 8.50659 46 19 46H63.3457L82.4502 58.083L78.8291 44.7344C85.9483 41.9911 91 35.0861 91 27V19C90.9999 8.50666 82.4934 1.20797e-07 72 0H19Z" fill="#CABDB8"/>
+      </svg>
+      <p class="cd-daily-time__answer-text" id="cdDailyTimeAnswer"></p>
+    </div>
+  </div>
+
+  <!-- 2. 사용자가 시간을 입력 -->
+  <div class="cd-daily-time__input-row" id="cdDailyTimeInputRow">
+    <input type="text" class="cd-daily-time__input" id="cdDailyTimeInput" placeholder="시간을 입력해주세요 (예: 8:00)">
+    <button type="button" class="cd-daily-time__send" id="cdDailyTimeSend" aria-label="전송">
+      <img src="{% static 'images/send_icon.svg' %}" alt="">
+    </button>
+  </div>
+
+  <!-- 4. next 누르면 레이팅 화면으로 -->
+  <button type="button" class="cd-daily-time__next" id="cdDailyTimeNext" disabled>
+    next
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42" fill="none" class="cd-daily-time__next-icon" aria-hidden="true">
+      <g clip-path="url(#cd-daily-time-next-clip)">
+        <path d="M21 0C26.5695 0 31.911 2.21249 35.8492 6.15076C39.7875 10.089 42 15.4305 42 21C42 26.5695 39.7875 31.911 35.8492 35.8492C31.911 39.7875 26.5695 42 21 42C15.4305 42 10.089 39.7875 6.15076 35.8492C2.21249 31.911 0 26.5695 0 21C0 15.4305 2.21249 10.089 6.15076 6.15076C10.089 2.21249 15.4305 0 21 0ZM11.8125 19.6875C11.4644 19.6875 11.1306 19.8258 10.8844 20.0719C10.6383 20.3181 10.5 20.6519 10.5 21C10.5 21.3481 10.6383 21.6819 10.8844 21.9281C11.1306 22.1742 11.4644 22.3125 11.8125 22.3125H27.0191L21.3832 27.9457C21.2612 28.0678 21.1644 28.2127 21.0984 28.3721C21.0323 28.5315 20.9983 28.7024 20.9983 28.875C20.9983 29.0476 21.0323 29.2185 21.0984 29.3779C21.1644 29.5373 21.2612 29.6822 21.3832 29.8043C21.5053 29.9263 21.6502 30.0231 21.8096 30.0891C21.969 30.1552 22.1399 30.1892 22.3125 30.1892C22.4851 30.1892 22.656 30.1552 22.8154 30.0891C22.9748 30.0231 23.1197 29.9263 23.2418 29.8043L31.1168 21.9293C31.239 21.8073 31.336 21.6625 31.4021 21.503C31.4683 21.3436 31.5023 21.1726 31.5023 21C31.5023 20.8274 31.4683 20.6564 31.4021 20.497C31.336 20.3375 31.239 20.1927 31.1168 20.0707L23.2418 12.1957C22.9953 11.9493 22.661 11.8108 22.3125 11.8108C21.964 11.8108 21.6297 11.9493 21.3832 12.1957C21.1368 12.4422 20.9983 12.7765 20.9983 13.125C20.9983 13.4735 21.1368 13.8078 21.3832 14.0543L27.0191 19.6875H11.8125Z" fill="#775151"/>
+      </g>
+      <defs>
+        <clipPath id="cd-daily-time-next-clip">
+          <rect width="42" height="42" fill="white" transform="matrix(-1 0 0 1 42 0)"/>
+        </clipPath>
+      </defs>
+    </svg>
+  </button>
+
+  <p class="cd-field__error" id="cdDailyTimeError" hidden></p>
+  
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/daily_time.js' %}"></script>
+{% endblock %}

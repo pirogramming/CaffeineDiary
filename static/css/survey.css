@@ -1,0 +1,491 @@
+
+/* ==========================================================
+   survey.css — 회원가입 직후 설문 (initial_survey)
+   ========================================================== */
+
+/* 전체 갈색 배경 */
+.cd-survey-body {
+    margin: 0;
+    background: var(--cd-brown-dark);
+}
+
+/* 영수증 부분 */
+.cd-survey-page {
+    position: relative;
+    z-index: 1; /* 아이콘 레이어(z-index:0) 위에 오도록 */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: auto;
+}
+ 
+/* ---- 흩뿌려진 배경 아이콘 레이어 ---- */
+.cd-bg-icons {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none; /* 장식 레이어 — 클릭/포커스 대상에서 제외 */
+}
+ 
+.cd-bg-icons__icon {
+    position: absolute;
+    top: var(--icon-top, 0);
+    left: var(--icon-left, 0);
+    width: var(--icon-w, 40px);
+    height: var(--icon-h, 40px);
+    /* 아이콘 크기 조절 */
+    transform: rotate(var(--icon-rotate, 0deg)) scale(var(--icon-scale, 0.8));
+}
+ 
+/* ==========================================================
+   영수증 카드 (1~4단계 공통)
+   .cd-survey-page의 flex 정렬로 화면 가운데 온다.
+   ========================================================== */
+ 
+/* form 자체가 카드(.cd-receipt)와 네비게이션(.cd-receipt__nav)을 세로로 쌓아주는 컨테이너 역할 */
+.cd-receipt__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+ 
+.cd-receipt {
+    position: relative;
+    width: 350px;
+    height: 460px; /* 콘텐츠(질문/옵션) 영역 크기 — 스크롤 기준이 되는 고정값 */
+}
+ 
+
+/* 영수증 이미지 */
+.cd-receipt__bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+    max-width: none;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.cd-receipt__bg--category {
+    top: 50%;
+    left: 48%;
+}
+
+.cd-receipt__bg--brand {
+    top: 50%;
+    left: 53%;
+}
+
+.cd-receipt__bg--menu {
+    top: 54%;
+    left: 50%;
+}
+
+.cd-receipt__bg--size {
+    top: 51%;
+    left: 51%;
+}
+
+/* 영수증 안의 내용 */
+.cd-receipt__content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-45px); /*영수증 내용 살짝 위로 보정 */
+    padding: 15% 12% 12%; /* 영수증 이미지의 실제 종이 영역에 맞춰 나중에 미세조정 필요 */
+}
+
+/* receipt */
+.cd-receipt__label {
+    font-family: 'Kirang Haerang', var(--cd-font-display);
+    font-size: 50px;
+    text-align: center;
+    color: var(--cd-brown-ink);
+    margin-bottom: 10px;
+}
+
+/* 질문 텍스트 */
+.cd-receipt__question {
+    font-size: 17px;
+    color: var(--cd-brown-ink);
+    text-align: center;
+    margin-bottom: 40px;
+    line-height: 1.4;
+}
+
+/* 옵션 목록 — 스크롤 영역 */
+.cd-receipt__options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 200px; /* 고정값 — 항목이 몇 개든, 위아래 요소 크기가 어떻든 이 영역은 항상 이 크기 */
+    flex-shrink: 0; /* 부모가 좁아져도 이 높이는 그대로 유지 */
+    overflow-y: auto;
+    padding: 0 10px; 
+    margin-bottom: 50px; 
+}
+ 
+.cd-receipt__option label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    color: var(--cd-brown-ink);
+    cursor: pointer;
+}
+
+/* 바코드 */
+.cd-receipt__barcode {
+    font-family: 'Libre Barcode 39', cursive;
+    font-size: 60px;
+    line-height: 1;
+    text-align: center;
+    color: var(--cd-brown-ink);
+    margin-top: 10px;
+    letter-spacing: 2px;
+}
+ 
+/* 체크박스처럼 보이는 라디오 버튼 */
+.cd-receipt__radio {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--cd-brown-ink);
+    border-radius: 2px;
+    margin: 0;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.cd-receipt__radio:checked::after {
+    content: '✔';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--cd-brown-dark);
+}
+ 
+.cd-receipt__option--custom {
+    display: flex;
+    flex-direction: column;
+}
+ 
+.cd-receipt__custom-input {
+    font-size: 16px;
+    border: none;
+    background: transparent;
+    color: var(--cd-brown-ink);
+}
+
+.cd-receipt__custom-input:read-only { opacity: 0.5; }
+.cd-receipt__custom-input:focus { outline: none; border-color: var(--cd-brown); }
+ 
+/* ---- prev/next 원형 화살표 아이콘 ---- */
+.cd-arrow-icon {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+ 
+.cd-receipt__nav {
+    display: contents;
+}
+ 
+.cd-receipt__arrow {
+    position: fixed;
+    top: 50%;
+    width: 60px;
+    height: 60px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.cd-receipt__arrow:hover { opacity: 0.85; }
+ 
+/* 화면 왼쪽 끝에 고정 + 세로 중앙 정렬, 좌우 반전 */
+.cd-receipt__arrow--prev {
+    left: 80px;
+    transform: translateY(-50%) scaleX(-1);
+}
+.cd-receipt__arrow--prev:hover { opacity: 0.85; transform: translateY(-50%) scaleX(-1) translateX(2px); }
+ 
+/* 화면 오른쪽 끝에 고정 + 세로 중앙 정렬 */
+.cd-receipt__arrow--next {
+    right: 80px;
+    transform: translateY(-50%);
+}
+.cd-receipt__arrow--next:hover { opacity: 0.85; transform: translateY(-50%) translateX(2px); }
+ 
+
+/* ==========================================================
+   마지막 카드 (수면시간/몸무게) — 영수증과 다른 레이아웃
+   ========================================================== */
+ 
+.cd-survey-final-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+ 
+.cd-survey-final {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+ 
+/* prev 화살표만 세로 중앙에 고정 */
+.cd-survey-final__arrow {
+    position: fixed;
+    top: 50%;
+    left: 80px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    background: none;
+    align-self: start;
+    padding: 0;
+    cursor: pointer;
+    transform: translateY(-50%) scaleX(-1); /* 세로 중앙 정렬 + prev 방향 반전 */
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.cd-survey-final__arrow:hover { opacity: 0.85; transform: translateY(-50%) scaleX(-1) translateX(2px); }
+ 
+/* 제출 버튼 */
+.cd-survey-final__submit-wrap {
+    position: fixed;
+    top: 50%;
+    right: 80px;
+    transform: translateY(-75%);
+    margin-top: 0;
+}
+
+.cd-survey-submit-btn{
+    padding: 10px 50px;
+    background-color: var(--cd-cream);
+    border: none;
+    border-radius: 20px;
+    font-size: 30px;
+    color: var(--cd-brown-dark);
+    font-weight: 800;
+    font-family: var(--cd-font-display);
+    margin-top: 50px;
+} 
+ 
+.cd-survey-final__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: -20px;
+    min-width: 600px;
+}
+ 
+/* 말풍선 */
+.cd-survey-final__bubble {
+    position: relative;
+    width: 350px;
+    margin-bottom: 20px;
+}
+
+.cd-survey-final__bubble--top {
+    align-self: flex-start;
+}
+ 
+.cd-survey-final__bubble--bottom {
+    align-self: flex-end;
+}
+ 
+.cd-survey-final__field {
+    display: flex;
+    align-items: center;
+    gap: var(--cd-space-2);
+    width: 100%;
+}
+.cd-survey-final__field--time {
+    transform: translateX(150px); /* 말풍선과 입력 필드가 살짝 겹치도록 */
+}
+.cd-survey-final__field--weight {
+    transform: translateX(300px); /* 말풍선과 입력 필드가 살짝 겹치도록 */
+}
+ 
+.cd-survey-final__field--time .cd-survey-final__input {
+    flex: none;
+    width: auto;
+}
+
+.cd-survey-final__field--weight .cd-survey-final__input {
+    flex: none;
+    width: auto;
+}
+.cd-survey-final__field label {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--cd-cream);
+    flex-shrink: 0;
+}
+.cd-survey-final__input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;;
+    font-size: 20px;
+    background: transparent;
+    color: var(--cd-cream);
+}
+.cd-survey-final__input:focus { outline: none; border-color: var(--cd-brown); }
+ 
+/* 시계 아이콘 색 */
+.cd-survey-final__input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.cd-survey-final__input::placeholder {
+    color: var(--cd-cream);
+    font-size: 20px;
+    opacity: 0.5; /* 살짝 흐리게 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-survey-final__arrow,
+  .cd-receipt__next { transition: none; }
+}
+
+/* ==========================================================
+   반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    /* 아이콘 크기 조정 */
+    .cd-bg-icons__icon { transform: scale(var(--icon-scale, 0.6));}
+
+    /* ----- 음료 조사------ */
+    /* 영수증 이미지 수정 */
+    .cd-receipt__bg {max-width: 500px;}
+
+    /* 화살표 수정 */
+    .cd-receipt__arrow--prev { left: 24px; }
+    .cd-receipt__arrow--next { right: 24px;}
+    
+    /* 영수증 안의 내용 */
+    .cd-receipt__content { transform: translateY(-20px);}
+
+    /* receipt */
+    .cd-receipt__label {font-size: 40px;}
+    /* 질문 텍스트 */
+    .cd-receipt__question {font-size: 15px;}
+    /* 옵션 목록 — 스크롤 영역 */
+    .cd-receipt__options {padding: 0 15px;margin-bottom: 30px; } 
+    /* 옵션 글자 사이즈 조정 */
+    .cd-receipt__option label {font-size: 15px;}
+        .cd-receipt__custom-input {font-size: 15px;}
+    /* 바코드 */
+    .cd-receipt__barcode {font-size: 50px;}
+
+
+    /* ----- 수면, 몸무게 조사 ------ */
+
+    /* 레이아웃 범위 수정 */
+    .cd-survey-final__content { min-width: 0; width: 80vw; max-width: 300px; }
+
+    /* 말풍선 위치 조정 */
+    .cd-survey-final__bubble { width: 300px; }
+    .cd-survey-final__bubble--top { transform: translateX(-30px); }
+    .cd-survey-final__bubble--bottom { transform: translateX(30px); }
+ 
+    /* 말풍선과 입력 필드 사이의 간격 조절 */
+    .cd-survey-final__field--time { transform: translateX(100px); margin-bottom: 10px;}
+    .cd-survey-final__field--weight { transform: translateX(50px); }
+
+    /* 입력 필드 폰트 사이즈 조정 */
+    .cd-survey-final__field label, 
+    .cd-survey-final__input, 
+    .cd-survey-final__input::placeholder {font-size: 15px;}
+
+    .cd-survey-final__submit-wrap {top: 75%; left: 40%; transform: translateY(0%);}
+}
+
+
+
+@media (max-width: 480px) {
+     
+    /* 아이콘 크기 조정 */
+    .cd-bg-icons__icon { transform: scale(var(--icon-scale, 0.6));}
+
+    /* ----- 음료 조사------ */
+    /* 영수증 이미지 수정 */
+    .cd-receipt__bg {max-width: 300px;}
+
+    /* 화살표 수정 */
+    .cd-receipt__arrow {width: 40px; height: 40px;}
+    .cd-receipt__arrow--prev { left: 24px; }
+    .cd-receipt__arrow--next { right: 24px;}
+    
+    /* 영수증 안의 내용 */
+    .cd-receipt__content { transform: translateY(10px) translateX(10px);; padding: 30% 24% 24%;}
+
+    /* receipt */
+    .cd-receipt__label {font-size: 30px; margin-bottom: 8px;}
+    /* 질문 텍스트 */
+    .cd-receipt__question {font-size: 11px; margin-bottom: 25px;}
+    /* 옵션 목록 — 스크롤 영역 */
+    .cd-receipt__options {padding: 0 10px; width: 100%; height: 100px; margin-bottom: 20px; } 
+    /* 옵션 글자 사이즈 조정 */
+    .cd-receipt__option label {font-size: 10px;}
+    .cd-receipt__custom-input {font-size: 10px;}
+    /* 바코드 */
+    .cd-receipt__barcode {font-size: 30px;}
+
+
+    /* ----- 수면, 몸무게 조사 ------ */
+
+    /* 이전 버튼 수정 */
+    .cd-survey-final__arrow {width: 40px; height: 40px; left: 24px;}
+
+    /* 레이아웃 범위 수정 */
+    .cd-survey-final__content { min-width: 0; width: 80vw; max-width: 300px; }
+
+    /* 말풍선 위치 조정 */
+    .cd-survey-final__bubble { width: 200px; }
+    .cd-survey-final__bubble--top { transform: translateX(-10px); }
+    .cd-survey-final__bubble--bottom { transform: translateX(10px); }
+ 
+    /* 말풍선과 입력 필드 사이의 간격 조절 */
+    .cd-survey-final__field--time { transform: translateX(50px); margin-bottom: 10px;}
+    .cd-survey-final__field--weight { transform: translateX(50px); }
+
+    /* 입력 필드 폰트 사이즈 조정 */
+    .cd-survey-final__field label, 
+    .cd-survey-final__input, 
+    .cd-survey-final__input::placeholder {font-size: 15px;}
+
+    .cd-survey-final__submit-wrap {top: 75%; left: 35%; transform: translateY(0%);}
+    .cd-survey-submit-btn{
+        padding: 10px 30px;
+        background-color: var(--cd-cream);
+        border: none;
+        border-radius: 20px;
+        font-size: 20px;
+        color: var(--cd-brown-dark);
+        font-weight: 800;
+        font-family: var(--cd-font-display);
+        margin-top: 50px;
+    } 
+}

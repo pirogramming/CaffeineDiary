@@ -1,0 +1,11 @@
+{% extends "diary/survey_receipt_base.html" %}
+
+{% load static %}
+
+{% block title %}회원가입 설문 - 음료 종류 · Caffeine Diary{% endblock %}
+
+{% block survey_receipt_bg %}
+<img src="{% static 'images/survey_category.png' %}" alt="" class="cd-receipt__bg cd-receipt__bg--category">
+{% endblock %}
+
+{% block survey_question %}어떤 카페인 음료를 즐겨 마시나요?{% endblock %}
