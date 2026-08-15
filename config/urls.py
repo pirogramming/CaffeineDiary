@@ -23,9 +23,11 @@ from django.views.static import serve as static_serve
 from django.urls import path, include
 from django.views.generic import TemplateView #임시
 
-def home(request):
+from diary import views as diary_views # 메인 view 연결
+
+# def home(request):
     # TODO: 프론트엔드 구현 후 SPA index 서빙으로 교체
-    return JsonResponse({"is_authenticated": request.user.is_authenticated})
+   # return JsonResponse({"is_authenticated": request.user.is_authenticated})
 
 
 def login_placeholder(request):
@@ -35,7 +37,7 @@ def login_placeholder(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'),
+    path('', diary_views.MainView.as_view(), name='home'), # 메인 view 연결
     path('login', login_placeholder, name='login-placeholder'),
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
