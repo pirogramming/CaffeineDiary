@@ -6,3 +6,7 @@ django-allauth==65.18.0
 python-dotenv==1.2.2
 requests==2.34.2
 pillow==12.3.0
+
+# 배포용 (운영 환경)
+mysqlclient==2.2.7   # MySQL 드라이버 (DB_ENGINE=django.db.backends.mysql)
+gunicorn==23.0.0     # WSGI 서버 (nginx 뒤에서 실행)
