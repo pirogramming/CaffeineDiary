@@ -23,6 +23,9 @@ from django.views.static import serve as static_serve
 from django.urls import path, include
 from django.views.generic import TemplateView #임시
 
+from accounts import views as accounts_views
+
+def home(request):
 from diary import views as diary_views # 메인 view 연결
 
 # def home(request):
@@ -42,6 +45,7 @@ urlpatterns = [
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
     path('', include('diary.urls')),
+    path('', include('allnight.urls')),
 ]
 
 if settings.DEBUG:

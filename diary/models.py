@@ -62,5 +62,6 @@ class SleepLog(models.Model):
     sleep_quality = models.PositiveSmallIntegerField(null=True, blank=True)  # 수면질 1~5 설문
     actual_bedtime = models.DateTimeField(null=True, blank=True)
     wakeup_time = models.DateTimeField(null=True, blank=True)
-    
+    residual_mg_at_sleep = models.FloatField(null=True, blank=True)  # 스냅샷: 취침시각의 잔류 카페인량(계산값)
+
     created_at = models.DateTimeField(auto_now_add=True)

@@ -68,5 +68,7 @@ form?.addEventListener('submit', async (event) => {
 
   // 성공 시 이동 경로 — 로그인/회원가입 각각 고정 경로로 이동
   // (백엔드가 응답에 next를 내려주더라도, 지금은 이 고정 규칙을 우선한다)
-  window.location.href = mode === 'signup' ? '/initial_survey' : '/sleep-logs';
+  // 로그인은 메인피드 화면(명세상 "메인피드 조회" = GET /feed, 지금 diary:feed)으로 이동한다.
+  // 기존 '/sleep-logs'는 API 경로라 브라우저로 들어가면 깨진다.
+  window.location.href = mode === 'signup' ? '/initial_survey' : '/feed/';
 });
