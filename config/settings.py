@@ -126,7 +126,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 # DB_ENGINE 미설정 시 로컬 개발용 SQLite로 폴백. 운영에서는 .env에
-# DB_ENGINE=mysql.connector.django (MySQL Connector/Python) 및 접속 정보를 채워 전환한다.
+# DB_ENGINE=django.db.backends.mysql (드라이버: mysqlclient) 및 접속 정보를 채워 전환한다.
 
 DB_ENGINE = _env("DB_ENGINE", "django.db.backends.sqlite3")
 

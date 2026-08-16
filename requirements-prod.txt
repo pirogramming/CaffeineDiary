@@ -1,0 +1,11 @@
+# 운영/배포 전용 의존성 (Docker 리눅스 이미지 또는 EC2에서 설치)
+#   pip install -r requirements-prod.txt
+#
+# ⚠️ mysqlclient 는 C 확장이라 빌드에 시스템 라이브러리가 필요하다.
+#    - Debian/Ubuntu(Docker): apt-get install -y default-libmysqlclient-dev build-essential pkg-config
+#    - 로컬 Mac 개발에는 설치하지 말 것 (SQLite로 개발). requirements.txt 만 쓰면 된다.
+
+-r requirements.txt
+
+mysqlclient==2.2.7   # MySQL 드라이버 (Django 공식 권장, ENGINE=django.db.backends.mysql)
+gunicorn==23.0.0     # WSGI 서버 (nginx 뒤에서 실행)
