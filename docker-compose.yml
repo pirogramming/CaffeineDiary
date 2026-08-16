@@ -23,6 +23,11 @@ services:
     #   - "3306:3306"
 
   web:
+    # image + build 병행:
+    #   - 로컬에서 `docker compose build` 하면 이 이름으로 태그됨
+    #   - `docker compose push` 로 Hub 업로드
+    #   - 서버에선 이미지가 없으면 Hub에서 pull (build 컨텍스트 없이도 동작)
+    image: ethan0587/caffeine-diary:latest
     build: .
     restart: unless-stopped
     env_file: .env
