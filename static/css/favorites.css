@@ -1,5 +1,10 @@
-.drink_brand, .drink_name, .drink_size, .drink_caffeine,
-.option_item span, .next_btn, .edit_btn {
+.drink_brand,
+.drink_name,
+.drink_size,
+.drink_caffeine,
+.option_item span,
+.next_btn,
+.edit_btn {
     font-family: var(--cd-font-display);
 }
 
@@ -20,14 +25,17 @@
 
 .drink_img {
     width: 140px;
-    height: auto;
+    height: 140px;
+    object-fit: contain;
 }
 
 .favorite_drinks.is-empty .drink_img {
     opacity: 0.35;
 }
 
-.drink_info1, .drink_info2,.drink_info3 {
+.drink_info1,
+.drink_info2,
+.drink_info3 {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -103,12 +111,14 @@
     position: relative;
     width: 90%;
     max-width: 700px;
+    max-height: 90vh;
     aspect-ratio: 500 / 350;
     padding: 60px 60px 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
 }
 
 .overlay_close {
@@ -137,12 +147,15 @@
 
 .overlay_step {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .overlay_step h3 {
     text-align: center;
     font-size: 32px;
-    margin-top: -40px;  
+    margin-top: -40px;
     margin-bottom: 25px;
 }
 
@@ -184,14 +197,28 @@
     text-align: center;
 }
 
-/* 브랜드/메뉴/사이즈 단계 - 아이콘 없이 텍스트만 나열한다 */
+/* 브랜드/메뉴/사이즈 단계 - 아이콘 없이 텍스트만 나열한다.
+   메뉴 단계는 브랜드에 따라 수십~수백 개가 나올 수 있어 모달 밖으로
+   넘치지 않도록 목록 안쪽에서만 스크롤되게 높이를 제한한다. */
 .overlay_step--list .option_list {
     grid-template-columns: repeat(3, 1fr);
+    max-height: 45vh;
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
 .overlay_step--list .option_item {
     padding: 12px 10px;
     border: 1px solid var(--cd-brown-light);
+}
+
+.overlay_step--list .option_list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overlay_step--list .option_list::-webkit-scrollbar-thumb {
+    background-color: var(--cd-brown-light);
+    border-radius: 10px;
 }
 
 .next_btn {
@@ -210,4 +237,3 @@
 .next_btn:hover {
     background-color: var(--cd-brown-deep);
 }
-

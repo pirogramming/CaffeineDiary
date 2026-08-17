@@ -42,4 +42,5 @@ class Brand(models.TextChoices):
     GONGCHA = "gongcha", "공차"
     PEPSI = "pepsi", "펩시"
     COCACOLA = "cocacola", "코카콜라"
+    ENERGY = "energy", "에너지드링크"
     CUSTOM = "custom", "직접 입력"
