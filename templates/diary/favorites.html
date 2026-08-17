@@ -60,6 +60,13 @@
         <div class="overlay_step overlay_step--list" data-step="4" style="display:none;">
             <h3>어떤 사이즈로 마시나요?</h3>
             <div class="option_list"></div>
+            <button type="button" class="next_btn" data-next="icon">다음</button>
+        </div>
+
+        <!-- 5단계: 아이콘 선택 -->
+        <div class="overlay_step overlay_step--icons" data-step="5" style="display:none;">
+            <h3>아이콘을 선택하세요</h3>
+            <div class="option_list"></div>
             <button type="button" class="next_btn" id="wizard-save-btn">완료</button>
         </div>
 
@@ -68,14 +75,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    window.CD_DRINK_ICONS = {
-        coffee: "{% static 'images/icons/coffee_icon1.svg' %}",
-        tea: "{% static 'images/icons/tea_icon.svg' %}",
-        energy: "{% static 'images/icons/energydrink_icon1.svg' %}",
-        soda: "{% static 'images/icons/cola_icon1.svg' %}",
-        other: "{% static 'images/icons/coffee_icon1.svg' %}"
-    };
-</script>
 <script src="{% static 'js/favorites.js' %}"></script>
 {% endblock %}

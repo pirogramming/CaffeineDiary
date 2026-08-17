@@ -1,6 +1,6 @@
 /**
  * favorites.js — 즐겨찾는 음료(최대 3개) 목록을 GET /users/me/drinks/로 채우고,
- * "추가"/"수정" 오버레이(종류→브랜드→메뉴→사이즈)로 선택한 프리셋을
+ * "추가"/"수정" 오버레이(종류→브랜드→메뉴→사이즈→아이콘)로 선택한 프리셋을
  * POST .../from-preset/(추가) 또는 PATCH .../<id>/(교체)로 저장한다.
  */
 (function () {
@@ -14,13 +14,14 @@
     brand: overlay.querySelector('[data-step="2"]'),
     menu: overlay.querySelector('[data-step="3"]'),
     size: overlay.querySelector('[data-step="4"]'),
+    icon: overlay.querySelector('[data-step="5"]'),
   };
 
-  let wizard = { mode: 'add', editingId: null, type: null, brand: null, name: null, size: null, presetsForType: [] };
-
-  function iconForType(type) {
-    return window.CD_DRINK_ICONS[type] || window.CD_DRINK_ICONS.other;
-  }
+  let wizard = {
+    mode: 'add', editingId: null,
+    type: null, brand: null, name: null, size: null, iconKey: null,
+    presetsForType: [],
+  };
 
   // ── 즐겨찾기 목록 ──────────────────────────────────────────────
 
@@ -39,7 +40,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'favorite_drinks';
     wrap.innerHTML = `
-      <img src="${iconForType(drink.type)}" alt="" class="drink_img">
+      <img src="${cdIconForDrink(drink)}" alt="" class="drink_img">
       <div class="drink_info1">
         <div class="info_left">
           <span class="drink_brand">${drink.brand_display}</span>
@@ -101,12 +102,34 @@
     });
   }
 
+  function renderIconOptionList(stepEl, options, onSelect) {
+    const list = stepEl.querySelector('.option_list');
+    list.innerHTML = '';
+    options.forEach(({ key, src }) => {
+      const item = document.createElement('div');
+      item.className = 'option_item';
+      item.dataset.value = key;
+      item.innerHTML = `<img src="${src}" alt="">`;
+      item.addEventListener('click', () => {
+        list.querySelectorAll('.option_item').forEach((el) => el.classList.remove('is-selected'));
+        item.classList.add('is-selected');
+        onSelect(key);
+      });
+      list.appendChild(item);
+    });
+  }
+
   function openWizard(mode, editingId) {
-    wizard = { mode, editingId: editingId ?? null, type: null, brand: null, name: null, size: null, presetsForType: [] };
+    wizard = {
+      mode, editingId: editingId ?? null,
+      type: null, brand: null, name: null, size: null, iconKey: null,
+      presetsForType: [],
+    };
     steps.type.querySelectorAll('.option_item').forEach((el) => el.classList.remove('is-selected'));
     clearOptionList(steps.brand);
     clearOptionList(steps.menu);
     clearOptionList(steps.size);
+    clearOptionList(steps.icon);
     showStep('type');
     overlay.style.display = 'flex';
   }
@@ -144,12 +167,22 @@
     );
   }
 
+  function loadIconOptions() {
+    const options = window.CD_DRINK_ICON_OPTIONS[wizard.type] || window.CD_DRINK_ICON_OPTIONS.other;
+    renderIconOptionList(steps.icon, options, (key) => {
+      wizard.iconKey = key;
+    });
+  }
+
   async function saveDrink() {
     let res;
     if (wizard.mode === 'add') {
       res = await apiFetch('/users/me/drinks/from-preset/', {
         method: 'POST',
-        body: JSON.stringify({ brand: wizard.brand, name: wizard.name, size: wizard.size, is_favorite: true }),
+        body: JSON.stringify({
+          brand: wizard.brand, name: wizard.name, size: wizard.size,
+          icon_key: wizard.iconKey, is_favorite: true,
+        }),
       });
     } else {
       const preset = wizard.presetsForType.find(
@@ -164,6 +197,7 @@
           name: wizard.name,
           size: wizard.size,
           caffeine_mg: preset.caffeine_mg,
+          icon_key: wizard.iconKey,
           is_favorite: true,
         }),
       });
@@ -202,8 +236,14 @@
     showStep('size');
   });
 
-  saveBtn.addEventListener('click', () => {
+  steps.size.querySelector('.next_btn').addEventListener('click', () => {
     if (!wizard.size) { alert('사이즈를 선택해주세요.'); return; }
+    loadIconOptions();
+    showStep('icon');
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!wizard.iconKey) { alert('아이콘을 선택해주세요.'); return; }
     saveDrink();
   });
 

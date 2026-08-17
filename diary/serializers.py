@@ -18,7 +18,7 @@ from rest_framework import serializers
 from calcs.pharmacokinetics import concentration_at
 
 from .calc_bridge import doses_for_user
-from .constants import Brand, DrinkType
+from .constants import Brand, DRINK_ICON_KEYS, DrinkType
 from .models import CaffeineLog, Drink, SleepLog
 from .presets import find_preset, size_labels
 
@@ -47,6 +47,7 @@ class DrinkSerializer(serializers.ModelSerializer):
             "brand_display",
             "name",
             "size",
+            "icon_key",
             "caffeine_mg",
             "is_favorite",
             "is_recent",
@@ -127,6 +128,11 @@ class DrinkSerializer(serializers.ModelSerializer):
         if brand != Brand.CUSTOM:
             attrs["custom_brand_name"] = ""
 
+        icon_key = attrs.get("icon_key", getattr(self.instance, "icon_key", ""))
+        if icon_key:
+            drink_type = attrs.get("type", getattr(self.instance, "type", DrinkType.COFFEE))
+            _validate_icon_key(icon_key, drink_type)
+
         labels = size_labels(brand)
         if not labels:
             return attrs
@@ -165,6 +171,7 @@ class DrinkSerializer(serializers.ModelSerializer):
                 "type": validated_data.get("type", DrinkType.COFFEE),
                 "caffeine_mg": validated_data["caffeine_mg"],
                 "is_favorite": validated_data.get("is_favorite", False),
+                "icon_key": validated_data.get("icon_key", ""),
             },
         )
 
@@ -202,6 +209,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
     brand = serializers.CharField()
     name = serializers.CharField()
     size = serializers.CharField(required=False, allow_blank=True)
+    icon_key = serializers.CharField(required=False, allow_blank=True, default="")
     is_favorite = serializers.BooleanField(default=False)
 
     def validate(self, attrs):
@@ -211,7 +219,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
         다시 조회하면 카탈로그를 두 번 읽게 되므로 여기서 한 번만 읽는다.
 
         Args:
-            attrs (dict): brand, name, size, is_favorite
+            attrs (dict): brand, name, size, icon_key, is_favorite
 
         Returns:
             dict: _preset 키가 추가된 attrs
@@ -229,6 +237,8 @@ class DrinkFromPresetSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"size": "해당 사이즈의 카페인 정보가 아직 등록되지 않았습니다."}
             )
+        if attrs.get("icon_key"):
+            _validate_icon_key(attrs["icon_key"], preset["type"])
 
         attrs["_preset"] = preset
         return attrs
@@ -237,7 +247,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
         """검증된 프리셋 값으로 Drink를 생성한다.
 
         type, caffeine_mg는 전부 프리셋에서 가져오고, 클라이언트가 정할 수
-        있는 값은 is_favorite뿐이다.
+        있는 값은 icon_key·is_favorite뿐이다.
 
         Args:
             validated_data (dict): _preset이 포함된 검증 결과
@@ -256,6 +266,7 @@ class DrinkFromPresetSerializer(serializers.Serializer):
                 "type": preset["type"],
                 "caffeine_mg": preset["caffeine_mg"],
                 "is_favorite": validated_data["is_favorite"],
+                "icon_key": validated_data.get("icon_key", ""),
             },
         )
 
@@ -497,6 +508,23 @@ class SleepLogSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+def _validate_icon_key(icon_key, drink_type):
+    """icon_key가 drink_type에서 고를 수 있는 아이콘인지 확인한다.
+
+    Args:
+        icon_key (str): static/images/icons/<icon_key>.svg
+        drink_type (str): constants.DrinkType 값
+
+    Raises:
+        serializers.ValidationError: 해당 종류에 없는 아이콘 키인 경우
+    """
+    valid_keys = DRINK_ICON_KEYS.get(drink_type, [])
+    if icon_key not in valid_keys:
+        raise serializers.ValidationError(
+            {"icon_key": f"해당 종류에서 고를 수 없는 아이콘입니다. 가능: {', '.join(valid_keys)}"}
+        )
+
+
 @transaction.atomic
 def _create_or_revive(user, brand, custom_brand_name, name, size, defaults):
     """중복 음료를 새로 만들지 않고 되살리거나 갱신한다.
@@ -516,7 +544,7 @@ def _create_or_revive(user, brand, custom_brand_name, name, size, defaults):
         custom_brand_name (str): brand=custom일 때의 자유 입력 브랜드명. 그 외엔 빈 문자열
         name (str): 음료명
         size (str): 사이즈 라벨. 사이즈가 없으면 빈 문자열
-        defaults (dict): type, caffeine_mg, is_favorite
+        defaults (dict): type, caffeine_mg, is_favorite, icon_key
 
     Returns:
         Drink: 생성/복구/재사용된 인스턴스
@@ -538,6 +566,7 @@ def _create_or_revive(user, brand, custom_brand_name, name, size, defaults):
         existing.is_active = True
         existing.type = defaults["type"]
         existing.caffeine_mg = defaults["caffeine_mg"]
+        existing.icon_key = defaults.get("icon_key", "")
 
     # 이미 활성 상태라면 즐겨찾기 요청만 반영한다.
     # 과거 로그가 참조하는 caffeine_mg를 임의로 덮어쓰지 않기 위해서다.

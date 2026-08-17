@@ -29,6 +29,19 @@ async function apiFetch(url, options = {}) {
   return fetch(url, { ...options, headers, credentials: 'same-origin' });
 }
 
+/**
+ * Drink 객체(icon_key 포함)를 실제 아이콘 이미지 URL로 바꾼다.
+ * icon_key가 없거나(구버전 데이터) 목록에 없으면 종류(type) 대표 아이콘으로 대체한다.
+ */
+function cdIconForDrink(drink) {
+  if (drink.icon_key) {
+    const options = window.CD_DRINK_ICON_OPTIONS[drink.type] || [];
+    const match = options.find((o) => o.key === drink.icon_key);
+    if (match) return match.src;
+  }
+  return window.CD_DRINK_ICONS[drink.type] || window.CD_DRINK_ICONS.other;
+}
+
 // 상단 네비게이션의 로그아웃 버튼 — 모든 페이지에 공통으로 존재하므로 여기서 한 번만 연결
 document.getElementById('cd-logout-btn')?.addEventListener('click', async () => {
   // 로그인/회원가입 응답에서 세션과 함께 csrftoken도 발급되지만,

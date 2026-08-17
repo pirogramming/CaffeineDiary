@@ -202,9 +202,6 @@
    넘치지 않도록 목록 안쪽에서만 스크롤되게 높이를 제한한다. */
 .overlay_step--list .option_list {
     grid-template-columns: repeat(3, 1fr);
-    max-height: 45vh;
-    overflow-y: auto;
-    padding-right: 8px;
 }
 
 .overlay_step--list .option_item {
@@ -212,11 +209,27 @@
     border: 1px solid var(--cd-brown-light);
 }
 
-.overlay_step--list .option_list::-webkit-scrollbar {
+/* 아이콘 선택 단계 - 1단계(종류)와 같은 4열 이미지 그리드로 통일한다 */
+.overlay_step--icons .option_list {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 목록/아이콘 단계 공통: 항목이 많아질 수 있는 단계는 모달 밖으로 넘치지 않도록
+   목록 안쪽에서만 스크롤되게 높이를 제한한다. */
+.overlay_step--list .option_list,
+.overlay_step--icons .option_list {
+    max-height: 45vh;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.overlay_step--list .option_list::-webkit-scrollbar,
+.overlay_step--icons .option_list::-webkit-scrollbar {
     width: 6px;
 }
 
-.overlay_step--list .option_list::-webkit-scrollbar-thumb {
+.overlay_step--list .option_list::-webkit-scrollbar-thumb,
+.overlay_step--icons .option_list::-webkit-scrollbar-thumb {
     background-color: var(--cd-brown-light);
     border-radius: 10px;
 }

@@ -47,6 +47,47 @@
     </main>
 </div>
 
+<script>
+    /* 음료 종류(DrinkType) -> 대표 아이콘 1개. Drink.icon_key가 비어있을 때(기본값) 쓴다. */
+    window.CD_DRINK_ICONS = {
+        coffee: "{% static 'images/icons/coffee_icon1.svg' %}",
+        tea: "{% static 'images/icons/tea_icon.svg' %}",
+        energy: "{% static 'images/icons/energydrink_icon1.svg' %}",
+        soda: "{% static 'images/icons/cola_icon1.svg' %}",
+        other: "{% static 'images/icons/coffee_icon1.svg' %}"
+    };
+
+    /* 음료 종류별로 사용자가 고를 수 있는 아이콘 전체 목록(음료 추가 화면의 "아이콘을 선택하세요" 단계용).
+       key는 diary.constants.DRINK_ICON_KEYS와 반드시 일치해야 한다(서버가 그 값으로 검증한다). */
+    window.CD_DRINK_ICON_OPTIONS = {
+        coffee: [
+            { key: "coffee_icon1", src: "{% static 'images/icons/coffee_icon1.svg' %}" },
+            { key: "coffee_icon2", src: "{% static 'images/icons/coffee_icon2.svg' %}" },
+            { key: "coffee_icon3", src: "{% static 'images/icons/coffee_icon3.svg' %}" },
+            { key: "coffee_icon4", src: "{% static 'images/icons/coffee_icon4.svg' %}" },
+            { key: "coffee_icon5", src: "{% static 'images/icons/coffee_icon5.svg' %}" },
+            { key: "coffee_icon6", src: "{% static 'images/icons/coffee_icon6.svg' %}" }
+        ],
+        tea: [
+            { key: "tea_icon", src: "{% static 'images/icons/tea_icon.svg' %}" }
+        ],
+        energy: [
+            { key: "energydrink_icon1", src: "{% static 'images/icons/energydrink_icon1.svg' %}" },
+            { key: "energydrink_icon2", src: "{% static 'images/icons/energydrink_icon2.svg' %}" },
+            { key: "energydrink_icon3", src: "{% static 'images/icons/energydrink_icon3.svg' %}" },
+            { key: "energydrink_icon4", src: "{% static 'images/icons/energydrink_icon4.svg' %}" },
+            { key: "energydrink_icon5", src: "{% static 'images/icons/energydrink_icon5.svg' %}" },
+            { key: "energydrink_icon6", src: "{% static 'images/icons/energydrink_icon6.svg' %}" },
+            { key: "energydrink_icon7", src: "{% static 'images/icons/energydrink_icon7.svg' %}" }
+        ],
+        soda: [
+            { key: "cola_icon1", src: "{% static 'images/icons/cola_icon1.svg' %}" },
+            { key: "cola_icon2", src: "{% static 'images/icons/cola_icon2.svg' %}" }
+        ]
+    };
+    // "기타"는 전용 아이콘이 없어 커피 아이콘 세트를 재사용한다(constants.DRINK_ICON_KEYS와 동일한 정책).
+    window.CD_DRINK_ICON_OPTIONS.other = window.CD_DRINK_ICON_OPTIONS.coffee;
+</script>
 <script src="{% static 'js/base.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
