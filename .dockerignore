@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 가상환경 (이미지 안에서 새로 설치)
+venv/
+.venv/
+
+# 로컬 DB / 로그
+db.sqlite3
+*.log
+
+# 환경변수 — 이미지에 절대 포함 금지 (런타임에 주입)
+.env
+
+# 정적 수집물 (빌드 시 collectstatic 으로 재생성)
+staticfiles/
+
+# 개발용 테스트 프론트 / 스크래치
+testpages/
+calcs/_scratch.py
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+cookies.txt
+
+# 문서/이미지 (런타임 불필요)
+docs/
+README.md
