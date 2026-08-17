@@ -6,6 +6,7 @@
 """
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
@@ -209,10 +210,22 @@ class UserProfileAPITests(APITestCase):
         self.assertIsNone(res.data["cutoff_at"])
 
     def test_patch_bedtime_change_recomputes_cutoff(self):
-        """target_bedtime을 바꾸면 CALC-002가 재계산되어 cutoff_at이 채워진다."""
-        self._create_profile()
-        future_bedtime = (timezone.now() + timedelta(hours=5)).strftime("%H:%M")
-        res = self.client.patch(self.url, {"target_bedtime": future_bedtime}, format="json")
+        """target_bedtime을 바꾸면 CALC-002가 재계산되어 cutoff_at이 채워진다.
+
+        old_bedtime(기본값 23:30 KST)의 마감시각이 이미 지났으면 "tomorrow" 분기로
+        빠지므로(PROF-002), 실행 시각(KST)에 좌우되지 않도록 09:00 KST로 고정해
+        old_bedtime의 마감시각이 항상 아직 남아있는 상태에서 검증한다.
+        """
+        self._create_profile()  # target_bedtime 기본값 23:30
+        fixed_local_now = timezone.localtime(timezone.now()).replace(
+            hour=9, minute=0, second=0, microsecond=0
+        )
+        fixed_now = fixed_local_now.astimezone(timezone.UTC)
+        future_bedtime = (fixed_local_now + timedelta(hours=5)).strftime("%H:%M")
+
+        with patch("accounts.views.timezone.now", return_value=fixed_now):
+            res = self.client.patch(self.url, {"target_bedtime": future_bedtime}, format="json")
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["target_bedtime"], future_bedtime)
         self.assertEqual(res.data["applied_from"], "today")

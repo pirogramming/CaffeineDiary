@@ -219,11 +219,12 @@ def profile(request):
     # target_bedtime이 바뀐 경우에만 CALC-002를 재계산한다. 기존(변경 전) 마감시각이
     # 이미 지났으면 오늘 계산엔 개입하지 않고 내일부터 적용한다(명세 PROF-002).
     now = timezone.now()
+    local_now = timezone.localtime(now)
     doses = doses_for_user(request.user, now)
     theta_mg = theta_for_user(request.user).theta_mg
     ref_dose = reference_dose_mg(request.user)
 
-    old_next_bedtime = resolve_next_occurrence(old_bedtime, now)
+    old_next_bedtime = resolve_next_occurrence(old_bedtime, local_now)
     old_result = calc_cutoff(now, old_next_bedtime, ref_dose, doses, theta_mg)
 
     if old_result.cutoff_at is not None and now > old_result.cutoff_at:
@@ -232,7 +233,7 @@ def profile(request):
         data["message"] = "오늘의 마감시간은 이미 지나 변경은 내일부터 적용됩니다."
         return Response(data, status=status.HTTP_200_OK)
 
-    new_bedtime = resolve_next_occurrence(updated.target_sleeptime, now)
+    new_bedtime = resolve_next_occurrence(updated.target_sleeptime, local_now)
     new_result = calc_cutoff(now, new_bedtime, ref_dose, doses, theta_mg)
     data["applied_from"] = "today"
     data["cutoff_at"] = (

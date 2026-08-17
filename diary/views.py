@@ -335,7 +335,7 @@ class FeedStatusView(APIView):
         today_total_mg = sum(d.amount_mg for d in doses)
         current_mg = round(concentration_at(doses, now), 1)
 
-        bedtime = resolve_next_occurrence(profile.target_sleeptime, now)
+        bedtime = resolve_next_occurrence(profile.target_sleeptime, local_now)
         ref_dose = reference_dose_mg(user)
 
         cutoff_result = calc_cutoff(now, bedtime, ref_dose, doses, theta_mg)
