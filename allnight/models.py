@@ -25,5 +25,14 @@ class AllNightSession(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(status="active"),
+                name="uniq_active_session_per_user",
+            )
+        ]
+
     def __str__(self):
         return f"{self.user.username} | {self.target_time:%m-%d %H:%M}"

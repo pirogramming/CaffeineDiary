@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[밤샘모드] 화면</title>
+</head>
+<body>
+
+<h1>[밤샘모드] 화면</h1>
+
+<nav>
+  <a href="/testpages/index.html">홈</a> |
+  <a href="/testpages/signup.html">회원가입</a> |
+  <a href="/testpages/login.html">로그인</a> |
+  <a href="/testpages/drinks.html">내 음료</a> |
+  <a href="/testpages/presets.html">프리셋</a> |
+  <a href="/testpages/caffeine_logs.html">섭취기록</a> |
+  <a href="/testpages/sleep_logs.html">수면기록</a> |
+  <a href="/testpages/profile.html">프로필</a> |
+  <a href="/testpages/feed_status.html">피드계산</a> |
+  <a href="/testpages/night_session.html">밤샘모드</a> |
+  <button onclick="doLogout()">로그아웃</button>
+  &nbsp;&nbsp;[<span id="auth-status">확인중...</span>]
+</nav>
+<hr>
+
+<p><small>선행조건: 프로필이 있어야 시작할 수 있습니다(프로필 화면에서 먼저 생성).</small></p>
+
+<h2>1) 밤샘모드 시작 (POST /night-sessions/)</h2>
+<label>깨어있을 목표시각 <input type="datetime-local" id="target-awake"></label>
+<button onclick="startSession()">시작</button>
+<pre id="start-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>2) 진행 상황 조회 (GET /night-sessions/current/)</h2>
+<button onclick="loadCurrent()">조회</button>
+
+<table border="1" cellpadding="4" id="summary-table">
+  <tbody>
+    <tr><td>상태 (status)</td><td id="s-status">-</td></tr>
+    <tr><td>남은 시간 (time_remaining_min)</td><td id="s-remaining">-</td></tr>
+    <tr><td>현재 잔류 카페인 (current_mg)</td><td id="s-current">-</td></tr>
+    <tr><td>목표 농도밴드 (c_min ~ c_max)</td><td id="s-band">-</td></tr>
+    <tr><td>목표 범위 안 (in_target_range)</td><td id="s-range">-</td></tr>
+    <tr><td>다음 섭취 (next_dose_at / mg)</td><td id="s-next">-</td></tr>
+    <tr><td>오늘 누적 (total_mg / 상한)</td><td id="s-total">-</td></tr>
+    <tr><td>경고 (warnings)</td><td id="s-warnings">-</td></tr>
+  </tbody>
+</table>
+
+<h3>스케줄</h3>
+<ul id="schedule-items">(조회 후 생성됨)</ul>
+
+<h3>원본 응답</h3>
+<pre id="current-result">(아직 요청 없음)</pre>
+
+<hr>
+
+<h2>3) 밤샘모드 종료 (PATCH /night-sessions/current/)</h2>
+<p><small>목표시각 전에 중간에 종료할 때 씁니다. 목표시각이 지난 뒤에는 위 2번 조회만 해도 자동종료됩니다.</small></p>
+<button onclick="endSession()">지금 종료</button>
+<pre id="end-result">(아직 요청 없음)</pre>
+
+<script src="common.js"></script>
+<script>
+initNav();
+
+async function startSession() {
+  const target = document.getElementById("target-awake").value;
+  if (!target) { alert("목표시각을 입력하세요."); return; }
+  const result = await apiFetch("/night-sessions/", "POST", { target_awake_until: target });
+  renderResult("start-result", result);
+  if (result.ok) loadCurrent();
+}
+
+async function loadCurrent() {
+  const result = await apiFetch("/night-sessions/current/");
+  renderResult("current-result", result);
+
+  const d = result.data || {};
+  document.getElementById("s-status").textContent = d.status ?? "-";
+  document.getElementById("s-remaining").textContent = (d.time_remaining_min ?? "-") + " 분";
+  document.getElementById("s-current").textContent = (d.current_mg ?? "-") + " mg";
+  document.getElementById("s-band").textContent =
+    d.c_min != null ? d.c_min + " ~ " + d.c_max + " mg" : "-";
+  document.getElementById("s-range").textContent = String(d.in_target_range ?? "-");
+  document.getElementById("s-next").textContent =
+    d.next_dose_at ? d.next_dose_at + " / " + d.next_dose_mg + "mg" : "(없음)";
+  document.getElementById("s-total").textContent =
+    (d.total_mg ?? "-") + " mg / " + (d.daily_limit_mg ?? "-") + " mg";
+  document.getElementById("s-warnings").textContent =
+    Array.isArray(d.warnings) && d.warnings.length
+      ? d.warnings.map((w) => w.code).join(", ")
+      : "(없음)";
+
+  const ul = document.getElementById("schedule-items");
+  ul.innerHTML = "";
+  const schedule = Array.isArray(d.schedule) ? d.schedule : [];
+  if (schedule.length === 0) {
+    ul.innerHTML = "<li>(스케줄 없음)</li>";
+  } else {
+    schedule.forEach((s) => {
+      const li = document.createElement("li");
+      li.textContent = s.at + " / " + s.dose_mg + "mg / " + (s.done ? "완료" : "예정");
+      ul.appendChild(li);
+    });
+  }
+}
+
+async function endSession() {
+  if (!confirm("밤샘모드를 지금 종료할까요?")) return;
+  const result = await apiFetch("/night-sessions/current/", "PATCH", { status: "ended" });
+  renderResult("end-result", result);
+  loadCurrent();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadCurrent();
+});
+</script>
+
+</body>
+</html>
