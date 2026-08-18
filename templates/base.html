@@ -18,10 +18,13 @@
     {% block header %}
     <header class="cd-header">
         <div class="cd-logo-card">
-        <img src="{% static 'images/logo_background.png' %}" alt="" class="cd-logo-card__bg">
-        <a href="{% url 'diary:feed' %}" class="cd-logo-card__link" aria-label="Caffeine Diary 메인으로">
-            caffeine<br>diary
-        </a>
+            <img src="{% static 'images/logo_background.png' %}" alt="" class="cd-logo-card__bg">
+            <div class="cd-logo-wrapper">
+                <img src="{% static 'images/diary-logo.svg' %}" alt="" class="cd-logo-diary">
+                <a href="{% url 'diary:feed' %}" class="cd-logo-card__link" aria-label="Caffeine Diary 메인으로">
+                caffeine<br>diary
+                </a>
+            </div>
         </div>
         <nav class="cd-nav" aria-label="주 메뉴" id="cd-nav">
         <a href="{% url 'diary:feed' %}" class="cd-nav__link">메인 화면</a>

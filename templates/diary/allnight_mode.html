@@ -18,14 +18,23 @@
                 <span>diary</span>
             </div>
         </div>
-        <nav>
-            <a href="{% url 'diary:feed' %}" class="cd-nav__link">메인 화면</a>
-            <a href="{% url 'diary:mydiary' %}" class="cd-nav__link">나의 다이어리</a>
-            <a href="{% url 'diary:favorites' %}" class="cd-nav__link">음료 추가</a>
-            <a href="{% url 'diary:allnight-setup' %}" class="cd-nav__link">밤샘 모드</a>
-            <button type="button" class="cd-nav__link" id="cd-logout-btn">로그아웃</button>
-            <a href="{% url 'diary:mypage' %}" class="cd-nav__link">마이페이지</a>
+
+        <button type="button" class="nav_toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav id="navMenu">
+            <a href="{% url 'diary:feed' %}">메인 화면</a>
+            <a href="{% url 'diary:mydiary' %}">나의 다이어리</a>
+            <a href="{% url 'diary:favorites' %}">음료 추가</a>
+            <a href="{% url 'diary:allnight-setup' %}">밤샘 모드</a>
+            <button type="button" id="cd-logout-btn">로그아웃</button>
+            <a href="{% url 'diary:mypage' %}">마이페이지</a>
         </nav>
+
+        <div class="nav_backdrop" id="navBackdrop"></div>
     </header>
 
     <main>
@@ -38,13 +47,13 @@
                     <p class="allnight_warning" id="allnightWarning" hidden></p>
                     <button type="button" class="finish_btn" id="allnightFinishBtn">종료버튼</button>
 
-                    <div class="schedule_toggle" id="allnightScheduleToggle">
+                    <div class="schedule_toggle collapsed" id="allnightScheduleToggle">
                         <span class="line"></span>
                         <span class="toggle_text">오늘의 스케줄</span>
                         <span class="line"></span>
                     </div>
 
-                    <ul class="schedule_list" id="allnightScheduleList"></ul>
+                    <ul class="schedule_list collapsed" id="allnightScheduleList"></ul>
                     <span class="bottom_line"></span>
                 </div>
             </section>

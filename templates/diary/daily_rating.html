@@ -8,8 +8,9 @@
 
   <div class="cd-daily-rating__prompt">
     <div class="cd-daily-rating__bot-profile">
-      <!-- TODO: 로고 이미지 준비되면 이 빈 원 안에 background-image로 넣으면 됨 -->
-      <div class="cd-daily-rating__bot-avatar" aria-hidden="true"></div>
+      <div class="cd-daily-rating__bot-avatar" aria-hidden="true">
+        <img src="{% static 'images/dailysurvey-logo.svg' %}" alt="" class="cd-daily-rating__bot-avatar-img">
+      </div>
       <span class="cd-daily-rating__bot-name">caffeine</span>
     </div>
 
@@ -29,7 +30,7 @@
       {% for i in "12345" %}
       <label class="cd-daily-rating__bean" data-bean-index="{{ forloop.counter }}">
         <input type="radio" name="rating" value="{{ i }}" class="cd-daily-rating__bean-input">
-        <img src="{% static 'images/coffebean-rating.png' %}" alt="{{ i }}점" class="cd-daily-rating__bean-icon">
+        <img src="{% static 'images/coffeebean-rating.png' %}" alt="{{ i }}점" class="cd-daily-rating__bean-icon">
       </label>
       {% endfor %}
     </div>

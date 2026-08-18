@@ -167,6 +167,7 @@
 .cd-feed-cup-row {
     display: flex;
     align-items: flex-start;
+    
     gap: 12px;
 }
 .cd-feed-cup--sm {

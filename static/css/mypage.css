@@ -8,18 +8,21 @@
 
 .mypage_stage {
     position: relative;
-    width: fit-content;
-}
-
-.mypage_cards {
-    position: relative;
-}
-
-.mypage_cards .mypage_card_bg {
     width: 100%;
-    height: auto;
-    display: block;
+    max-width: 900px;
     margin: 0 auto;
+}
+
+.decor_layer {
+    position: absolute;
+    top: -200px;
+    left: calc(50% - 50vw);
+    right: calc(50% - 50vw);
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+    pointer-events: none;
+    z-index: -1;
 }
 
 .grid_bgimg,
@@ -48,40 +51,59 @@
     transform: translate(100%, 0%);
 }
 
+.mypage_cards {
+    position: relative;
+}
+
+.mypage_card_bg {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
 .mypage_content {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 8% 10% 8% 13%;
+    padding: 10% 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 40px;
 }
 
 .mypage_title {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 6%;
-    margin-bottom: 6%;
-    padding: 0 8%;
+    justify-content: center;
+    gap:40%; 
+    margin-bottom: 10px;
 }
 
 .mypage_title h2 {
     font-family: var(--cd-font-display);
     font-size: 45px;
-    margin-left: 3%;
     white-space: nowrap;
     color: #000;
+}
+
+#mypage-nickname {
+    font-family: var(--cd-font-display);
+    font-size: 52px;
+    font-weight: bold;
+    color: #403C31;
 }
 
 .mypage_title h2 span {
     font-family: var(--cd-font-body);
     font-size: 22px;
-    font-weight: normal;
-    color: #000;
+    font-weight: bold;
+    color: #403C31;
 }
 
-/* 닉네임 자체는 "님"과 달리 h2와 같은 디스플레이 폰트를 유지한다 */
 #mypage-nickname {
     font-family: var(--cd-font-display);
     font-size: 45px;
@@ -90,7 +112,6 @@
 .edit_wrap {
     position: relative;
     display: inline-block;
-    margin-right: 5%;
 }
 
 .edit_btn_bg {
@@ -114,100 +135,173 @@
     font-size: 22px;
     cursor: pointer;
     white-space: nowrap;
-    color: #000;
+    color: #403C31;
 }
 
 .edit_icon {
     width: 20px;
     height: 20px;
+    filter: brightness(0) saturate(100%) invert(20%) sepia(8%) saturate(1200%) hue-rotate(20deg) brightness(94%) contrast(90%);
 }
 
-/* 체중 카드 */
-.weight_card {
-    position: relative;
-    margin-bottom: 2%;
-    margin-top: -13%;
-    margin-left: -5%;
+.stat_row {
+    display: flex;
+    align-items: center;
+    gap: 0;
 }
 
-.weight_card .card_bg {
-    width: 80%;
-    height: auto;
-    display: block;
-}
-
-.weight_value {
-    position: absolute;
-    top: 42%;
-    left: 40%;
+.stat_label {
+    flex-shrink: 0;
     font-family: var(--cd-font-display);
-    font-size: 44px;
-    font-weight: bold;
-    color: #000;
+    font-size: 22px;
+    padding: 20px 36px;
+    border-radius: 50px;
+    white-space: nowrap;
+    z-index: 1;
+    margin-right: -20px;
 }
 
-.weight_value .unit {
+.stat_label-weight {
+    background-color: #CFE0D8;
+}
+
+.stat_label-sleep {
+    background-color: #E2D0BB;
+}
+
+.stat_box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--cd-font-display);
+    font-size: 36px;
+    font-weight: bold;
+    padding: 16px 40px 16px 60px;
+    border-radius: 30px;
+    background-color: #E4DCCB;
+}
+
+.stat_box-weight {
+    color: #3E6B54;
+}
+
+.stat_box-sleep {
+    color: #8A5A2B;
+}
+
+.unit {
     font-family: var(--cd-font-body);
     font-size: 22px;
     font-weight: bold;
-    color: #000;
 }
 
-/* 수면 카드 */
-.sleep_card {
-    position: relative;
-    margin-left: 40%;
-    margin-top: -24%;
-}
-
-.sleep_card .card_bg {
-    width: 70%;
-    height: auto;
-    display: block;
-}
-
-.sleep_value {
-    position: absolute;
-    top: 50%;
-    left: 30%;
-    font-family: var(--cd-font-display);
-    font-size: 40px;
-    font-weight: bold;
-    color: #000;
-}
-
-.sleep_value .unit {
-    font-family: var(--cd-font-body);
-    font-size: 22px;
-    font-weight: bold;
-    color: #000;
-}
-
-/* 수정 모드 입력창 - 카드 배경색과 같은 색을 입혀 종이에 이어 쓴 것처럼 보이게 한다 */
 .mypage_edit_input {
     box-sizing: content-box;
     font-family: var(--cd-font-display);
     font-weight: bold;
-    color: #000;
     border: none;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid currentColor;
     outline: none;
     text-align: center;
     padding: 0 2px;
+    background: transparent;
+    font-size: inherit;
+    color: inherit;
 }
 
 .mypage_edit_input[hidden] {
     display: none;
 }
 
-/* 체중 카드(myweight_card.svg) 배경색과 동일하게 맞춤 */
-#mypage-weight-input {
-    font-size: 44px;
-    width: 2.2em;
-    background: #DBC5C3;
+
+@media (max-width: 768px) {
+    .decor_layer {
+        display: none;
+    }
+
+    .mypage_stage {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mypage_card_bg {
+        display: none;
+    }
+
+    .mypage_content {
+        position: static !important;
+        width: 100%;
+        height: auto;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mypage_title h2,
+    #mypage-nickname {
+        font-size: 28px;
+    }
+
+    .mypage_title h2 span {
+        font-size: 16px;
+    }
+
+    .edit_btn {
+        font-size: 16px;
+    }
+
+    .stat_row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .stat_label {
+        margin-right: 0;
+        margin-bottom: -12px;
+        margin-left: 16px;
+        font-size: 16px;
+        padding: 8px 20px;
+    }
+
+    .stat_box {
+        width: 100%;
+        justify-content: center;
+        font-size: 32px;
+        padding: 28px 20px 16px;
+    }
 }
 
-/* number 타입의 기본 증감 스피너 제거 - 카드 디자인과 안 어울려서 */
+
+@media (max-width: 480px) {
+    .mypage_title h2,
+    #mypage-nickname {
+        font-size: 22px;
+    }
+
+    .stat_label {
+        font-size: 14px;
+        padding: 6px 16px;
+    }
+
+    .stat_box {
+        font-size: 26px;
+        padding: 24px 16px 14px;
+    }
+
+    .unit {
+        font-size: 16px !important;
+    }
+}
+
+#mypage-weight-input {
+    font-size: 36px;
+    width: 4em;
+}
+
 #mypage-weight-input::-webkit-outer-spin-button,
 #mypage-weight-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -216,17 +310,4 @@
 
 #mypage-weight-input {
     -moz-appearance: textfield;
-}
-
-/* 수면 카드(mytargetsleep_card.svg) 배경색과 동일하게 맞춤 */
-#mypage-sleep-input {
-    font-size: 40px;
-    width: 3.2em;
-    background: #E2D0BB;
-}
-
-/* 시계 아이콘은 네이티브 피커를 그대로 쓰되, 카드 위에서 튀지 않도록 톤만 낮춘다 */
-#mypage-sleep-input::-webkit-calendar-picker-indicator {
-    opacity: 0.55;
-    cursor: pointer;
 }

@@ -115,11 +115,54 @@ finishBtn?.addEventListener('click', async () => {
   window.location.href = '/feed/';
 });
 
+// 오늘의 스케줄 토글 — collapsed 클래스를 켜고 끄면 allnight_mode.css의
+// max-height 트랜지션으로 접히고 펼쳐진다.
 scheduleToggle?.addEventListener('click', () => {
-  scheduleListEl.hidden = !scheduleListEl.hidden;
+  scheduleToggle.classList.toggle('collapsed');
+  scheduleListEl.classList.toggle('collapsed');
 });
 
 refresh().then(() => {
   tickTimer = setInterval(tick, 1000);
   pollTimer = setInterval(refresh, 60000);
+});
+
+// 모바일 햄버거 메뉴 — base.js와 동일한 로직.
+// 이 페이지는 base.html을 상속하지 않고 헤더를 직접 그려서 id가 달라(navToggle 등),
+// base.js의 cd-nav-toggle 기반 로직이 안 먹는다 — 여기서 따로 연결한다.
+document.addEventListener('DOMContentLoaded', function () {
+  const navToggle = document.getElementById('navToggle');
+  const navMenu = document.getElementById('navMenu');
+  const navBackdrop = document.getElementById('navBackdrop');
+
+  if (navToggle && navMenu && navBackdrop) {
+    function openNav() {
+      navMenu.classList.add('is-open');
+      navBackdrop.hidden = false;
+      requestAnimationFrame(function () {
+        navBackdrop.classList.add('is-open');
+      });
+      navToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeNav() {
+      navMenu.classList.remove('is-open');
+      navBackdrop.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      setTimeout(function () {
+        navBackdrop.hidden = true;
+      }, 250);
+    }
+
+    navToggle.addEventListener('click', function () {
+      const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+      isOpen ? closeNav() : openNav();
+    });
+
+    navBackdrop.addEventListener('click', closeNav);
+
+    navMenu.querySelectorAll('a, button').forEach(function (el) {
+      el.addEventListener('click', closeNav);
+    });
+  }
 });

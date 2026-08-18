@@ -9,10 +9,8 @@
 
 {% block content %}
 <div class="chat_page">
-    <div class="chat_frame">
-        <div class="chat_container" id="chatContainer"
-             data-bot-icon="{% static 'images/chatbot_icon.svg' %}"
-             data-caffeine-icon="{% static 'images/caffeine_icon.svg' %}">
+    <div class="chat_frame" id="chatFrame" data-redirect-url="{% url 'diary:allnight-mode' %}">
+        <div class="chat_container" id="chatContainer">
 
             <div class="chatbot">
                 <div class="bot_profile">
@@ -25,7 +23,7 @@
 
         <div class="chat_input_container">
             <input type="text" class="chat_input" id="chatInput" placeholder="예: 08:00" autocomplete="off">
-            <button type="button" class="send_btn" id="chatSendBtn">
+            <button type="button" class="send_btn" id="sendBtn">
                 <img src="{% static 'images/send_icon.svg' %}" alt="전송">
             </button>
         </div>
@@ -34,5 +32,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    window.CAFFEINE_ICON_URL = "{% static 'images/caffeine_icon.svg' %}";
+</script>
 <script src="{% static 'js/allnight_setup.js' %}"></script>
 {% endblock %}

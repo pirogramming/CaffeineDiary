@@ -18,16 +18,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
-# Quick-start development settings - unsuitable for production
+
+def _env(key, default=None):
+    # 환경변수가 없거나 빈 문자열이면 default. (.env에 KEY= 로만 남은 경우 대응)
+    val = os.environ.get(key)
+    return val if val not in (None, "") else default
+
+
+def _env_bool(key, default):
+    return str(_env(key, default)).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _env_list(key, default):
+    # 쉼표로 구분된 환경변수를 리스트로. 빈 값은 걸러낸다.
+    return [item.strip() for item in _env(key, default).split(",") if item.strip()]
+
+
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ydmu6++nun6$ub$(y^sm=q&e1@(tcgn^z(xzkpa_ppw50)i4#c'
+# 운영에서는 .env의 DJANGO_SECRET_KEY로 반드시 덮어쓴다. 아래 값은 로컬 개발 폴백.
+SECRET_KEY = _env(
+    "DJANGO_SECRET_KEY",
+    'django-insecure-ydmu6++nun6$ub$(y^sm=q&e1@(tcgn^z(xzkpa_ppw50)i4#c',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _env_bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+
+CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS", "http://localhost:8000")
 
 
 # Application definition
@@ -105,13 +126,30 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# DB_ENGINE 미설정 시 로컬 개발용 SQLite로 폴백. 운영에서는 .env에
+# DB_ENGINE=django.db.backends.mysql (드라이버: mysqlclient) 및 접속 정보를 채워 전환한다.
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DB_ENGINE = _env("DB_ENGINE", "django.db.backends.sqlite3")
+
+if DB_ENGINE == "django.db.backends.sqlite3":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': os.environ.get("DB_NAME", ""),
+            'USER': os.environ.get("DB_USER", ""),
+            'PASSWORD': os.environ.get("DB_PASSWORD", ""),
+            'HOST': os.environ.get("DB_HOST", "127.0.0.1"),
+            'PORT': os.environ.get("DB_PORT", "3306"),
+            'OPTIONS': {'charset': 'utf8mb4'},
+        }
+    }
 
 
 # Password validation
@@ -138,11 +176,27 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Seoul'
+TIME_ZONE = _env("TIME_ZONE", "Asia/Seoul")
 
 USE_I18N = True
 
 USE_TZ = True
+
+
+# 세션 / 보안 쿠키
+# HTTPS 배포 환경에서는 .env에서 SESSION_COOKIE_SECURE/CSRF_COOKIE_SECURE를 True로 설정.
+SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", False)
+CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE", False)
+SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", "1800"))
+
+# HTTPS 하드닝 — 개발 기본값은 모두 off. 운영(nginx+SSL) .env에서 켠다.
+SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT", False)
+SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", False)
+SECURE_HSTS_PRELOAD = _env_bool("SECURE_HSTS_PRELOAD", False)
+# nginx가 X-Forwarded-Proto 헤더로 원 요청 스킴을 전달하는 경우 True.
+if _env_bool("USE_X_FORWARDED_PROTO", False):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SOCIALACCOUNT_PROVIDERS = {
     "kakao": {
@@ -160,4 +214,7 @@ SOCIALACCOUNT_PROVIDERS = {
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# collectstatic 수집 위치. 운영에서 nginx가 이 디렉토리를 정적 파일로 서빙한다.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 

@@ -1,3 +1,8 @@
+:root {
+    --cd-font-display: 'Kirang Haerang', 'Baloo 2', cursive;
+    --cd-font-body: 'Noto Sans KR', -apple-system, sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -12,15 +17,14 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow-y: auto;   /* 세로 스크롤만 스케줄 길이에 맞춰서 생기게 */
+    overflow-y: auto;
     overflow-x: hidden;
     background-color: #35354B;
-    /* 이 페이지는 base.html을 상속하지 않는 독립 페이지라 base.css의
-       폰트 토큰(--cd-font-*)이 적용되지 않는다 — 직접 지정한다. */
-    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    font-family: var(--cd-font-body);
 }
 
 .allnight_header {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -38,7 +42,7 @@ body {
     display: flex;
     flex-direction: column;
     color: #F4EFE9;
-    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
+    font-family: var(--cd-font-display);
     font-size: 24px;
     font-weight: bold;
 }
@@ -50,22 +54,51 @@ nav {
     padding-top: 50px;
 }
 
-nav a,
-nav button {
+nav a {
     text-decoration: none;
     color: #F4EFE9;
     font-size: 15px;
 }
 
-/* 로그아웃은 <a>가 아니라 <button>이라 위 규칙만으로는 브라우저 기본
-   버튼 배경/테두리가 안 지워진다 — 따로 리셋한다. */
-nav button {
+#cd-logout-btn {
     background: none;
     border: none;
-    font-family: inherit;
+    color: #F4EFE9;
+    font-size: 15px;
     cursor: pointer;
+    font-family: var(--cd-font-body);
 }
 
+.nav_toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.nav_toggle span {
+    display: block;
+    width: 25px;
+    height: 2.5px;
+    background: #F4EFE9;
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav_toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav_toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav_toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nav_backdrop {
+    display: none;
+}
 
 main {
     flex: 1;
@@ -81,9 +114,13 @@ main {
 
 .cloud_background {
     position: absolute;
+    top: 0;
+    left: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
     z-index: -1;
 }
 
@@ -94,23 +131,20 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* 위쪽을 넉넉히 줘서 목표시각/타이머 큰 글씨가 구름 그림의 물결 모양
-       윗부분 바깥으로 삐져나가지 않게 한다. */
-    padding: 8% 15% 10%;
+    padding: 1% 15% 10%;
 }
 
 .timer_label {
-    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
+    font-family: var(--cd-font-display);
     font-size: 36px;
     color: #eab361;
 }
 
 .timer_text {
-    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
+    font-family: var(--cd-font-display);
     font-size: 200px;
     font-weight: bold;
     color: #eab361;
-
 }
 
 .allnight_warning {
@@ -120,14 +154,13 @@ main {
 }
 
 .finish_btn {
-    /* <button>은 브라우저가 body 폰트를 상속시키지 않고 시스템 UI 폰트를
-       따로 쓴다 — 명시적으로 상속시켜야 한다. */
-    font-family: inherit;
+    font-family: var(--cd-font-display);
     background-color: #A98E91;
     border: none;
     border-radius: 50px;
     padding: 10px 80px;
     font-size: 25px;
+    color: #212121;
     cursor: pointer;
     margin-bottom: 60px;
 }
@@ -143,14 +176,19 @@ main {
     gap: 16px;
     width: 80%;
     margin: 0 auto 50px;
-    cursor: pointer;  
+    cursor: pointer;
+    transition: margin-bottom 0.3s ease;
+}
+
+.schedule_toggle.collapsed {
+    margin-bottom: 20px;
 }
 
 .line {
     flex: 1;
     height: 0;
     border-top: 2px solid #333;
-    background: none;  
+    background: none;
 }
 
 .bottom_line {
@@ -163,13 +201,17 @@ main {
 }
 
 .toggle_text {
-    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    font-family: var(--cd-font-display);
     white-space: nowrap;
     font-size: 25px;
+    background-color: #a69c887d;
+    border-radius: 50px;
+    padding: 8px 24px;
+    cursor: pointer;
+    color: #212121;
 }
 
 .schedule_list {
-    font-family: 'Noto Sans KR', -apple-system, sans-serif;
     list-style: none;
     width: 100%;
     display: grid;
@@ -178,6 +220,14 @@ main {
     column-gap: 13em;
     font-size: 20px;
     row-gap: 13px;
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.3s ease;
+}
+
+.schedule_list.collapsed {
+    max-height: 0;
+    row-gap: 0;
 }
 
 .schedule_list li {
@@ -201,4 +251,121 @@ main {
 
 .schedule_list li.is-done .work {
     text-decoration: line-through;
+}
+
+
+@media (max-width: 768px) {
+    .allnight_header {
+        padding: 20px 20px 20px 0;
+        align-items: flex-start;
+    }
+
+    .logotext {
+        left: 20px;
+    }
+
+    .nav_toggle {
+        display: flex;
+        margin-top: 4px;
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 70%;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        row-gap: 24px;
+        margin: 0;
+        background-color: #35354B;
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.2);
+        padding: 64px 40px;
+        z-index: 100;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+    }
+    nav.is-open {
+        transform: translateX(0);
+    }
+
+    .nav_backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .nav_backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .timer_label {
+        font-size: 24px;
+    }
+
+    .timer_text {
+        font-size: 120px;
+    }
+
+    .finish_btn {
+        font-size: 20px;
+        padding: 8px 60px;
+    }
+
+    .toggle_text {
+        font-size: 20px;
+        padding: 8px 20px;
+    }
+
+    .schedule_list {
+        font-size: 16px;
+        column-gap: 6em;
+    }
+}
+
+@media (max-width: 480px) {
+    .timer_label {
+        font-size: 16px;
+    }
+
+    .timer_text {
+        font-size: 70px;
+    }
+
+    .finish_btn {
+        padding: 8px 40px;
+        font-size: 16px;
+    }
+
+    .toggle_text {
+        font-size: 16px;
+        padding: 6px 18px;
+    }
+
+    .schedule_list {
+        max-height: 140px;
+        overflow-y: auto;
+        row-gap: 13px;
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        justify-content: start;
+        padding-left: 10%;
+        font-size: 15px;
+    }
+
+    .schedule_list.collapsed {
+        max-height: 0;
+        row-gap: 0;
+    }
+
+    .schedule_list .time {
+        text-align: left;
+    }
 }

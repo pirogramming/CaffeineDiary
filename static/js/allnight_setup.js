@@ -1,12 +1,14 @@
 /* allnight_setup.js — 밤샘모드 시작 전, 목표 시각을 물어보는 채팅형 화면.
  * POST /night-sessions/로 시작하고, 성공하면 계산된 스케줄을 바로 조회해
- * 추천 메시지를 보여준 뒤 진행 화면(/allnight-mode/)으로 이동한다.
+ * 추천 메시지를 보여준 뒤 진행 화면(chatFrame의 data-redirect-url)으로 이동한다.
  */
 
+const chatFrame = document.getElementById('chatFrame');
 const chatContainer = document.getElementById('chatContainer');
 const chatInput = document.getElementById('chatInput');
-const chatSendBtn = document.getElementById('chatSendBtn');
-const caffeineIconSrc = chatContainer?.dataset.caffeineIcon || '';
+const chatSendBtn = document.getElementById('sendBtn');
+const caffeineIconSrc = window.CAFFEINE_ICON_URL || '';
+const modeUrl = chatFrame?.dataset.redirectUrl || '/allnight-mode/';
 
 function scrollToBottom() {
   chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -94,7 +96,7 @@ async function handleSend() {
   }
   if (res.status === 409) {
     addBotMessage('이미 진행 중인 밤샘모드가 있어요. 그 화면으로 이동할게요.');
-    window.location.href = '/allnight-mode/';
+    window.location.href = modeUrl;
     return;
   }
   if (!res.ok) {
@@ -122,7 +124,7 @@ async function handleSend() {
 
   addBotMessage('밤샘모드를 시작했어요! 진행 화면으로 이동할게요.', { start: true });
   setTimeout(() => {
-    window.location.href = '/allnight-mode/';
+    window.location.href = modeUrl;
   }, 1500);
 }
 
@@ -140,6 +142,6 @@ chatInput?.addEventListener('keydown', (e) => {
   if (!res.ok) return;
   const data = await res.json().catch(() => ({}));
   if (data.status === 'active') {
-    window.location.href = '/allnight-mode/';
+    window.location.href = modeUrl;
   }
 })();

@@ -81,6 +81,15 @@ img, svg { display: block; max-width: 100%; }
     padding: 24px 30px 32px;
     color: var(--cd-cream);
 }
+
+.cd-logo-wrapper {
+    position: relative; 
+    z-index: 1;         
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .cd-logo-card__bg {
     /* 찢어진 종이 모양의 투명 PNG. 카드 전체를 채우는 배경 레이어로 깔고
         텍스트보다 아래(z-index: 0)에 둔다. */
@@ -96,14 +105,19 @@ img, svg { display: block; max-width: 100%; }
     position: relative;
     z-index: 1; /* 배경 이미지 위로 */
     display: inline-block;
-    color: #FFF;
-    text-align: center;
+    color: var(--cd-cream);
+    text-align: left;
     font-family: "Kirang Haerang";
-    font-size: 40px;
+    font-size: 30px;
     font-style: normal;
     font-weight: 400;
-    line-height: 35px; /* 87.5% */
+    line-height: 24px; /* 80% */
     padding: 10px;
+}
+
+.cd-logo-diary {
+  width: 50px;
+  height: auto;
 }
 
 .cd-nav {
