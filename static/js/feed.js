@@ -50,6 +50,14 @@ async function loadCutoffTime() {
   if (!res.ok) return;
 
   const data = await res.json();
+
+  // SLEEP-001: 오늘 아직 안 낸 수면설문이 있으면(diary.views.FeedStatusView.
+  // _sleep_survey_required) 마감시간을 보여주는 대신 설문부터 받는다.
+  if (data.sleep_survey_required) {
+    window.location.href = '/sleep-logs/time';
+    return;
+  }
+
   el.textContent = data.cutoff_at ? formatCutoffTime(data.cutoff_at) : '-';
   renderFeedWarnings(data.warnings);
 }
