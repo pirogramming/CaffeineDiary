@@ -295,6 +295,9 @@ class FeedStatusView(APIView):
                           CALC-003(남은허용량/잔수), CALC-005(개인화 θ),
                           CALC-006(한계효용)을 이 안에서 호출해 한 번에 내려준다.
                           ?compact=true면 drinks/graph를 생략한다.
+                          ?drink_id=<id>를 주면 CALC-002/003/006의 "1잔" 기준량을
+                          그 음료의 caffeine_mg로 바꿔 다시 계산한다("한잔 마시기"
+                          버튼에서 고른 음료가 바뀔 때 프론트가 미리보기용으로 호출).
 
     명세(Notion API 명세서) URI는 /feed이지만, 그 경로는 diary/urls.py의
     "feed/"에서 프론트가 작업 중인 HTML 화면(FeedView)이 이미 쓰고 있다.
@@ -336,7 +339,7 @@ class FeedStatusView(APIView):
         current_mg = round(concentration_at(doses, now), 1)
 
         bedtime = resolve_next_occurrence(profile.target_sleeptime, local_now)
-        ref_dose = reference_dose_mg(user)
+        ref_dose = self._resolve_ref_dose(request, user)
 
         cutoff_result = calc_cutoff(now, bedtime, ref_dose, doses, theta_mg)
         allowance_result = calc_allowance(bedtime, doses, theta_mg, ref_dose)
@@ -366,6 +369,7 @@ class FeedStatusView(APIView):
             "target_bedtime": profile.target_sleeptime.strftime("%H:%M"),
             "threshold_mg": theta_mg,
             "current_mg": current_mg,
+            "ref_dose_mg": ref_dose,
             "cutoff_at": cutoff_at_local.isoformat() if cutoff_at_local else None,
             "remaining_mg": allowance_result.remaining_mg,
             "remaining_cups": allowance_result.cups,
@@ -395,6 +399,24 @@ class FeedStatusView(APIView):
             )
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def _resolve_ref_dose(request, user):
+        """CALC-002/003/006에 쓸 '1잔' 기준량(mg).
+
+        ?drink_id=<id>가 오면 그 음료의 caffeine_mg로 미리보기 계산을 해준다
+        ("한잔 마시기" 버튼에서 고른 음료가 바뀔 때마다 프론트가 재조회).
+        caffeine_mg는 CaffeineLogSerializer의 스냅샷 원칙과 동일하게 클라이언트가
+        직접 보낸 값을 쓰지 않고, 반드시 본인 소유 활성 음료의 id로만 조회해 채운다.
+        id가 없거나, 숫자가 아니거나, 본인 소유가 아니면 기존 기본값
+        (reference_dose_mg: 가장 최근 즐겨찾기, 없으면 180mg)으로 조용히 폴백한다.
+        """
+        drink_id = request.query_params.get("drink_id", "")
+        if drink_id.isdigit():
+            drink = Drink.objects.filter(user=user, id=int(drink_id), is_active=True).first()
+            if drink:
+                return drink.caffeine_mg
+        return reference_dose_mg(user)
 
     @staticmethod
     def _sleep_survey_required(user, local_now, today, day_start):

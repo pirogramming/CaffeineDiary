@@ -34,6 +34,17 @@
 
 /* ---- 상태 표시: "오늘의 카페인 마감 시간은 8:00" ---- */
 
+/* CALC-002(마감시간 초과)/CALC-006(한계효용) 등 /feed-status/의 warnings를 보여주는 줄.
+   본문 폰트를 써서 위 라벨(display 폰트, 손글씨 톤)과 구분되는 "알림"으로 읽히게 한다. */
+.cd-feed-hero__warning {
+    text-align: center;
+    font-family: var(--cd-font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: #C0392B;
+    margin-bottom: 10px;
+}
+
 .cd-feed-hero__label {
     text-align: center;
     font-size: 25px;
@@ -308,6 +319,7 @@
     
 
     /* 오늘의 마감 시간은 부분 */
+    .cd-feed-hero__warning {font-size: 12px;transform: translateX(20px);}
     .cd-feed-hero__label {font-size: 18px;transform: translateX(20px);}
     /* 마감 시간 숫자 */
     .cd-feed-hero__time {font-size: 40px; transform: translateX(20px);}
