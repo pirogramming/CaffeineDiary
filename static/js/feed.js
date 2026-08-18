@@ -9,11 +9,38 @@ function formatCutoffTime(isoString) {
   });
 }
 
+// "한잔 마시기" 버튼에 현재 골라진 음료. 이 값이 바뀔 때마다 loadCutoffTime()을
+// 다시 불러 그 음료 기준으로 마감시간을 재계산한다(selectDrink 참고).
+// loadCutoffTime이 페이지 로드 시 제일 먼저 호출되므로, TDZ 에러를 피하려면
+// 이 선언이 그보다 위에 있어야 한다.
+let selectedDrink = null;
+
+// /feed-status/의 warnings(CUTOFF_EXCEEDED, DAILY_LIMIT_EXCEEDED, MARGINAL_EFFECT —
+// 뒤의 둘은 CALC-006 한계효용 판정)를 마감시간 문구 위에 빨간 글씨로 띄운다.
+function renderFeedWarnings(warnings) {
+  const el = document.getElementById('cd-feed-warning');
+  if (!el) return;
+
+  if (!Array.isArray(warnings) || !warnings.length) {
+    el.hidden = true;
+    el.textContent = '';
+    return;
+  }
+  el.textContent = warnings.map((w) => w.message).join(' · ');
+  el.hidden = false;
+}
+
+// 선택된 음료(selectedDrink)가 있으면 그 음료의 caffeine_mg 기준으로 CALC-002/003/006을
+// 다시 계산해달라고 서버에 drink_id를 실어 보낸다(diary.views.FeedStatusView._resolve_ref_dose).
+// 선택된 음료가 없으면(페이지 첫 로드) 기존처럼 서버 기본값(가장 최근 즐겨찾기)을 쓴다.
 async function loadCutoffTime() {
   const el = document.getElementById('cd-feed-cutoff-time');
   if (!el) return;
 
-  const res = await apiFetch('/feed-status/?compact=true');
+  const query = selectedDrink
+    ? `?compact=true&drink_id=${selectedDrink.id}`
+    : '?compact=true';
+  const res = await apiFetch(`/feed-status/${query}`);
   if (res.status === 404) {
     // 백엔드가 내려주는 next("/signup/profile")는 실제로 등록된 페이지 경로가
     // 아니라(spec용 placeholder) 실제 설문 화면인 /initial_survey/로 보낸다.
@@ -23,7 +50,16 @@ async function loadCutoffTime() {
   if (!res.ok) return;
 
   const data = await res.json();
+
+  // SLEEP-001: 오늘 아직 안 낸 수면설문이 있으면(diary.views.FeedStatusView.
+  // _sleep_survey_required) 마감시간을 보여주는 대신 설문부터 받는다.
+  if (data.sleep_survey_required) {
+    window.location.href = '/sleep-logs/time';
+    return;
+  }
+
   el.textContent = data.cutoff_at ? formatCutoffTime(data.cutoff_at) : '-';
+  renderFeedWarnings(data.warnings);
 }
 
 loadCutoffTime();
@@ -62,8 +98,6 @@ loadFavoriteCups();
 
 // 한잔 마시기 버튼 — 즐겨찾는 음료를 고르면 여기에 아이콘/이름이 반영되고,
 // 버튼을 누르면 그 음료로 카페인 로그를 남긴다(마감시간 등은 서버의 calcs 엔진이 재계산).
-let selectedDrink = null;
-
 const bigDrinkBtn = document.getElementById('cd-feed-drink-btn');
 const defaultCupIcon = document.getElementById('cd-feed-drink-default-icon');
 const selectedCupIcon = document.getElementById('cd-feed-drink-selected-icon');
@@ -92,6 +126,8 @@ function selectDrink(drink) {
     selectedDrinkName.hidden = false;
   }
   bigDrinkBtn?.setAttribute('aria-label', `한잔 마시기 — ${drink.name} 기록`);
+
+  loadCutoffTime();
 }
 
 // 즐겨찾는 음료 클릭 → 한잔 마시기 버튼에 그 음료를 선택 상태로 반영

@@ -92,5 +92,5 @@ urlpatterns = [
     path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
     path("allnight-setup/", views.AllNightSetupView.as_view(), name="allnight-setup"),
     path("allnight-mode/", views.AllNightModeView.as_view(), name="allnight-mode"),
-    path("mydiary/", TemplateView.as_view(template_name="diary/mydiary.html"), name="mydiary"),
+    path("mydiary/", views.MyDiaryView.as_view(), name="mydiary"),
 ]

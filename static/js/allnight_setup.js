@@ -10,138 +10,169 @@ const chatSendBtn = document.getElementById('sendBtn');
 const caffeineIconSrc = window.CAFFEINE_ICON_URL || '';
 const modeUrl = chatFrame?.dataset.redirectUrl || '/allnight-mode/';
 
+// 챗봇 말풍선 사이의 표시 간격 — 시작 성공 후 뜨는 모든 봇 메시지(추천/음료별
+// 잔 수/경고/시작 안내)에 공통으로 적용한다.
+const CHAT_MESSAGE_INTERVAL_MS = 2000;
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// messages를 순서대로 한 번에 하나씩, CHAT_MESSAGE_INTERVAL_MS 간격으로 띄운다.
+async function addBotMessagesSequentially(messages) {
+    for (let i = 0; i < messages.length; i++) {
+        addBotMessage(messages[i]);
+        if (i < messages.length - 1) {
+            await sleep(CHAT_MESSAGE_INTERVAL_MS);
+        }
+    }
+}
+
 function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 function addBotMessage(text, { start = false } = {}) {
-  const wrap = document.createElement('div');
-  wrap.className = 'chatbot';
+    const wrap = document.createElement('div');
+    wrap.className = 'chatbot';
 
-  const profile = document.createElement('div');
-  profile.className = 'bot_profile';
-  const icon = document.createElement('img');
-  icon.src = caffeineIconSrc;
-  icon.alt = '';
-  icon.className = 'bot_icon';
-  const name = document.createElement('span');
-  name.className = 'bot_name';
-  name.textContent = 'caffeine bot';
-  profile.append(icon, name);
+    const profile = document.createElement('div');
+    profile.className = 'bot_profile';
+    const icon = document.createElement('img');
+    icon.src = caffeineIconSrc;
+    icon.alt = '';
+    icon.className = 'bot_icon';
+    const name = document.createElement('span');
+    name.className = 'bot_name';
+    name.textContent = 'caffeine bot';
+    profile.append(icon, name);
 
-  const bubble = document.createElement('p');
-  bubble.className = start ? 'start_bubble' : 'bot_bubble';
-  bubble.textContent = text;
+    const bubble = document.createElement('p');
+    bubble.className = start ? 'start_bubble' : 'bot_bubble';
+    bubble.textContent = text;
 
-  wrap.append(profile, bubble);
-  chatContainer.appendChild(wrap);
-  scrollToBottom();
+    wrap.append(profile, bubble);
+    chatContainer.appendChild(wrap);
+    scrollToBottom();
 }
 
 function addUserMessage(text) {
-  const wrap = document.createElement('div');
-  wrap.className = 'chat_user';
-  const bubble = document.createElement('p');
-  bubble.className = 'user_bubble';
-  bubble.textContent = text;
-  wrap.appendChild(bubble);
-  chatContainer.appendChild(wrap);
-  scrollToBottom();
+    const wrap = document.createElement('div');
+    wrap.className = 'chat_user';
+    const bubble = document.createElement('p');
+    bubble.className = 'user_bubble';
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    chatContainer.appendChild(wrap);
+    scrollToBottom();
 }
 
 // "8:00" / "08:00" / "23:59" 같은 HH:MM만 인식한다. 이미 지난 시각이면 내일로 본다
 // (target_sleeptime의 "다음 도래 시각" 규칙과 동일).
 function parseTargetTime(input) {
-  const match = input.trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
-  if (!match) return null;
+    const match = input.trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+    if (!match) return null;
 
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
-  if (target <= now) target.setDate(target.getDate() + 1);
-  return target;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    return target;
 }
 
 function setInputEnabled(enabled) {
-  chatInput.disabled = !enabled;
-  chatSendBtn.disabled = !enabled;
+    chatInput.disabled = !enabled;
+    chatSendBtn.disabled = !enabled;
 }
 
 async function handleSend() {
-  const text = chatInput.value.trim();
-  if (!text) return;
+    const text = chatInput.value.trim();
+    if (!text) return;
 
-  addUserMessage(text);
-  chatInput.value = '';
+    addUserMessage(text);
+    chatInput.value = '';
 
-  const target = parseTargetTime(text);
-  if (!target) {
-    addBotMessage('시간 형식을 이해하지 못했어요. "08:00"처럼 입력해주세요.');
-    return;
-  }
-
-  setInputEnabled(false);
-
-  const res = await apiFetch('/night-sessions/', {
-    method: 'POST',
-    body: JSON.stringify({ target_awake_until: target.toISOString() }),
-  });
-  const data = await res.json().catch(() => ({}));
-
-  if (res.status === 404) {
-    addBotMessage('프로필이 없어서 시작할 수 없어요. 설문부터 진행할게요.');
-    window.location.href = '/initial_survey/';
-    return;
-  }
-  if (res.status === 409) {
-    addBotMessage('이미 진행 중인 밤샘모드가 있어요. 그 화면으로 이동할게요.');
-    window.location.href = modeUrl;
-    return;
-  }
-  if (!res.ok) {
-    const firstError = Object.values(data.errors || {})[0];
-    addBotMessage(firstError || data.message || '시작하지 못했어요. 다시 시도해주세요.');
-    setInputEnabled(true);
-    chatInput.focus();
-    return;
-  }
-
-  // 시작 성공 — 방금 계산된 스케줄을 바로 조회해 추천 잔 수/용량을 보여준다.
-  const currentRes = await apiFetch('/night-sessions/current/');
-  if (currentRes.ok) {
-    const current = await currentRes.json();
-    const doses = current.schedule || [];
-    if (doses.length > 0) {
-      addBotMessage(
-        `${doses[0].dose_mg}mg씩 ${doses.length}번 나눠 마시는 걸 추천해요 (총 ${current.total_mg}mg).`
-      );
+    const target = parseTargetTime(text);
+    if (!target) {
+        addBotMessage('시간 형식을 이해하지 못했어요. "08:00"처럼 입력해주세요.');
+        return;
     }
-    if (current.warnings && current.warnings.length) {
-      addBotMessage(current.warnings[0].message);
-    }
-  }
 
-  addBotMessage('밤샘모드를 시작했어요! 진행 화면으로 이동할게요.', { start: true });
-  setTimeout(() => {
+    setInputEnabled(false);
+
+    const res = await apiFetch('/night-sessions/', {
+        method: 'POST',
+        body: JSON.stringify({ target_awake_until: target.toISOString() }),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 404) {
+        addBotMessage('프로필이 없어서 시작할 수 없어요. 설문부터 진행할게요.');
+        window.location.href = '/initial_survey/';
+        return;
+    }
+    if (res.status === 409) {
+        addBotMessage('이미 진행 중인 밤샘모드가 있어요. 그 화면으로 이동할게요.');
+        window.location.href = modeUrl;
+        return;
+    }
+    if (!res.ok) {
+        const firstError = Object.values(data.errors || {})[0];
+        addBotMessage(firstError || data.message || '시작하지 못했어요. 다시 시도해주세요.');
+        setInputEnabled(true);
+        chatInput.focus();
+        return;
+    }
+
+    // 시작 성공 — 방금 계산된 스케줄을 바로 조회해 추천 잔 수/용량을 보여준다.
+    // 아래서 뜰 모든 봇 메시지(추천 → 음료별 잔 수 → 경고 → 시작 안내)를 한 줄로
+    // 모아서 addBotMessagesSequentially로 한 번에 2초 간격으로 띄운다.
+    const messages = [];
+
+    const currentRes = await apiFetch('/night-sessions/current/');
+    if (currentRes.ok) {
+        const current = await currentRes.json();
+        const doses = current.schedule || [];
+        if (doses.length > 0) {
+            messages.push(
+                `${doses[0].dose_mg}mg씩 ${doses.length}번 나눠 마시는 걸 추천해요 (총 ${current.total_mg}mg).`
+            );
+        }
+
+        // 즐겨찾는 음료(최대 3개)마다 "(이름-N잔)" 메시지를 하나씩 추가한다.
+        const favorites = (current.favorite_drinks || []).filter((d) => d.dose_cups != null);
+        favorites.forEach((fav) => messages.push(`${fav.name} : ${fav.dose_cups}잔`));
+
+        if (current.warnings && current.warnings.length) {
+            messages.push(current.warnings[0].message);
+        }
+    }
+
+    await addBotMessagesSequentially(messages);
+    if (messages.length > 0) {
+        await sleep(CHAT_MESSAGE_INTERVAL_MS);
+    }
+
+    addBotMessage('밤샘모드를 시작했어요! 진행 화면으로 이동할게요.', { start: true });
+    await sleep(CHAT_MESSAGE_INTERVAL_MS);
     window.location.href = modeUrl;
-  }, 1500);
 }
 
 chatSendBtn?.addEventListener('click', handleSend);
 chatInput?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    handleSend();
-  }
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+    }
 });
 
 // 이미 진행 중인 밤샘모드가 있으면 채팅으로 다시 시작할 필요 없이 바로 넘어간다.
 (async () => {
-  const res = await apiFetch('/night-sessions/current/');
-  if (!res.ok) return;
-  const data = await res.json().catch(() => ({}));
-  if (data.status === 'active') {
-    window.location.href = modeUrl;
-  }
+    const res = await apiFetch('/night-sessions/current/');
+    if (!res.ok) return;
+    const data = await res.json().catch(() => ({}));
+    if (data.status === 'active') {
+        window.location.href = modeUrl;
+    }
 })();
