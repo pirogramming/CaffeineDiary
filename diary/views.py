@@ -447,6 +447,13 @@ class AllNightModeView(LoginRequiredMixin, TemplateView):
     template_name = "diary/allnight_mode.html"
     extra_context = {"page_title": "밤샘모드"}
 
+
+# 나의 다이어리 — /feed-status/, /sleep-logs/, /caffeine-logs/를 호출하므로 로그인 필수.
+class MyDiaryView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/mydiary.html"
+    extra_context = {"page_title": "나의 다이어리"}
+
 # 수면 설문
 class SleepLogTimeView(LoginRequiredMixin, TemplateView):
     login_url = "/auth/login"
