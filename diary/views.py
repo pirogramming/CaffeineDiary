@@ -434,6 +434,19 @@ class FeedView(LoginRequiredMixin, TemplateView):
     template_name = "diary/feed.html"
     extra_context = {"page_title": "피드 화면"}
 
+
+# 밤샘모드 — allnight 앱의 /night-sessions/ API를 호출하므로 로그인 필수.
+class AllNightSetupView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/allnight_setup.html"
+    extra_context = {"page_title": "밤샘모드 설정"}
+
+
+class AllNightModeView(LoginRequiredMixin, TemplateView):
+    login_url = "/auth/login"
+    template_name = "diary/allnight_mode.html"
+    extra_context = {"page_title": "밤샘모드"}
+
 # 수면 설문
 class SleepLogTimeView(LoginRequiredMixin, TemplateView):
     login_url = "/auth/login"

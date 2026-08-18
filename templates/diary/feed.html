@@ -60,6 +60,23 @@
   </button>
 
 </section>
+
+<!-- 커스텀 마시기 — 즐겨찾기에 없는 음료를 이름+카페인량 직접 입력으로 기록 -->
+<div class="cd-custom-overlay" id="cd-custom-overlay" hidden>
+  <div class="cd-custom-card">
+    <button type="button" class="cd-custom-close" id="cd-custom-close" aria-label="닫기">&times;</button>
+    <h3 class="cd-custom-title">커스텀 마시기</h3>
+    <div class="cd-custom-field">
+      <label for="cd-custom-name">음료 이름</label>
+      <input type="text" id="cd-custom-name" maxlength="100" placeholder="예: 편의점 콜드브루">
+    </div>
+    <div class="cd-custom-field">
+      <label for="cd-custom-mg">카페인 함량 (mg)</label>
+      <input type="number" id="cd-custom-mg" min="1" max="1000" step="1" placeholder="예: 150">
+    </div>
+    <button type="button" class="cd-custom-submit" id="cd-custom-submit">기록하기</button>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}

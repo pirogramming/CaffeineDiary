@@ -90,7 +90,7 @@ urlpatterns = [
     path("initial_survey/sleep/", views.SurveySleepView.as_view(), name="survey-sleep"),
     path("favorites/", TemplateView.as_view(template_name="diary/favorites.html"), name="favorites"),
     path("mypage/", TemplateView.as_view(template_name="diary/mypage.html"), name="mypage"),
-    path("allnight-setup/", TemplateView.as_view(template_name="diary/allnight_setup.html"), name="allnight-setup"),
-    path("allnight-mode/", TemplateView.as_view(template_name="diary/allnight_mode.html"), name="allnight-mode"),
+    path("allnight-setup/", views.AllNightSetupView.as_view(), name="allnight-setup"),
+    path("allnight-mode/", views.AllNightModeView.as_view(), name="allnight-mode"),
     path("mydiary/", TemplateView.as_view(template_name="diary/mydiary.html"), name="mydiary"),
 ]

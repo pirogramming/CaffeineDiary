@@ -123,6 +123,56 @@ bigDrinkBtn?.addEventListener('click', async () => {
   await loadCutoffTime();
 });
 
-document.getElementById('cd-feed-custom-drink-btn')?.addEventListener('click', () => {
-  console.log('커스텀 마시기 클릭 — 음료 선택 플로우 연결 예정');
+// 커스텀 마시기 — 즐겨찾기에 없는 음료를 이름+카페인량 직접 입력으로 기록한다.
+const customOverlay = document.getElementById('cd-custom-overlay');
+const customNameInput = document.getElementById('cd-custom-name');
+const customMgInput = document.getElementById('cd-custom-mg');
+
+function openCustomModal() {
+  if (!customOverlay) return;
+  customNameInput.value = '';
+  customMgInput.value = '';
+  customOverlay.hidden = false;
+  customNameInput.focus();
+}
+
+function closeCustomModal() {
+  if (customOverlay) customOverlay.hidden = true;
+}
+
+document.getElementById('cd-feed-custom-drink-btn')?.addEventListener('click', openCustomModal);
+document.getElementById('cd-custom-close')?.addEventListener('click', closeCustomModal);
+// 카드 바깥(반투명 배경)을 클릭하면 닫는다.
+customOverlay?.addEventListener('click', (e) => {
+  if (e.target === customOverlay) closeCustomModal();
+});
+
+document.getElementById('cd-custom-submit')?.addEventListener('click', async () => {
+  const name = customNameInput.value.trim();
+  const caffeineMg = Number(customMgInput.value);
+
+  if (!name) {
+    alert('음료 이름을 입력해주세요.');
+    return;
+  }
+  // 서버(diary.serializers.CaffeineLogSerializer)도 0 < mg <= 1000으로 검증한다.
+  if (!customMgInput.value || !(caffeineMg > 0 && caffeineMg <= 1000)) {
+    alert('카페인량은 1~1000mg 사이로 입력해주세요.');
+    return;
+  }
+
+  const res = await apiFetch('/caffeine-logs/', {
+    method: 'POST',
+    body: JSON.stringify({ name, caffeine_mg: caffeineMg }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const firstError = Object.values(data.errors || {})[0];
+    alert(firstError || data.message || '기록에 실패했어요. 다시 시도해주세요.');
+    return;
+  }
+
+  closeCustomModal();
+  await loadCutoffTime();
 });

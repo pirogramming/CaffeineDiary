@@ -198,6 +198,99 @@
     overflow: hidden;
 }
 
+/* ---- 커스텀 마시기 모달 ---- */
+
+.cd-custom-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+/* author 스타일의 "display: flex"가 브라우저 기본 [hidden]{display:none}보다
+   우선 적용돼(origin이 specificity보다 먼저 비교됨) hidden 속성만으로는 안 감춰진다.
+   더 구체적인 선택자로 명시적으로 다시 감춘다. */
+.cd-custom-overlay[hidden] {
+    display: none;
+}
+
+.cd-custom-card {
+    position: relative;
+    width: 90%;
+    max-width: 360px;
+    background: var(--cd-cream);
+    border-radius: 20px;
+    padding: 40px 28px 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.cd-custom-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--cd-brown-dark);
+    cursor: pointer;
+}
+
+.cd-custom-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 24px;
+}
+
+.cd-custom-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.cd-custom-field label {
+    font-size: 14px;
+    color: var(--cd-brown-dark);
+}
+
+.cd-custom-field input {
+    border: 1px solid var(--cd-brown-light);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 16px;
+    color: var(--cd-brown-ink);
+    background: #fff;
+}
+
+.cd-custom-field input:focus {
+    outline: 2px solid var(--cd-brown-deep);
+    outline-offset: 1px;
+}
+
+.cd-custom-submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border: none;
+    border-radius: 999px;
+    background: var(--cd-brown-deep);
+    color: #fff;
+    font-size: 16px;
+    font-family: var(--cd-font-body);
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.cd-custom-submit:hover {
+    opacity: 0.9;
+}
+
 
 /* ==========================================================
    반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정

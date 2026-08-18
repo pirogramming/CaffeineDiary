@@ -15,6 +15,9 @@ body {
     overflow-y: auto;   /* 세로 스크롤만 스케줄 길이에 맞춰서 생기게 */
     overflow-x: hidden;
     background-color: #35354B;
+    /* 이 페이지는 base.html을 상속하지 않는 독립 페이지라 base.css의
+       폰트 토큰(--cd-font-*)이 적용되지 않는다 — 직접 지정한다. */
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
 .allnight_header {
@@ -35,6 +38,7 @@ body {
     display: flex;
     flex-direction: column;
     color: #F4EFE9;
+    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
     font-size: 24px;
     font-weight: bold;
 }
@@ -46,10 +50,20 @@ nav {
     padding-top: 50px;
 }
 
-nav a {
+nav a,
+nav button {
     text-decoration: none;
     color: #F4EFE9;
     font-size: 15px;
+}
+
+/* 로그아웃은 <a>가 아니라 <button>이라 위 규칙만으로는 브라우저 기본
+   버튼 배경/테두리가 안 지워진다 — 따로 리셋한다. */
+nav button {
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
 }
 
 
@@ -79,18 +93,36 @@ main {
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;  
-    padding: 1% 15% 10%;
+    align-items: center;
+    /* 위쪽을 넉넉히 줘서 목표시각/타이머 큰 글씨가 구름 그림의 물결 모양
+       윗부분 바깥으로 삐져나가지 않게 한다. */
+    padding: 8% 15% 10%;
+}
+
+.timer_label {
+    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
+    font-size: 36px;
+    color: #eab361;
 }
 
 .timer_text {
+    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
     font-size: 200px;
     font-weight: bold;
-    color: #eab361;  
+    color: #eab361;
 
 }
 
+.allnight_warning {
+    color: #E4A15E;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
 .finish_btn {
+    /* <button>은 브라우저가 body 폰트를 상속시키지 않고 시스템 UI 폰트를
+       따로 쓴다 — 명시적으로 상속시켜야 한다. */
+    font-family: inherit;
     background-color: #A98E91;
     border: none;
     border-radius: 50px;
@@ -98,6 +130,11 @@ main {
     font-size: 25px;
     cursor: pointer;
     margin-bottom: 60px;
+}
+
+.finish_btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .schedule_toggle {
@@ -126,11 +163,13 @@ main {
 }
 
 .toggle_text {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
     white-space: nowrap;
     font-size: 25px;
 }
 
 .schedule_list {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
     list-style: none;
     width: 100%;
     display: grid;
@@ -151,4 +190,15 @@ main {
 
 .schedule_list .work {
     text-align: left;
+}
+
+/* .schedule_list li는 display:contents라 li 자체엔 박스가 없다 —
+   opacity 등은 실제 렌더 박스를 가진 자식(span)에 걸어야 적용된다. */
+.schedule_list li.is-done .time,
+.schedule_list li.is-done .work {
+    opacity: 0.45;
+}
+
+.schedule_list li.is-done .work {
+    text-decoration: line-through;
 }

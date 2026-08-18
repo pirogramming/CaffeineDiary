@@ -10,60 +10,29 @@
 {% block content %}
 <div class="chat_page">
     <div class="chat_frame">
-        <div class="chat_container" id="chatContainer">
+        <div class="chat_container" id="chatContainer"
+             data-bot-icon="{% static 'images/chatbot_icon.svg' %}"
+             data-caffeine-icon="{% static 'images/caffeine_icon.svg' %}">
 
             <div class="chatbot">
                 <div class="bot_profile">
                     <img src="{% static 'images/chatbot_icon.svg' %}" alt="" class="bot_icon">
                     <span class="bot_name">caffeine bot</span>
                 </div>
-                <p class="bot_bubble">오늘은 몇 시까지 밤샐 예정인가요?</p>
-            </div>
-
-            <!-- 예시: 실제로는 사용자가 입력한 후 생성 -->
-            <div class="chat_user">
-                <p class="user_bubble">8:00</p>
-            </div>
-
-            <div class="chatbot">
-                <div class="bot_profile">
-                    <img src="{% static 'images/caffeine_icon.svg' %}" alt="" class="bot_icon">
-                    <span class="bot_name">caffeine bot</span>
-                </div>
-                <p class="bot_bubble">커피를 4잔 마시는 것을 추천합니다</p>
-            </div>
-
-            <div class="chatbot">
-                <div class="bot_profile">
-                    <img src="{% static 'images/caffeine_icon.svg' %}" alt="" class="bot_icon">
-                    <span class="bot_name">caffeine bot</span>
-                </div>
-                <p class="bot_bubble">커피를 4잔 마시는 것을 추천합니다</p>
-            </div>
-
-            <div class="chatbot">
-                <div class="bot_profile">
-                    <img src="{% static 'images/caffeine_icon.svg' %}" alt="" class="bot_icon">
-                    <span class="bot_name">caffeine bot</span>
-                </div>
-                <p class="bot_bubble">커피를 4잔 마시는 것을 추천합니다</p>
-            </div>
-
-            <div class="chatbot">
-                <div class="bot_profile">
-                    <img src="{% static 'images/caffeine_icon.svg' %}" alt="" class="bot_icon">
-                    <span class="bot_name">caffeine bot</span>
-                </div>
-                <p class="start_bubble">밤샘모드를 시작하려면 '시작'을 입력하세요!</p>
+                <p class="bot_bubble">오늘은 몇 시까지 밤샐 예정인가요? (예: 08:00)</p>
             </div>
         </div>
 
         <div class="chat_input_container">
-            <input type="text" class="chat_input" id="chatInput" placeholder="메시지를 입력하세요...">
-            <button class="send_btn">
+            <input type="text" class="chat_input" id="chatInput" placeholder="예: 08:00" autocomplete="off">
+            <button type="button" class="send_btn" id="chatSendBtn">
                 <img src="{% static 'images/send_icon.svg' %}" alt="전송">
             </button>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/allnight_setup.js' %}"></script>
 {% endblock %}
