@@ -5,21 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>밤샘모드</title>
-    <link rel="stylesheet" href="{% static 'css/allnight_mode.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/allnight_mode.css' %}">
 </head>
 <body class="allnight_page">
     <header class="allnight_header">
         <div class="logo">
             <div class="logotext">
-                <span>caffeine</span>
-                <span>diary</span>
+                <img src="{% static 'images/diary-logo.svg' %}" alt="" class="logotext__icon">
+                <div class="logotext__words">
+                    <span>caffeine</span>
+                    <span>diary</span>
+                </div>
             </div>
         </div>
 
-        <button class="nav_toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기">
+        <button type="button" class="nav_toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기">
             <span></span>
             <span></span>
             <span></span>
@@ -42,20 +45,18 @@
             <section class="cloud_section">
                 <img src="{% static 'images/cloud_section.svg' %}" alt="" class="cloud_background">
                 <div class="cloud_content">
-                    <p class="timer_text">10:30</p>
-                    <button class="finish_btn" id="finishBtn">종료버튼</button>
+                    <p class="timer_label">목표시각까지 :</p>
+                    <p class="timer_text" id="allnightTimer">-</p>
+                    <p class="allnight_warning" id="allnightWarning" hidden></p>
+                    <button type="button" class="finish_btn" id="allnightFinishBtn">종료버튼</button>
 
-                    <div class="schedule_toggle collapsed" id="scheduleToggle">
+                    <div class="schedule_toggle collapsed" id="allnightScheduleToggle">
                         <span class="line"></span>
                         <span class="toggle_text">오늘의 스케줄</span>
                         <span class="line"></span>
                     </div>
 
-                    <ul class="schedule_list collapsed" id="scheduleList">
-                        <li><span class="time">00:00</span><span class="work">공부 시작</span></li>
-                        <li><span class="time">00:00</span><span class="work">카페인 섭취</span></li>
-                        <li><span class="time">00:00</span><span class="work">공부 종료</span></li>
-                    </ul>
+                    <ul class="schedule_list collapsed" id="allnightScheduleList"></ul>
                     <span class="bottom_line"></span>
                 </div>
             </section>
