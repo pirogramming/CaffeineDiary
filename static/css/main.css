@@ -35,29 +35,29 @@
 }
 
 .cd-landing__bean--tr-light {
-    top: -30px;
-    right: 230px;
+    top: -5%;
+    right: 15%;
     width: 240px;
 }
 
 .cd-landing__bean--tr-dark {
-    top: -10px;
-    right: 50px;
-    width: 230px;
+    top: 6%;
+    right: 8%;
+    width: 120px;
 }
 
 .cd-landing__bean--bl {
-    bottom: 50px;
-    left: 20px;
-    width: 240px;
+    bottom: 10%;
+    left: 7%;
+    width: 120px;
     transform: rotate(10deg); 
 }
 
 .cd-landing__bean--br-light {
-    bottom: -40px;
-    right: 180px;
+    bottom: -3%;
+    right: 12%;
     width: 240px;
-    transform: rotate(-160deg);
+    transform: rotate(-130deg);
 }
 
 /* 로고 + 버튼 */
@@ -130,6 +130,8 @@
     .cd-landing__art {display: none;}
     .cd-landing-body {background: var(--cd-brown-dark);}
     .cd-landing__bean { width: 200px;}
+    .cd-landing__bean--tr-dark, .cd-landing__bean--bl {width: 100px;}
+    .cd-landing__bean--tr-dark{right: 2%;}
     .cd-landing__logo {font-size: 90px; line-height: 80px;}
     .cd-landing__btn {width: 121px; padding: 11px 20px 12px 20px; font-size: 16px;}
 }
@@ -139,6 +141,8 @@
     .cd-landing__art {display: none;}
     .cd-landing-body {background: var(--cd-brown-dark);}
     .cd-landing__bean { width: 180px;}
+    .cd-landing__bean--tr-dark, .cd-landing__bean--bl {width: 80px;}
+    .cd-landing__bean--tr-dark{right: 2%;}
     .cd-landing__logo {font-size: 70px; line-height: 65px;}
     .cd-landing__btn {
         width: 100px; padding: 11px 10px 12px 10px; font-size: 15px; margin-top: 40px;

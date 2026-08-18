@@ -84,11 +84,7 @@
 }
 
 .cd-daily-time__bot-avatar {
-    width: 55px;
-    height: 55px;
     border-radius: 50%;
-    background: var(--cd-cream-soft);
-    border: 2px solid var(--cd-brown-deep);
 }
 
 .cd-daily-time__bot-icon { width: 48px; height: 48px; }
@@ -260,13 +256,12 @@
 }
 
 /* 로고 이미지가 들어갈 빈 원. 나중에 background-image로 채우면 됨. */
+
 .cd-daily-rating__bot-avatar {
-    width: 55px;
-    height: 55px;
     border-radius: 50%;
-    background: var(--cd-cream-soft);
-    border: 2px solid var(--cd-brown-deep);
 }
+
+
 
 .cd-daily-rating__bot-name {
     font-family: 'Kirang Haerang', var(--cd-font-display);
@@ -312,14 +307,14 @@
 
 .cd-daily-rating__label {
     font-size: 16px;
-    padding: 0 5px;
+    padding: 0 25px;
     color: var(--cd-brown-ink);
     white-space: nowrap;
 }
 
 .cd-daily-rating__beans {
     display: flex;
-    gap: 10px;
+    gap: 20px;
 }
 
 .cd-daily-rating__bean { cursor: pointer; }
@@ -332,7 +327,7 @@
 }
 
 .cd-daily-rating__bean-icon {
-    width: 120px;
+    width: 34px;
     height: auto;
     opacity: 0.35; /* 기본: 반투명(미선택) */
     transition: opacity 0.15s ease;
@@ -415,12 +410,14 @@
 
 @media (max-width: 480px) {
     .cd-daily__paper {transform: translateY(30px); min-height: 100%;}
-    .cd-daily-rating__beans {gap: 0px;}
+    .cd-daily-rating__beans {gap: 10px;}
+
+    .cd-daily-rating__label {padding: 0 15px; font-size: 13px;}
 
     .cd-daily-rating__next-icon, 
     .cd-daily-time__next-icon, 
     .cd-daily-rating__back-icon, 
-    .cd-daily-time__back-icon {width: 50px; height: 50px;}
+    .cd-daily-time__back-icon {width: 50px;}
 
     .cd-daily-rating__next, 
     .cd-daily-time__next, 
