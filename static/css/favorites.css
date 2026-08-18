@@ -1,10 +1,5 @@
-.drink_brand,
-.drink_name,
-.drink_size,
-.drink_caffeine,
-.option_item span,
-.next_btn,
-.edit_btn {
+.drink_brand, .drink_name, .drink_size, .drink_caffeine,
+.option_item span, .next_btn, .edit_btn {
     font-family: var(--cd-font-display);
 }
 
@@ -21,6 +16,8 @@
     flex-direction: column;
     align-items: center;
     gap: 16px;
+    min-width: 200px;
+    flex-shrink: 0;
 }
 
 .drink_img {
@@ -33,9 +30,7 @@
     opacity: 0.35;
 }
 
-.drink_info1,
-.drink_info2,
-.drink_info3 {
+.drink_info1, .drink_info2, .drink_info3 {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -197,9 +192,6 @@
     text-align: center;
 }
 
-/* 브랜드/메뉴/사이즈 단계 - 아이콘 없이 텍스트만 나열한다.
-   메뉴 단계는 브랜드에 따라 수십~수백 개가 나올 수 있어 모달 밖으로
-   넘치지 않도록 목록 안쪽에서만 스크롤되게 높이를 제한한다. */
 .overlay_step--list .option_list {
     grid-template-columns: repeat(3, 1fr);
 }
@@ -209,13 +201,10 @@
     border: 1px solid var(--cd-brown-light);
 }
 
-/* 아이콘 선택 단계 - 1단계(종류)와 같은 4열 이미지 그리드로 통일한다 */
 .overlay_step--icons .option_list {
     grid-template-columns: repeat(4, 1fr);
 }
 
-/* 목록/아이콘 단계 공통: 항목이 많아질 수 있는 단계는 모달 밖으로 넘치지 않도록
-   목록 안쪽에서만 스크롤되게 높이를 제한한다. */
 .overlay_step--list .option_list,
 .overlay_step--icons .option_list {
     max-height: 45vh;
@@ -249,4 +238,150 @@
 
 .next_btn:hover {
     background-color: var(--cd-brown-deep);
+}
+
+
+
+@media (max-width: 768px) {
+    .favorites_page {
+        gap: 40px;
+        padding: 30px 20px;
+    }
+
+    .favorite_drinks {
+        min-width: 180px;
+    }
+
+    .drink_img {
+        width: 110px;
+        height: 110px;
+    }
+
+    .drink_info1, .drink_info2, .drink_info3 {
+        padding: 8px 18px;
+        gap: 12px;
+    }
+
+    .drink_brand,
+    .drink_name {
+        font-size: 14px;
+    }
+
+    .drink_size,
+    .drink_caffeine {
+        font-size: 16px;
+    }
+
+    .overlay_content {
+        aspect-ratio: unset;
+        width: 92%;
+        max-width: 420px;
+        padding: 32px 24px;
+        max-height: 85vh;
+        overflow-y: auto;
+        border-radius: 24px;
+        background-color: var(--cd-cream);
+    }
+
+    .edit_card {
+        display: none;
+    }
+
+    .overlay_step h3 {
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 18px;
+    }
+
+    .option_list {
+        gap: 8px;
+    }
+
+    .option_item img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .option_item span {
+        font-size: 13px;
+    }
+
+    .next_btn {
+        font-size: 16px;
+        padding: 8px 28px;
+        margin-top: 20px;
+    }
+}
+
+
+@media (max-width: 480px) {
+    .favorites_page {
+        gap: 28px;
+        padding: 20px 16px;
+    }
+
+    .favorite_drinks {
+        min-width: 160px;
+        width: 100%;
+    }
+
+    .drink_img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .drink_info1, .drink_info2, .drink_info3 {
+        padding: 8px 14px;
+        gap: 10px;
+    }
+
+    .drink_brand,
+    .drink_name {
+        font-size: 13px;
+    }
+
+    .drink_size,
+    .drink_caffeine {
+        font-size: 14px;
+    }
+
+    .edit_btn {
+        font-size: 13px;
+        padding: 8px 0;
+    }
+
+    .overlay_content {
+        width: 95%;
+        padding: 24px 16px;
+    }
+
+    .overlay_close {
+        top: 10px;
+        right: 14px;
+        width: 28px;
+        height: 28px;
+        font-size: 20px;
+    }
+
+    .overlay_step h3 {
+        font-size: 18px;
+    }
+
+    .overlay_step--list .option_list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .option_item img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .option_item span {
+        font-size: 12px;
+    }
+
+    .next_btn {
+        font-size: 15px;
+        padding: 6px 24px;
+    }
 }

@@ -1,3 +1,8 @@
+:root {
+    --cd-font-display: 'Kirang Haerang', 'Baloo 2', cursive;
+    --cd-font-body: 'Noto Sans KR', -apple-system, sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -12,12 +17,14 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow-y: auto;   /* 세로 스크롤만 스케줄 길이에 맞춰서 생기게 */
+    overflow-y: auto;
     overflow-x: hidden;
     background-color: #35354B;
+    font-family: var(--cd-font-body);
 }
 
 .allnight_header {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -52,6 +59,45 @@ nav a {
     font-size: 15px;
 }
 
+#cd-logout-btn {
+    background: none;
+    border: none;
+    color: #F4EFE9;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: var(--cd-font-body);
+}
+
+.nav_toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.nav_toggle span {
+    display: block;
+    width: 25px;
+    height: 2.5px;
+    background: #F4EFE9;
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav_toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav_toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav_toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nav_backdrop {
+    display: none;
+}
 
 main {
     flex: 1;
@@ -67,9 +113,13 @@ main {
 
 .cloud_background {
     position: absolute;
+    top: 0;
+    left: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
     z-index: -1;
 }
 
@@ -79,23 +129,24 @@ main {
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;  
+    align-items: center;
     padding: 1% 15% 10%;
 }
 
 .timer_text {
     font-size: 200px;
     font-weight: bold;
-    color: #eab361;  
-
+    color: #eab361;
 }
 
 .finish_btn {
+    font-family: var(--cd-font-display);
     background-color: #A98E91;
     border: none;
     border-radius: 50px;
     padding: 10px 80px;
     font-size: 25px;
+    color: #212121;
     cursor: pointer;
     margin-bottom: 60px;
 }
@@ -106,14 +157,19 @@ main {
     gap: 16px;
     width: 80%;
     margin: 0 auto 50px;
-    cursor: pointer;  
+    cursor: pointer;
+    transition: margin-bottom 0.3s ease;
+}
+
+.schedule_toggle.collapsed {
+    margin-bottom: 20px;
 }
 
 .line {
     flex: 1;
     height: 0;
     border-top: 2px solid #333;
-    background: none;  
+    background: none;
 }
 
 .bottom_line {
@@ -126,8 +182,14 @@ main {
 }
 
 .toggle_text {
+    font-family: var(--cd-font-display);
     white-space: nowrap;
     font-size: 25px;
+    background-color: #a69c887d;
+    border-radius: 50px;
+    padding: 8px 24px;
+    cursor: pointer;
+    color: #212121;
 }
 
 .schedule_list {
@@ -139,6 +201,14 @@ main {
     column-gap: 13em;
     font-size: 20px;
     row-gap: 13px;
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.3s ease;
+}
+
+.schedule_list.collapsed {
+    max-height: 0;
+    row-gap: 0;
 }
 
 .schedule_list li {
@@ -151,4 +221,113 @@ main {
 
 .schedule_list .work {
     text-align: left;
+}
+
+
+@media (max-width: 768px) {
+    .allnight_header {
+        padding: 20px 20px 20px 0;
+        align-items: flex-start;
+    }
+
+    .logotext {
+        left: 20px;
+    }
+
+    .nav_toggle {
+        display: flex;
+        margin-top: 4px;
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 70%;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        row-gap: 24px;
+        margin: 0;
+        background-color: #35354B;
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.2);
+        padding: 64px 40px;
+        z-index: 100;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+    }
+    nav.is-open {
+        transform: translateX(0);
+    }
+
+    .nav_backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .nav_backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .timer_text {
+        font-size: 120px;
+    }
+
+    .finish_btn {
+        font-size: 20px;
+        padding: 8px 60px;
+    }
+
+    .toggle_text {
+        font-size: 20px;
+        padding: 8px 20px;
+    }
+
+    .schedule_list {
+        font-size: 16px;
+        column-gap: 6em;
+    }
+}
+
+@media (max-width: 480px) {
+    .timer_text {
+        font-size: 70px;
+    }
+
+    .finish_btn {
+        padding: 8px 40px;
+        font-size: 16px;
+    }
+
+    .toggle_text {
+        font-size: 16px;
+        padding: 6px 18px;
+    }
+
+    .schedule_list {
+        max-height: 140px;
+        overflow-y: auto;
+        row-gap: 13px;
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        justify-content: start;
+        padding-left: 10%;
+        font-size: 15px;
+    }
+
+    .schedule_list.collapsed {
+        max-height: 0;
+        row-gap: 0;
+    }
+
+    .schedule_list .time {
+        text-align: left;
+    }
 }
