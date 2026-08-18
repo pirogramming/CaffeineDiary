@@ -28,7 +28,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 84px 0 40px;
+    /* 메인피드(base.css .cd-header)의 로고 카드 왼쪽 여백(30px)과 맞춘다 —
+       거긴 헤더 자체는 padding-left:0이고 카드 내부 padding이 30px다. */
+    padding: 0 84px 0 30px;
     flex-shrink: 0;
 }
 
@@ -37,8 +39,18 @@ body {
 }
 
 .logotext {
-    position: absolute;
-    left: 54px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.logotext__icon {
+    width: 36px;
+    height: auto;
+}
+
+.logotext__words {
     display: flex;
     flex-direction: column;
     color: #F4EFE9;
@@ -131,7 +143,9 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1% 15% 10%;
+    /* 위쪽 여백을 조금 더 줘서 "목표시각까지" 글씨가 구름의 물결 모양
+       윗부분에 걸치지 않게 한다. */
+    padding: 6% 15% 10%;
 }
 
 .timer_label {
@@ -256,12 +270,8 @@ main {
 
 @media (max-width: 768px) {
     .allnight_header {
-        padding: 20px 20px 20px 0;
+        padding: 20px;
         align-items: flex-start;
-    }
-
-    .logotext {
-        left: 20px;
     }
 
     .nav_toggle {
