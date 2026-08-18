@@ -15,8 +15,9 @@ async function loadCutoffTime() {
 
   const res = await apiFetch('/feed-status/?compact=true');
   if (res.status === 404) {
-    const data = await res.json().catch(() => ({}));
-    window.location.href = data.next || '/signup/profile';
+    // 백엔드가 내려주는 next("/signup/profile")는 실제로 등록된 페이지 경로가
+    // 아니라(spec용 placeholder) 실제 설문 화면인 /initial_survey/로 보낸다.
+    window.location.href = '/initial_survey/';
     return;
   }
   if (!res.ok) return;
