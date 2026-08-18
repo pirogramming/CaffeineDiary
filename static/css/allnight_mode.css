@@ -231,11 +231,12 @@ main {
     display: grid;
     grid-template-columns: auto auto;
     justify-content: center;
+    align-items: start; /* 회차 블록이 (음료 3종 세로 나열로) 길어져도 시각/본문이 각 행 위쪽에서 나란히 시작하도록 */
     column-gap: 13em;
     font-size: 20px;
-    row-gap: 13px;
+    row-gap: 28px; /* 회차 블록이 여러 줄이 되면서 13px로는 회차끼리 붙어 보여 넓혔다 */
     overflow: hidden;
-    max-height: 500px;
+    max-height: 2000px; /* 회차 블록이 길어진 만큼(기존 500px로는 회차가 많으면 잘림) 여유를 크게 잡음 */
     transition: max-height 0.3s ease;
 }
 
@@ -250,10 +251,25 @@ main {
 
 .schedule_list .time {
     text-align: right;
+    /* 아래 .work가 "N번째 섭취" + 음료 3종 세로 나열로 여러 줄이 된 만큼,
+       늘어난 세로 공간에 맞춰 시각 글자도 함께 키운다. */
+    font-size: 1.4em;
 }
 
 .schedule_list .work {
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.schedule_list .work_title {
+    /* "N번째 섭취" — .time과 같은 비율로 키워 한 행의 헤더 역할을 하게 한다. */
+    font-size: 1.4em;
+}
+
+.schedule_list .work_cup {
+    opacity: 0.85;
 }
 
 /* .schedule_list li는 display:contents라 li 자체엔 박스가 없다 —
@@ -265,6 +281,13 @@ main {
 
 .schedule_list li.is-done .work {
     text-decoration: line-through;
+}
+
+/* .work가 flex 컨테이너라 자식(work_title/work_cup)이 flex item이 되면서 부모의
+   line-through가 자동으로 이어지지 않을 수 있어 명시적으로 상속시킨다. */
+.schedule_list .work_title,
+.schedule_list .work_cup {
+    text-decoration: inherit;
 }
 
 

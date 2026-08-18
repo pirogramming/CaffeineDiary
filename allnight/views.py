@@ -19,9 +19,13 @@ from calcs.marginal_utility import calc_marginal_utility
 from calcs.night_schedule import calc_night_schedule, next_dose
 from calcs.pharmacokinetics import DAILY_LIMIT_MG, concentration_at
 from diary.calc_bridge import doses_for_user, service_day_bounds
+from diary.models import Drink
 
 from .models import AllNightSession
 from .serializers import NightSessionEndSerializer, NightSessionStartSerializer
+
+# 메인피드(feed.js)의 즐겨찾는 음료 컵 슬롯과 동일하게 최대 3개까지만 보여준다.
+MAX_FAVORITE_DRINKS = 3
 
 
 def _iso(dt):
@@ -124,7 +128,12 @@ class NightSessionStartView(APIView):
 
 
 class NightSessionCurrentView(APIView):
-    """GET/PATCH /night-sessions/current/ — 밤샘모드 진행 조회·종료(NIGHT-002~003)."""
+    """GET/PATCH /night-sessions/current/ — 밤샘모드 진행 조회·종료(NIGHT-002~003).
+
+    GET 응답의 favorite_drinks는 사용자의 즐겨찾는 음료(최대 3개, 메인피드 컵
+    슬롯과 동일 기준)마다 이번 회차 섭취량(dose_mg)이 그 음료 몇 잔에 해당하는지
+    (dose_cups)를 같이 내려준다 — "몇 잔 마시면 되는지"를 음료별로 보여주기 위함.
+    """
 
     permission_classes = [permissions.IsAuthenticated]
 
@@ -175,6 +184,22 @@ class NightSessionCurrentView(APIView):
         upcoming = next_dose(schedule, now)
         marginal = calc_marginal_utility(schedule.total_mg, schedule.dose_mg, body_weight_kg)
 
+        # 회차별 섭취량(dose_mg, 모든 회차 공통값)을 즐겨찾는 음료마다 "몇 잔"으로
+        # 환산한다. 즐겨찾는 음료가 하나도 없으면 빈 목록 — 화면에서 자연히 생략된다.
+        favorite_drinks = list(
+            Drink.objects.filter(user=request.user, is_favorite=True, is_active=True)
+            .order_by("-created_at")[:MAX_FAVORITE_DRINKS]
+        )
+        favorite_drinks_data = [
+            {
+                "drink_id": d.id,
+                "name": d.name,
+                "caffeine_mg": d.caffeine_mg,
+                "dose_cups": round(schedule.dose_mg / d.caffeine_mg, 1) if d.caffeine_mg > 0 else None,
+            }
+            for d in favorite_drinks
+        ]
+
         warnings = []
         if schedule.exceeds_daily_limit:
             warnings.append(
@@ -194,6 +219,7 @@ class NightSessionCurrentView(APIView):
             "in_target_range": schedule.c_min <= current_mg <= schedule.c_max,
             "next_dose_at": _iso(upcoming.at) if upcoming else None,
             "next_dose_mg": upcoming.dose_mg if upcoming else None,
+            "favorite_drinks": favorite_drinks_data,
             "schedule": [
                 {"at": _iso(d.at), "dose_mg": d.dose_mg, "done": d.at <= now}
                 for d in schedule.doses
