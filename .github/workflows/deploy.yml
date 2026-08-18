@@ -12,6 +12,11 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
+      # docker-compose.yml의 env_file: .env 를 compose가 파싱할 때 파일 존재만 확인하면 되고
+      # 실제 값은 필요 없다 (빌드/푸시는 컨테이너를 실행하지 않으므로). 실제 값은 EC2의 .env가 담당.
+      - name: 빌드용 더미 .env 생성
+        run: touch .env
+
       - name: Docker Hub 로그인
         uses: docker/login-action@v3
         with:
