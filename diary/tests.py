@@ -454,7 +454,7 @@ class FeedStatusAPITests(APITestCase):
         self.client.force_authenticate(self.user)
 
     def _create_profile(self, body_weight_kg=65.0):
-        bedtime = (timezone.now() + timedelta(hours=5)).time()
+        bedtime = timezone.localtime(timezone.now() + timedelta(hours=5)).time()
         return UserProfile.objects.create(
             user=self.user, target_sleeptime=bedtime, body_weight_kg=body_weight_kg
         )

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% trans "Redirecting…" %}</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F4EFE9;
+    color: #775151;
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+  }
+</style>
+</head>
+<body>
+<!-- allauth의 기본 확인화면(영어 "Continue" 버튼)을 대신한다.
+     SOCIALACCOUNT_LOGIN_ON_GET=False(로그인 CSRF 방어)는 유지하면서,
+     사용자가 버튼을 누를 필요 없이 이 폼이 로드 즉시 스스로 제출되게 한다. -->
+<p>로그인 페이지로 이동 중…</p>
+<form id="cd-social-auto-submit" method="post">
+  {% csrf_token %}
+  <noscript>
+    <button type="submit">계속하기</button>
+  </noscript>
+</form>
+<script>
+  document.getElementById('cd-social-auto-submit').submit();
+</script>
+</body>
+</html>

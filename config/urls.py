@@ -43,6 +43,7 @@ urlpatterns = [
     path('login', login_placeholder, name='login-placeholder'),
     path('auth/', include('accounts.urls')),
     path('auth/social/', include('allauth.urls')),
+    path('users/me/profile/', accounts_views.profile, name='user-profile'),
     path('', include('diary.urls')),
     path('', include('allnight.urls')),
 ]

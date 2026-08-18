@@ -19,7 +19,8 @@
     </svg>
   </a>
 
-  <div class="cd-survey-final">
+  <form method="post" class="cd-survey-final">
+    {% csrf_token %}
     <div class="cd-survey-final__content">
       <div class="cd-survey-final__bubble cd-survey-final__bubble--top">
         <img src="{% static 'images/sleepwhen.png' %}" alt="" class="cd-survey-final__bubble-img">
@@ -27,7 +28,7 @@
 
       <div class="cd-survey-final__field cd-survey-final__field--time">
         <label for="cd-survey-bedtime">시간:</label>
-        <input type="time" id="cd-survey-bedtime" class="cd-survey-final__input" placeholder="여기에 입력해주세요.">
+        <input type="time" id="cd-survey-bedtime" name="target_bedtime" class="cd-survey-final__input" placeholder="여기에 입력해주세요." required>
       </div>
 
       <div class="cd-survey-final__bubble cd-survey-final__bubble--bottom">
@@ -36,25 +37,14 @@
 
       <div class="cd-survey-final__field cd-survey-final__field--weight">
         <label for="cd-survey-weight">몸무게:</label>
-        <input type="number" id="cd-survey-weight" class="cd-survey-final__input" placeholder="여기에 입력해주세요">
+        <input type="number" id="cd-survey-weight" name="body_weight_kg" class="cd-survey-final__input" placeholder="여기에 입력해주세요" step="0.1" required>
       </div>
     </div>
-  </div>
 
-  <!-- 화살표(prev/content) 아래에 별도로 배치된 제출 버튼.
-       실제로는 세션에 쌓인 category/brand/menu/size + 이 화면의 수면시간/몸무게를
-       API로 제출해야 하지만, 지금은 구조만 잡아두고 /feed/로 바로 이동한다. -->
-  <div class="cd-survey-final__submit-wrap">
-    <button type="button" class="cd-survey-submit-btn cd-btn--primary" id="cd-survey-submit">submit</button>
-  </div>
+    <!-- 화살표(prev/content) 아래에 별도로 배치된 제출 버튼 -->
+    <div class="cd-survey-final__submit-wrap">
+      <button type="submit" class="cd-survey-submit-btn cd-btn--primary">submit</button>
+    </div>
+  </form>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  document.getElementById('cd-survey-submit')?.addEventListener('click', () => {
-    // TODO: 실제 연결 시 세션의 설문 응답 + 아래 입력값을 API로 제출 후 이동
-    window.location.href = '/feed/';
-  });
-</script>
 {% endblock %}

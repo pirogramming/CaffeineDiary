@@ -127,11 +127,36 @@
 
 .cd-feed-cup-row {
     display: flex;
+    align-items: flex-start;
     gap: 12px;
 }
 .cd-feed-cup--sm {
     width: 86px;
-    height: 80px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.cd-feed-cup--sm .cd-feed-cup__icon {
+    width: 72px;
+    height: 62px;
+    object-fit: contain;
+}
+
+.cd-feed-cup__name {
+    font-family: var(--cd-font-body);
+    font-size: 12px;
+    line-height: 1.25;
+    color: var(--cd-brown-dark);
+    text-align: center;
+    word-break: keep-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 

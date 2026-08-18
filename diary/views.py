@@ -51,8 +51,12 @@ from django.views.generic import RedirectView
 from django.shortcuts import redirect
 from django.urls import reverse
 
+from django.db import IntegrityError
+
+from accounts.serializers import UserProfileSerializer
+
 from .constants import DrinkType
-from .presets import brands_for_type, menus_for_brand_and_type, sizes_for_drink
+from .presets import brands_for_type, find_preset, menus_for_brand_and_type, sizes_for_drink
 
 
 class DrinkListCreateView(generics.ListCreateAPIView):
@@ -331,7 +335,7 @@ class FeedStatusView(APIView):
         today_total_mg = sum(d.amount_mg for d in doses)
         current_mg = round(concentration_at(doses, now), 1)
 
-        bedtime = resolve_next_occurrence(profile.target_sleeptime, now)
+        bedtime = resolve_next_occurrence(profile.target_sleeptime, local_now)
         ref_dose = reference_dose_mg(user)
 
         cutoff_result = calc_cutoff(now, bedtime, ref_dose, doses, theta_mg)
@@ -539,3 +543,40 @@ class SurveySizeView(LoginRequiredMixin, TemplateView):
 class SurveySleepView(LoginRequiredMixin, TemplateView):
     login_url = "/auth/login"
     template_name = "diary/survey_sleep.html"
+
+    def post(self, request, *args, **kwargs):
+        """설문 마지막 단계: 세션에 쌓인 선택값 + 이 화면의 입력을 묶어 프로필을 생성한다.
+
+        직전 단계들의 session 값(survey_size)은 사이즈 코드라서, find_preset이
+        요구하는 라벨로 한 번 바꿔야 한다.
+        """
+        category = request.session.get("survey_category")
+        brand = request.session.get("survey_brand")
+        menu = request.session.get("survey_menu")
+        size_code = request.session.get("survey_size")
+        if not all([category, brand, menu, size_code]):
+            return redirect("diary:survey-category")
+
+        size = next((s for s in sizes_for_drink(brand, menu) if s["code"] == size_code), None)
+        preset = find_preset(brand, menu, size["label"]) if size else None
+        if preset is None or preset["caffeine_mg"] is None:
+            return redirect("diary:survey-category")
+
+        serializer = UserProfileSerializer(
+            data={
+                "target_bedtime": request.POST.get("target_bedtime"),
+                "body_weight_kg": request.POST.get("body_weight_kg"),
+                "drinks": [{"name": preset["name"], "caffeine_mg": preset["caffeine_mg"]}],
+            },
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError:
+                pass  # 이미 프로필이 있으면 그대로 진행
+
+        for key in ("survey_category", "survey_brand", "survey_menu", "survey_size"):
+            request.session.pop(key, None)
+
+        return redirect("diary:feed")

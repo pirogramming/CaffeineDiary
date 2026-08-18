@@ -18,11 +18,11 @@
 
         <div class="mypage_content">
             <div class="mypage_title">
-                <h2>닉네임 <span>님</span></h2>
+                <h2><span id="mypage-nickname">닉네임</span> <span>님</span></h2>
                 <div class="edit_wrap">
                     <img src="{% static 'images/edit_btn.svg' %}" alt="" class="edit_btn_bg">
-                    <button class="edit_btn">
-                        수정
+                    <button class="edit_btn" id="mypage-edit-btn">
+                        <span id="mypage-edit-label">수정</span>
                         <img src="{% static 'images/edit_icon.svg' %}" alt="수정 아이콘" class="edit_icon">
                     </button>
                 </div>
@@ -30,14 +30,25 @@
 
             <div class="weight_card">
                 <img src="{% static 'images/myweight_card.svg' %}" alt="" class="card_bg">
-                <p class="weight_value">111 <span class="unit">kg</span></p>
+                <p class="weight_value">
+                    <span id="mypage-weight">-</span>
+                    <input type="number" id="mypage-weight-input" class="mypage_edit_input" step="0.1" min="1" hidden>
+                    <span class="unit">kg</span>
+                </p>
             </div>
 
             <div class="sleep_card">
                 <img src="{% static 'images/mytargetsleep_card.svg' %}" alt="" class="card_bg">
-                <p class="sleep_value">7 <span class="unit">시간</span></p>
+                <p class="sleep_value">
+                    <span id="mypage-sleep">-</span>
+                    <input type="time" id="mypage-sleep-input" class="mypage_edit_input" hidden>
+                </p>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/mypage.js' %}"></script>
 {% endblock %}

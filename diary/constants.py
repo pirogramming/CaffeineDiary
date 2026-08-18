@@ -42,4 +42,18 @@ class Brand(models.TextChoices):
     GONGCHA = "gongcha", "공차"
     PEPSI = "pepsi", "펩시"
     COCACOLA = "cocacola", "코카콜라"
+    ENERGY = "energy", "에너지드링크"
     CUSTOM = "custom", "직접 입력"
+
+
+# 음료 종류(DrinkType)별로 고를 수 있는 아이콘 키 목록. 파일 실체는
+# static/images/icons/<key>.svg 이다. Drink.icon_key가 이 목록에 있는
+# 값인지 serializer가 검증한다(음료 종류와 안 맞는 아이콘은 못 고르게).
+DRINK_ICON_KEYS = {
+    DrinkType.COFFEE: [f"coffee_icon{i}" for i in range(1, 7)],
+    DrinkType.TEA: ["tea_icon"],
+    DrinkType.ENERGY: [f"energydrink_icon{i}" for i in range(1, 8)],
+    DrinkType.SODA: [f"cola_icon{i}" for i in range(1, 3)],
+}
+# "기타"는 전용 아이콘이 없어 커피 아이콘 세트를 그대로 재사용한다.
+DRINK_ICON_KEYS[DrinkType.OTHER] = DRINK_ICON_KEYS[DrinkType.COFFEE]

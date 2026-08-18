@@ -81,6 +81,12 @@
     color: #000;
 }
 
+/* 닉네임 자체는 "님"과 달리 h2와 같은 디스플레이 폰트를 유지한다 */
+#mypage-nickname {
+    font-family: var(--cd-font-display);
+    font-size: 45px;
+}
+
 .edit_wrap {
     position: relative;
     display: inline-block;
@@ -175,4 +181,52 @@
     font-size: 22px;
     font-weight: bold;
     color: #000;
+}
+
+/* 수정 모드 입력창 - 카드 배경색과 같은 색을 입혀 종이에 이어 쓴 것처럼 보이게 한다 */
+.mypage_edit_input {
+    box-sizing: content-box;
+    font-family: var(--cd-font-display);
+    font-weight: bold;
+    color: #000;
+    border: none;
+    border-bottom: 2px solid #000;
+    outline: none;
+    text-align: center;
+    padding: 0 2px;
+}
+
+.mypage_edit_input[hidden] {
+    display: none;
+}
+
+/* 체중 카드(myweight_card.svg) 배경색과 동일하게 맞춤 */
+#mypage-weight-input {
+    font-size: 44px;
+    width: 2.2em;
+    background: #DBC5C3;
+}
+
+/* number 타입의 기본 증감 스피너 제거 - 카드 디자인과 안 어울려서 */
+#mypage-weight-input::-webkit-outer-spin-button,
+#mypage-weight-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#mypage-weight-input {
+    -moz-appearance: textfield;
+}
+
+/* 수면 카드(mytargetsleep_card.svg) 배경색과 동일하게 맞춤 */
+#mypage-sleep-input {
+    font-size: 40px;
+    width: 3.2em;
+    background: #E2D0BB;
+}
+
+/* 시계 아이콘은 네이티브 피커를 그대로 쓰되, 카드 위에서 튀지 않도록 톤만 낮춘다 */
+#mypage-sleep-input::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
 }

@@ -21,6 +21,9 @@ class Drink(models.Model):
     custom_brand_name = models.CharField(max_length=100, blank=True)  # brand=custom일 때만 사용하는 자유 입력 브랜드명
     name = models.CharField(max_length=100)
     size = models.CharField(max_length=50, blank=True)  # 브랜드별 라벨, 검증은 serializer
+    # static/images/icons/<icon_key>.svg. 비어있으면 프론트가 type 기본 아이콘으로 대체한다.
+    # 종류(type)에 안 맞는 값은 못 들어오게 constants.DRINK_ICON_KEYS로 검증(serializer).
+    icon_key = models.CharField(max_length=30, blank=True)
 
     is_favorite = models.BooleanField(default=False)
     is_recent = models.BooleanField(default=False)

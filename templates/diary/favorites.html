@@ -8,187 +8,72 @@
 {% endblock %}
 
 {% block content %}
-<div class="favorites_page">
-
-    <div class="favorite_drinks">
-        <img src="{% static 'images/icons/coffee_icon1.svg' %}" alt="" class="drink_img"> <!-- 임시 -->
-
-        <div class="drink_info1">
-            <div class="info_left">
-                <span class="drink_brand">더벤티</span>
-                <span class="drink_size">venti</span>
-            </div>
-            <span class="divider"></span>
-            <div class="info_right">
-                <span class="drink_name">자몽허니블랙티</span>
-                <span class="drink_caffeine">55mg</span>
-            </div>
-        </div>
-        <button class="edit_btn" data-edit_btn="1">수정</button>
-    </div>
-
-    <div class="favorite_drinks">
-        <img src="{% static 'images/icons/coffee_icon2.svg' %}" alt="" class="drink_img">
-
-        <div class="drink_info2">
-            <div class="info_left">
-                <span class="drink_brand">더벤티</span>
-                <span class="drink_size">venti</span>
-            </div>
-            <span class="divider"></span>
-            <div class="info_right">
-                <span class="drink_name">자몽허니블랙티</span>
-                <span class="drink_caffeine">55mg</span>
-            </div>
-        </div>
-        <button class="edit_btn" data-edit_btn="2">수정</button>
-    </div>
-
-    <div class="favorite_drinks">
-        <img src="{% static 'images/icons/coffee_icon3.svg' %}" alt="" class="drink_img">
-
-        <div class="drink_info3">
-            <div class="info_left">
-                <span class="drink_brand">더벤티</span>
-                <span class="drink_size">venti</span>
-            </div>
-            <span class="divider"></span>
-            <div class="info_right">
-                <span class="drink_name">자몽허니블랙티</span>
-                <span class="drink_caffeine">55mg</span>
-            </div>
-        </div>
-        <button class="edit_btn" data-edit_btn="3">수정</button>
-    </div>
-
+<div class="favorites_page" id="favorite-drinks-list">
+    <!-- favorites.js가 GET /users/me/drinks/ 결과로 최대 3장을 채운다 -->
 </div>
 
-<!-- 수정 버튼 누르면 뜨는 오버레이 -->
+<!-- 수정/추가 버튼 누르면 뜨는 오버레이 -->
 <div class="overlay" id="editOverlay" style="display:none;">
     <div class="overlay_content">
         <img src="{% static 'images/favorites_editcard.svg' %}" alt="" class="edit_card">
+        <button type="button" class="overlay_close" id="overlay-close-btn" aria-label="닫기">×</button>
 
         <!-- 1단계: 종류 선택 -->
-        <div class="overlay_step" data-step="1" style="display:none;">
+        <div class="overlay_step" data-step="1">
             <h3>어떤 종류의 음료인가요?</h3>
             <div class="option_list">
-                <div class="option_item">
+                <div class="option_item" data-type="coffee">
                     <img src="{% static 'images/icons/coffee_icon1.svg' %}" alt="">
                     <span>커피</span>
                 </div>
-                <div class="option_item">
+                <div class="option_item" data-type="energy">
                     <img src="{% static 'images/icons/energydrink_icon1.svg' %}" alt="">
                     <span>에너지음료</span>
                 </div>
-                <div class="option_item">
+                <div class="option_item" data-type="soda">
                     <img src="{% static 'images/icons/cola_icon1.svg' %}" alt="">
                     <span>콜라</span>
                 </div>
-                <div class="option_item">
+                <div class="option_item" data-type="tea">
                     <img src="{% static 'images/icons/tea_icon.svg' %}" alt="">
                     <span>차</span>
                 </div>
             </div>
-            <button class="next_btn">다음</button>
+            <button type="button" class="next_btn" data-next="brand">다음</button>
         </div>
 
-        <!-- 2단계: 브랜드 선택 -->
-        <div class="overlay_step" data-step="2" style="display:none;">
+        <!-- 2단계: 브랜드 선택 (선택한 종류를 취급하는 브랜드만) -->
+        <div class="overlay_step overlay_step--list" data-step="2" style="display:none;">
             <h3>어떤 브랜드의 음료인가요?</h3>
-            <div class="option_list">
-                <div class="option_item">
-                    <img src="#" alt="">
-                    <span>브랜드1</span>
-                </div>
-                <div class="option_item">
-                    <img src="#" alt="">
-                    <span>브랜드2</span>
-                </div>
-                <div class="option_item">
-                    <img src="#" alt="">
-                    <span>브랜드3</span>
-                </div>
-                <div class="option_item">
-                    <img src="#" alt="">
-                    <span>브랜드4</span>
-                </div>
-            </div>
-            <button class="next_btn">다음</button>
+            <div class="option_list"></div>
+            <button type="button" class="next_btn" data-next="menu">다음</button>
         </div>
 
-        <!-- 3단계: 사이즈 선택 -->
-        <div class="overlay_step" data-step="3" style="display:none;">
+        <!-- 3단계: 메뉴(음료명) 선택 -->
+        <div class="overlay_step overlay_step--list" data-step="3" style="display:none;">
+            <h3>어떤 메뉴인가요?</h3>
+            <div class="option_list"></div>
+            <button type="button" class="next_btn" data-next="size">다음</button>
+        </div>
+
+        <!-- 4단계: 사이즈 선택 -->
+        <div class="overlay_step overlay_step--list" data-step="4" style="display:none;">
             <h3>어떤 사이즈로 마시나요?</h3>
-            <div class="option_list">
-                <div class="option_item">
-                    <span>Tall</span>
-                </div>
-                <div class="option_item">
-                    <span>Grande</span>
-                </div>
-                <div class="option_item">
-                    <span>Venti</span>
-                </div>
-            </div>
-            <button class="next_btn">다음</button>
+            <div class="option_list"></div>
+            <button type="button" class="next_btn" data-next="icon">다음</button>
         </div>
 
-        <!-- 4단계: 아이콘 선택  -->
-        <div class="overlay_step" data-step="4" style="display:none;">
-            <h3>어떤 아이콘으로 할까요?</h3>
-            <div class="option_list icon_list">
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon1.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon2.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon3.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon4.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon5.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/coffee_icon6.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon1.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon2.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon3.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon4.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon5.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon6.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/energydrink_icon7.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/cola_icon1.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/cola_icon2.svg' %}" alt="">
-                </div>
-                <div class="option_item">
-                    <img src="{% static 'images/icons/tea_icon.svg' %}" alt="">
-                </div>
-            </div>
-            <button class="next_btn">수정</button>
+        <!-- 5단계: 아이콘 선택 -->
+        <div class="overlay_step overlay_step--icons" data-step="5" style="display:none;">
+            <h3>아이콘을 선택하세요</h3>
+            <div class="option_list"></div>
+            <button type="button" class="next_btn" id="wizard-save-btn">완료</button>
         </div>
 
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/favorites.js' %}"></script>
 {% endblock %}

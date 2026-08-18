@@ -1,5 +1,5 @@
 /**
- * base.js — 모든 화면 공통 스크립트
+ * base.js — 모든 화면 공통 스크립트.
  * base.html이 로드하며, 아래 함수들은 이 파일 이후에 로드되는
  * 페이지별 스크립트(extra_js 블록)에서도 전역으로 사용할 수 있다.
  */
@@ -7,7 +7,6 @@
 /**
  * 쿠키 값을 이름으로 읽어온다.
  */
-
 function getCookie(name) {
   return document.cookie
     .split('; ')
@@ -30,12 +29,30 @@ async function apiFetch(url, options = {}) {
   return fetch(url, { ...options, headers, credentials: 'same-origin' });
 }
 
+/**
+ * Drink 객체(icon_key 포함)를 실제 아이콘 이미지 URL로 바꾼다.
+ * icon_key가 없거나(구버전 데이터) 목록에 없으면 종류(type) 대표 아이콘으로 대체한다.
+ */
+function cdIconForDrink(drink) {
+  if (drink.icon_key) {
+    const options = window.CD_DRINK_ICON_OPTIONS[drink.type] || [];
+    const match = options.find((o) => o.key === drink.icon_key);
+    if (match) return match.src;
+  }
+  return window.CD_DRINK_ICONS[drink.type] || window.CD_DRINK_ICONS.other;
+}
+
 // 상단 네비게이션의 로그아웃 버튼 — 모든 페이지에 공통으로 존재하므로 여기서 한 번만 연결
 document.getElementById('cd-logout-btn')?.addEventListener('click', async () => {
-  const res = await apiFetch('/auth/logout/', { method: 'POST' });
-  if (res.ok) {
-    window.location.href = '/login';
+  // 로그인/회원가입 응답에서 세션과 함께 csrftoken도 발급되지만,
+  // 혹시 없는 상태로 이 페이지에 온 경우를 대비해 세션 확인 API로 보장한다.
+  if (!getCookie('csrftoken')) {
+    await fetch('/auth/session/', { credentials: 'same-origin' });
   }
+
+  const res = await apiFetch('/auth/logout/', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  window.location.href = data.next || '/auth/login';
 });
 
 // 480px 미만에서만 보이는 햄버거 버튼 — 누르면 .cd-nav가 오른쪽에서 드로어로 열린다.
