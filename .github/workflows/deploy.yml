@@ -15,8 +15,8 @@ jobs:
       - name: Docker Hub 로그인
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       # docker-compose.yml에 정의된 web 서비스만 빌드/푸시한다.
       # db(mysql), nginx는 공개 이미지를 그대로 pull해서 쓰므로 push 대상이 아니다.
@@ -34,8 +34,8 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
           # EC2의 ~/caffeine-diary 디렉토리에 docker-compose.yml, nginx.conf, .env가
           # 미리 준비되어 있어야 한다 (최초 1회는 수동 세팅 필요).
           script: |
