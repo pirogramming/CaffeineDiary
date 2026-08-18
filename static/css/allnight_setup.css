@@ -4,8 +4,8 @@
 }
 
 .chat_frame {
-    width: 90%;           
-    max-width: 500px;     
+    width: 90%;
+    max-width: 500px;
     max-height: 70vh;
     display: flex;
     flex-direction: column;
@@ -23,7 +23,6 @@
     gap: 20px;
 }
 
-/* 봇 메시지 */
 .chatbot {
     display: flex;
     flex-direction: column;
@@ -69,7 +68,6 @@
     border-right: 8px solid #CABDB8;
 }
 
-/* 시작 메시지 */
 .start_bubble {
     position: relative;
     background-color: #6CA9B3;
@@ -90,7 +88,6 @@
     border-right: 8px solid #6CA9B3;
 }
 
-/* 사용자 메시지 */
 .chat_user {
     display: flex;
     justify-content: flex-end;
@@ -118,7 +115,6 @@
     border-left: 8px solid #795B5B;
 }
 
-/* 입력창 */
 .chat_input_container {
     flex-shrink: 0;
     display: flex;
@@ -146,4 +142,81 @@
 .send_btn img {
     width: 24px;
     height: 24px;
+}
+
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+    .chat_frame {
+        width: 95%;
+        max-height: 75vh;
+    }
+
+    .bot_bubble,
+    .start_bubble,
+    .user_bubble {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+
+    .chatbot,
+    .user_bubble {
+        max-width: 80%;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat_page {
+        padding: 0 10px;
+    }
+
+    .chat_frame {
+        width: 100%;
+        max-height: 80vh;
+        border-radius: 8px;
+    }
+
+    .chat_container {
+        padding: 14px;
+        gap: 14px;
+    }
+
+    .bot_icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .bot_name {
+        font-size: 11px;
+    }
+
+    .bot_bubble,
+    .start_bubble,
+    .user_bubble {
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+
+    .chatbot {
+        max-width: 85%;
+    }
+
+    .user_bubble {
+        max-width: 75%;
+    }
+
+    .chat_input_container {
+        padding: 12px;
+        gap: 6px;
+    }
+
+    .chat_input {
+        font-size: 13px;
+        padding: 8px 14px;
+    }
+
+    .send_btn img {
+        width: 20px;
+        height: 20px;
+    }
 }

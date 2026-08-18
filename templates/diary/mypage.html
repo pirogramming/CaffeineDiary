@@ -9,9 +9,11 @@
 
 {% block content %}
 <div class="mypage_stage">
-    <img src="{% static 'images/grid_bgimg.svg' %}" alt="" class="grid_bgimg">
-    <img src="{% static 'images/coffee_bgimg.svg' %}" alt="" class="coffee_bgimg">
-    <img src="{% static 'images/pencil_bgimg.svg' %}" alt="" class="pencil_bgimg">
+    <div class="decor_layer">
+        <img src="{% static 'images/grid_bgimg.svg' %}" alt="" class="grid_bgimg">
+        <img src="{% static 'images/coffee_bgimg.svg' %}" alt="" class="coffee_bgimg">
+        <img src="{% static 'images/pencil_bgimg.svg' %}" alt="" class="pencil_bgimg">
+    </div>
 
     <div class="mypage_cards">
         <img src="{% static 'images/mypage_card.svg' %}" alt="" class="mypage_card_bg">
@@ -28,21 +30,21 @@
                 </div>
             </div>
 
-            <div class="weight_card">
-                <img src="{% static 'images/myweight_card.svg' %}" alt="" class="card_bg">
-                <p class="weight_value">
+            <div class="stat_row">
+                <span class="stat_label stat_label-weight">나의 체중</span>
+                <div class="stat_box stat_box-weight">
                     <span id="mypage-weight">-</span>
                     <input type="number" id="mypage-weight-input" class="mypage_edit_input" step="0.1" min="1" hidden>
                     <span class="unit">kg</span>
-                </p>
+                </div>
             </div>
 
-            <div class="sleep_card">
-                <img src="{% static 'images/mytargetsleep_card.svg' %}" alt="" class="card_bg">
-                <p class="sleep_value">
+            <div class="stat_row">
+                <span class="stat_label stat_label-sleep">목표 수면 시간</span>
+                <div class="stat_box stat_box-sleep">
                     <span id="mypage-sleep">-</span>
                     <input type="time" id="mypage-sleep-input" class="mypage_edit_input" hidden>
-                </p>
+                </div>
             </div>
         </div>
     </div>
