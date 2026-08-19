@@ -160,6 +160,14 @@
     cursor: pointer;
 }
 
+/* "해당하는 항목이 없어요" — 위 질문(.cd-receipt__question)과 같은 크기로 맞춘다. */
+.cd-receipt__option--empty {
+    font-size: 17px;
+    color: var(--cd-brown-ink);
+    text-align: center;
+    line-height: 1.4;
+}
+
 /* 바코드 */
 .cd-receipt__barcode {
     font-family: 'Libre Barcode 39', cursive;
@@ -231,6 +239,9 @@
     background: none;
     padding: 0;
     cursor: pointer;
+    /* .cd-receipt__content(z-index:1)가 모바일 좁은 화면에서 이 버튼 자리까지
+       덮으면서 클릭을 가로채던 문제 — 항상 그 위에 그려지도록 명시적으로 올린다. */
+    z-index: 2;
     transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .cd-receipt__arrow:hover { opacity: 0.85; }
@@ -366,7 +377,44 @@
     color: var(--cd-cream);
 }
 .cd-survey-final__input:focus { outline: none; border-color: var(--cd-brown); }
- 
+
+/* 프리셋을 못 찾은(직접입력) 경로에서만 뜨는 카페인 함량 입력 —
+   기존 말풍선 두 개는 삽화라 세 번째를 새로 그리는 대신 담백한 라벨+입력으로 뒀다. */
+.cd-survey-final__custom-caffeine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.cd-survey-final__custom-caffeine label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--cd-cream);
+}
+.cd-survey-final__custom-caffeine input {
+    width: 140px;
+    padding: 8px 12px;
+    border: 1px solid var(--cd-cream);
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center;
+    background: rgba(244, 239, 233, 0.12);
+    color: var(--cd-cream);
+}
+.cd-survey-final__custom-caffeine input::placeholder { color: var(--cd-cream); opacity: 0.5; }
+.cd-survey-final__custom-caffeine input:focus { outline: none; border-color: var(--cd-brown-light); }
+
+.cd-survey-final__error {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #E4A15E;
+    text-align: center;
+}
+
 /* 시계 아이콘 색 */
 .cd-survey-final__input::-webkit-calendar-picker-indicator {
     filter: invert(1);
@@ -414,6 +462,8 @@
     .cd-receipt__options {padding: 0 15px;margin-bottom: 30px; }
     /* 옵션 글자 사이즈 조정 */
     .cd-receipt__option label {font-size: 15px;}
+    /* "해당하는 항목이 없어요" — 질문 텍스트와 같은 크기 유지 */
+    .cd-receipt__option--empty {font-size: 15px;}
         .cd-receipt__custom-input {font-size: 15px;}
     /* 바코드 */
     .cd-receipt__barcode {font-size: 50px;}
@@ -434,11 +484,24 @@
     .cd-survey-final__field--weight { transform: translateX(50px); }
 
     /* 입력 필드 폰트 사이즈 조정 */
-    .cd-survey-final__field label, 
-    .cd-survey-final__input, 
+    .cd-survey-final__field label,
+    .cd-survey-final__input,
     .cd-survey-final__input::placeholder {font-size: 15px;}
+    .cd-survey-final__custom-caffeine label,
+    .cd-survey-final__custom-caffeine input {font-size: 14px;}
 
-    .cd-survey-final__submit-wrap {top: 75%; left: 40%; transform: translateY(0%);}
+    /* 데스크톱은 submit 버튼을 화면에 고정(position:fixed)해두는데, 모바일에선
+       직접입력 시 카페인량 입력창/에러 문구로 콘텐츠 높이가 늘어나면서 고정된
+       버튼과 겹치는 문제가 있었다. 버튼을 문서 흐름에 자연스럽게 넣어 항상
+       콘텐츠 맨 아래에 오도록 바꿨다. */
+    .cd-survey-final { flex-direction: column; }
+    .cd-survey-final__submit-wrap {
+        position: static;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 36px;
+    }
 }
 
 
@@ -470,6 +533,8 @@
     .cd-receipt__options {padding: 0 10px; width: 100%; height: 100px; margin-bottom: 20px; }
     /* 옵션 글자 사이즈 조정 */
     .cd-receipt__option label {font-size: 10px;}
+    /* "해당하는 항목이 없어요" — 질문 텍스트와 같은 크기 유지 */
+    .cd-receipt__option--empty {font-size: 11px;}
     .cd-receipt__custom-input {font-size: 10px;}
     /* 바코드 */
     .cd-receipt__barcode {font-size: 30px;}
@@ -493,11 +558,15 @@
     .cd-survey-final__field--weight { transform: translateX(50px); }
 
     /* 입력 필드 폰트 사이즈 조정 */
-    .cd-survey-final__field label, 
-    .cd-survey-final__input, 
+    .cd-survey-final__field label,
+    .cd-survey-final__input,
     .cd-survey-final__input::placeholder {font-size: 15px;}
+    .cd-survey-final__custom-caffeine label,
+    .cd-survey-final__custom-caffeine input {font-size: 13px;}
 
-    .cd-survey-final__submit-wrap {top: 75%; left: 35%; transform: translateY(0%);}
+    /* position은 768px 구간에서 이미 static으로 바꿔놨다(콘텐츠 아래로 자연스럽게 배치) */
+    .cd-survey-final__submit-wrap {margin-top: 28px;}
+    .cd-survey-final__custom-caffeine {margin-bottom: 16px;}
     .cd-survey-submit-btn{
         padding: 10px 30px;
         background-color: var(--cd-cream);
