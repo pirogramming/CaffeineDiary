@@ -133,6 +133,7 @@ def _serialize_profile(profile, *, include_calc=True):
     data = {
         "profile_id": profile.id,
         "username": profile.user.username,
+        "nickname": profile.nickname,
         "target_bedtime": profile.target_sleeptime.strftime("%H:%M"),
         "body_weight_kg": profile.body_weight_kg,
     }

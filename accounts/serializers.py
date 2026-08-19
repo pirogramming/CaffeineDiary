@@ -114,11 +114,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
     # 다시 선언한다 — target_bedtime과 같은 이유. PATCH(partial=True)에서는 DRF가 이
     # required를 무시하므로 그대로 선택값으로 동작한다.
     body_weight_kg = serializers.FloatField()
+    nickname = serializers.CharField(max_length=150, required=False)
     drinks = ProfileDrinkSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = UserProfile
-        fields = ["target_bedtime", "body_weight_kg", "drinks"]
+        fields = ["nickname", "target_bedtime", "body_weight_kg", "drinks"]
+
+    def validate_nickname(self, value):
+        nickname = value.strip()
+        if not nickname:
+            raise serializers.ValidationError("닉네임을 입력해주세요.")
+        return nickname
 
     def validate_body_weight_kg(self, value):
         """calcs 엔진이 clamp_weight()로 내부적으로 [W_MIN_KG, W_MAX_KG]로 잘라내는데,
@@ -169,7 +176,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             UserProfile: 생성된 인스턴스
         """
         drinks = validated_data.pop("drinks", [])
+        # 가입 때는 닉네임 입력을 별도로 받지 않고 아이디와 같은 값으로 시작한다.
+        validated_data.pop("nickname", None)
         user = self.context["request"].user
+        validated_data["nickname"] = user.username
         profile = UserProfile.objects.create(user=user, **validated_data)
         for d in drinks:
             Drink.objects.create(

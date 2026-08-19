@@ -115,6 +115,7 @@ class UserProfileAPITests(APITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.data["target_bedtime"], "23:30")
+        self.assertEqual(res.data["nickname"], "tester")
         self.assertEqual(len(res.data["drinks"]), 2)
         self.assertEqual(Drink.objects.filter(user=self.user, is_favorite=True).count(), 2)
 
@@ -208,6 +209,15 @@ class UserProfileAPITests(APITestCase):
         self.assertEqual(res.data["body_weight_kg"], 70.5)
         self.assertEqual(res.data["applied_from"], "today")
         self.assertIsNone(res.data["cutoff_at"])
+
+    def test_patch_nickname_keeps_username_unchanged(self):
+        """닉네임은 아이디와 독립적으로 변경할 수 있다."""
+        self._create_profile()
+        res = self.client.patch(self.url, {"nickname": "커피러버"}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["nickname"], "커피러버")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "tester")
 
     def test_patch_bedtime_change_recomputes_cutoff(self):
         """target_bedtime을 바꾸면 CALC-002가 재계산되어 cutoff_at이 채워진다.
