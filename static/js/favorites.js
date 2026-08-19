@@ -156,7 +156,18 @@
     renderOptionList(steps.menu, names.map((n) => ({ value: n, label: n })), (value) => {
       wizard.name = value;
     });
+    // 새로 그린 목록이라 전부 보이는 상태 — 검색창만 비워서 이전 검색어가 안 남게 한다.
+    if (menuSearchInput) menuSearchInput.value = '';
   }
+
+  // 메뉴 목록을 검색어로 실시간 필터링한다. 한 글자 입력될 때마다(input 이벤트) 다시 걸러진다.
+  const menuSearchInput = steps.menu.querySelector('[data-option-search]');
+  menuSearchInput?.addEventListener('input', () => {
+    const q = menuSearchInput.value.trim().toLowerCase();
+    steps.menu.querySelectorAll('.option_item').forEach((item) => {
+      item.hidden = q.length > 0 && !item.textContent.trim().toLowerCase().includes(q);
+    });
+  });
 
   function loadSizeOptions() {
     const matches = wizard.presetsForType.filter((p) => p.brand === wizard.brand && p.name === wizard.name);

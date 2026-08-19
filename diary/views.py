@@ -26,6 +26,7 @@ from calcs.allowance import calc_allowance
 from calcs.cutoff import CutoffStatus, calc_cutoff
 from calcs.marginal_utility import calc_marginal_utility
 from calcs.pharmacokinetics import (
+    DAILY_LIMIT_MG,
     SERVICE_DAY_START_HOUR,
     build_curve_payload,
     concentration_at,
@@ -374,6 +375,7 @@ class FeedStatusView(APIView):
             "remaining_mg": allowance_result.remaining_mg,
             "remaining_cups": allowance_result.cups,
             "today_total_mg": round(today_total_mg, 1),
+            "daily_limit_mg": DAILY_LIMIT_MG,
             "today_log_count": len(doses),
             "marginal": {
                 "g_pd_min": marginal_result.g_pd_after,

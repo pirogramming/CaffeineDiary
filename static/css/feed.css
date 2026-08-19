@@ -306,6 +306,82 @@
     opacity: 0.9;
 }
 
+/* ---- 일일 권장 상한 초과 확인 모달 ---- */
+
+.cd-limit-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+/* .cd-custom-overlay와 같은 이유(author display:flex가 [hidden]보다 우선 적용)로 명시적으로 감춘다. */
+.cd-limit-overlay[hidden] {
+    display: none;
+}
+
+.cd-limit-card {
+    width: 90%;
+    max-width: 320px;
+    background: var(--cd-cream);
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.cd-limit-card__total {
+    font-family: var(--cd-font-display);
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.4;
+    color: var(--cd-brown-dark);
+    margin-bottom: 10px;
+}
+
+.cd-limit-card__message {
+    font-family: var(--cd-font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--cd-brown-ink);
+    margin-bottom: 24px;
+}
+
+/* 이 잔까지 마시면 일일 권장 상한을 넘는 경우에만 붙는다 */
+.cd-limit-card__message--warning {
+    color: #C0392B;
+}
+
+.cd-limit-card__actions {
+    display: flex;
+    gap: 12px;
+}
+
+.cd-limit-card__btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 999px;
+    font-size: 15px;
+    font-family: var(--cd-font-body);
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+.cd-limit-card__btn:hover { opacity: 0.9; }
+
+.cd-limit-card__btn--no {
+    background: var(--cd-brown-light);
+    color: var(--cd-brown-ink);
+}
+
+.cd-limit-card__btn--yes {
+    background: var(--cd-brown-deep);
+    color: #fff;
+}
+
 
 /* ==========================================================
    반응형 — 화면이 좁아질 때 카드/화살표/옵션 영역 크기 조정

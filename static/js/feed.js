@@ -15,18 +15,26 @@ function formatCutoffTime(isoString) {
 // 이 선언이 그보다 위에 있어야 한다.
 let selectedDrink = null;
 
+// 오늘 누적 섭취량/일일 상한 — loadCutoffTime()이 갱신하고, "한잔 마시기" 클릭 시
+// 이 잔까지 마시면 상한을 넘는지 미리 계산하는 데 쓴다(logSelectedDrink 참고).
+let todayTotalMg = 0;
+let dailyLimitMg = 400;
+
 // /feed-status/의 warnings(CUTOFF_EXCEEDED, DAILY_LIMIT_EXCEEDED, MARGINAL_EFFECT —
 // 뒤의 둘은 CALC-006 한계효용 판정)를 마감시간 문구 위에 빨간 글씨로 띄운다.
+// DAILY_LIMIT_EXCEEDED는 여기서 상시로 보여주는 대신, "한잔 마시기"를 누르는 순간
+// 확인 모달(cd-limit-overlay)로 옮겼다 — 배너에 줄이 계속 늘어나는 게 지저분해서.
 function renderFeedWarnings(warnings) {
   const el = document.getElementById('cd-feed-warning');
   if (!el) return;
 
-  if (!Array.isArray(warnings) || !warnings.length) {
+  const bannerWarnings = (warnings || []).filter((w) => w.code !== 'DAILY_LIMIT_EXCEEDED');
+  if (!bannerWarnings.length) {
     el.hidden = true;
     el.textContent = '';
     return;
   }
-  el.textContent = warnings.map((w) => w.message).join('  ');
+  el.textContent = bannerWarnings.map((w) => w.message).join('  ');
   el.hidden = false;
 }
 
@@ -66,6 +74,9 @@ async function loadCutoffTime() {
     if (labelEl) labelEl.textContent = '이미 임계치를 넘었어요! '; // 메시지 써 있던 곳
     el.textContent = 'STOP!'; // 시간 써 있던 곳
   }
+
+  if (typeof data.today_total_mg === 'number') todayTotalMg = data.today_total_mg;
+  if (typeof data.daily_limit_mg === 'number') dailyLimitMg = data.daily_limit_mg;
 
   renderFeedWarnings(data.warnings);
 }
@@ -148,12 +159,7 @@ document.getElementById('cd-feed-fav-row')?.addEventListener('click', (e) => {
 
 // 한잔 마시기 — 선택된 음료로 POST /caffeine-logs/를 호출해 기록을 남기고,
 // 서버 calcs 엔진이 반영한 새 마감시간을 다시 불러온다.
-bigDrinkBtn?.addEventListener('click', async () => {
-  if (!selectedDrink) {
-    alert('즐겨찾는 음료를 먼저 선택해주세요.');
-    return;
-  }
-
+async function logSelectedDrink() {
   const res = await apiFetch('/caffeine-logs/', {
     method: 'POST',
     body: JSON.stringify({ drink_id: selectedDrink.id }),
@@ -165,6 +171,52 @@ bigDrinkBtn?.addEventListener('click', async () => {
   }
 
   await loadCutoffTime();
+}
+
+// 한잔 마시기 재확인 모달 — "한잔 마시기"를 누를 때마다 뜬다. 이 잔까지 마시면
+// 오늘 누적량이 일일 권장 상한을 넘는 경우에만 메시지가 경고 문구로 바뀐다.
+const limitOverlay = document.getElementById('cd-limit-overlay');
+const limitCurrentMgEl = document.getElementById('cd-limit-current-mg');
+const limitDrinkMgEl = document.getElementById('cd-limit-drink-mg');
+const limitMessageEl = document.getElementById('cd-limit-message');
+
+// currentMg: 오늘 지금까지 마신 양. drinkMg: 지금 고른 음료가 더할 양.
+function openLimitConfirmModal(currentMg, drinkMg) {
+  if (!limitOverlay) return;
+  if (limitCurrentMgEl) limitCurrentMgEl.textContent = Math.round(currentMg);
+  if (limitDrinkMgEl) limitDrinkMgEl.textContent = Math.round(drinkMg);
+
+  const isOverLimit = currentMg + drinkMg >= dailyLimitMg;
+  if (limitMessageEl) {
+    limitMessageEl.textContent = isOverLimit
+      ? `일일 권장 상한(${dailyLimitMg}mg)을 초과해요. 그래도 마실까요?`
+      : '이 음료를 마신 걸로 기록할까요?';
+    limitMessageEl.classList.toggle('cd-limit-card__message--warning', isOverLimit);
+  }
+
+  limitOverlay.hidden = false;
+}
+
+function closeLimitConfirmModal() {
+  if (limitOverlay) limitOverlay.hidden = true;
+}
+
+document.getElementById('cd-limit-no')?.addEventListener('click', closeLimitConfirmModal);
+document.getElementById('cd-limit-yes')?.addEventListener('click', async () => {
+  closeLimitConfirmModal();
+  await logSelectedDrink();
+});
+limitOverlay?.addEventListener('click', (e) => {
+  if (e.target === limitOverlay) closeLimitConfirmModal();
+});
+
+bigDrinkBtn?.addEventListener('click', () => {
+  if (!selectedDrink) {
+    alert('즐겨찾는 음료를 먼저 선택해주세요.');
+    return;
+  }
+
+  openLimitConfirmModal(todayTotalMg, selectedDrink.caffeine_mg);
 });
 
 // 커스텀 마시기 — 즐겨찾기에 없는 음료를 이름+카페인량 직접 입력으로 기록한다.

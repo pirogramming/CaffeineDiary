@@ -198,6 +198,25 @@
     align-items: start; 
 }
 
+.option_search {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 14px;
+    padding: 8px 14px;
+    border: 1px solid var(--cd-brown-light);
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: var(--cd-font-body);
+    color: var(--cd-brown-ink);
+    background: #fff;
+}
+.option_search:focus { outline: none; border-color: var(--cd-brown-dark); }
+
+/* .option_item은 display:flex라 브라우저 기본 [hidden]{display:none}보다
+   우선 적용돼(feed.js의 같은 이슈 참고) hidden 속성만으로는 안 감춰진다. */
+.option_item[hidden] { display: none; }
+
 .overlay_step--list .option_item {
     padding: 12px 10px;
     border: 1px solid var(--cd-brown-light);

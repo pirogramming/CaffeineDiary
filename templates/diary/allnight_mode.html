@@ -13,13 +13,13 @@
 <body class="allnight_page">
     <header class="allnight_header">
         <div class="logo">
-            <div class="logotext">
+            <a href="{% url 'diary:feed' %}" class="logotext" aria-label="Caffeine Diary 메인으로">
                 <img src="{% static 'images/diary-logo.svg' %}" alt="" class="logotext__icon">
                 <div class="logotext__words">
                     <span>caffeine</span>
                     <span>diary</span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <button type="button" class="nav_toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기">

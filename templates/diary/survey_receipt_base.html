@@ -15,6 +15,8 @@
 
       <p class="cd-receipt__question">{% block survey_question %}{% endblock %}</p>
 
+      {% block survey_search %}{% endblock %}
+
       <!-- 옵션은 각 뷰의 get_context_data가 (value, label) 튜플 목록으로 내려준다. -->
       <ul class="cd-receipt__options" data-survey-options>
         {% for value, label in options %}
