@@ -2,6 +2,8 @@
  * favorites.js — 즐겨찾는 음료(최대 3개) 목록을 GET /users/me/drinks/로 채우고,
  * "추가"/"수정" 오버레이(종류→브랜드→메뉴→사이즈→아이콘)로 선택한 프리셋을
  * POST .../from-preset/(추가) 또는 PATCH .../<id>/(교체)로 저장한다.
+ * 브랜드 단계에서 "직접입력"을 고르면 메뉴/사이즈 프리셋 단계 대신 자유 입력
+ * 폼으로 가고, POST/PATCH .../drinks/(직접입력 전용 엔드포인트)로 저장한다.
  */
 (function () {
   const listEl = document.getElementById('favorite-drinks-list');
@@ -14,12 +16,20 @@
     brand: overlay.querySelector('[data-step="2"]'),
     menu: overlay.querySelector('[data-step="3"]'),
     size: overlay.querySelector('[data-step="4"]'),
+    custom: overlay.querySelector('[data-step="custom"]'),
     icon: overlay.querySelector('[data-step="5"]'),
   };
+
+  const customBrandInput = document.getElementById('custom-brand-input');
+  const customNameInput = document.getElementById('custom-name-input');
+  const customSizeInput = document.getElementById('custom-size-input');
+  const customCaffeineInput = document.getElementById('custom-caffeine-input');
+  const customNextBtn = document.getElementById('wizard-custom-next-btn');
 
   let wizard = {
     mode: 'add', editingId: null,
     type: null, brand: null, name: null, size: null, iconKey: null,
+    customBrandName: '', caffeineMg: null,
     presetsForType: [],
   };
 
@@ -123,6 +133,7 @@
     wizard = {
       mode, editingId: editingId ?? null,
       type: null, brand: null, name: null, size: null, iconKey: null,
+      customBrandName: '', caffeineMg: null,
       presetsForType: [],
     };
     steps.type.querySelectorAll('.option_item').forEach((el) => el.classList.remove('is-selected'));
@@ -130,6 +141,10 @@
     clearOptionList(steps.menu);
     clearOptionList(steps.size);
     clearOptionList(steps.icon);
+    customBrandInput.value = '';
+    customNameInput.value = '';
+    customSizeInput.value = '';
+    customCaffeineInput.value = '';
     showStep('type');
     overlay.style.display = 'flex';
   }
@@ -144,7 +159,9 @@
 
     const seen = new Map();
     wizard.presetsForType.forEach((p) => { if (!seen.has(p.brand)) seen.set(p.brand, p.brand_name); });
-    renderOptionList(steps.brand, [...seen.entries()].map(([value, label]) => ({ value, label })), (value) => {
+    const options = [...seen.entries()].map(([value, label]) => ({ value, label }));
+    options.push({ value: 'custom', label: '직접입력' });
+    renderOptionList(steps.brand, options, (value) => {
       wizard.brand = value;
     });
   }
@@ -187,7 +204,21 @@
 
   async function saveDrink() {
     let res;
-    if (wizard.mode === 'add') {
+    if (wizard.brand === 'custom') {
+      const payload = {
+        type: wizard.type,
+        brand: 'custom',
+        custom_brand_name: wizard.customBrandName,
+        name: wizard.name,
+        size: wizard.size,
+        caffeine_mg: wizard.caffeineMg,
+        icon_key: wizard.iconKey,
+        is_favorite: true,
+      };
+      res = wizard.mode === 'add'
+        ? await apiFetch('/users/me/drinks/', { method: 'POST', body: JSON.stringify(payload) })
+        : await apiFetch(`/users/me/drinks/${wizard.editingId}/`, { method: 'PATCH', body: JSON.stringify(payload) });
+    } else if (wizard.mode === 'add') {
       res = await apiFetch('/users/me/drinks/from-preset/', {
         method: 'POST',
         body: JSON.stringify({
@@ -237,8 +268,28 @@
 
   steps.brand.querySelector('.next_btn').addEventListener('click', () => {
     if (!wizard.brand) { alert('브랜드를 선택해주세요.'); return; }
+    if (wizard.brand === 'custom') {
+      showStep('custom');
+      return;
+    }
     loadMenuOptions();
     showStep('menu');
+  });
+
+  customNextBtn.addEventListener('click', () => {
+    const name = customNameInput.value.trim();
+    const caffeine = Number(customCaffeineInput.value);
+    if (!name) { alert('음료 이름을 입력해주세요.'); return; }
+    if (!customCaffeineInput.value || !(caffeine > 0 && caffeine <= 1000)) {
+      alert('카페인 함량을 1~1000mg 사이로 입력해주세요.');
+      return;
+    }
+    wizard.customBrandName = customBrandInput.value.trim();
+    wizard.name = name;
+    wizard.size = customSizeInput.value.trim();
+    wizard.caffeineMg = caffeine;
+    loadIconOptions();
+    showStep('icon');
   });
 
   steps.menu.querySelector('.next_btn').addEventListener('click', () => {
