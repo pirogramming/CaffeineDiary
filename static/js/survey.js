@@ -39,4 +39,24 @@ document.querySelectorAll('[data-survey-options]').forEach((list) => {
     customInput.readOnly = !customRadio.checked;
     if (customRadio.checked) customInput.focus();
   });
+
+  // 검색창(현재는 메뉴 단계만 있음)이 있으면, 글자가 입력될 때마다(input 이벤트)
+  // 옵션 목록을 실시간으로 필터링한다. "내가 직접 입력"과 빈 목록 안내는 검색 대상에서 뺀다.
+  const searchInput = list.closest('.cd-receipt__content')?.querySelector('[data-survey-search]');
+  if (searchInput) {
+    const items = list.querySelectorAll(
+      '.cd-receipt__option:not(.cd-receipt__option--custom):not(.cd-receipt__option--empty)'
+    );
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      items.forEach((item) => {
+        item.hidden = q.length > 0 && !item.textContent.trim().toLowerCase().includes(q);
+      });
+    });
+    // 검색창이 <form id="cd-receipt-form"> 안에 있어서, 엔터를 치면 필터링 대신
+    // 폼이 그대로 제출(다음 단계로 이동)돼버린다 — 검색 중엔 그걸 막는다.
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') e.preventDefault();
+    });
+  }
 });
