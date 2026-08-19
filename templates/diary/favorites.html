@@ -64,6 +64,30 @@
             <button type="button" class="next_btn" data-next="icon">다음</button>
         </div>
 
+        <!-- 2단계에서 "직접입력"을 고르면 메뉴/사이즈 프리셋 단계를 건너뛰고 여기로 온다 -->
+        <div class="overlay_step overlay_step--custom" data-step="custom" style="display:none;">
+            <h3>음료 정보를 입력해주세요</h3>
+            <div class="custom_form">
+                <label>
+                    <span>브랜드명 (선택)</span>
+                    <input type="text" id="custom-brand-input" placeholder="예: GS25" maxlength="100" autocomplete="off">
+                </label>
+                <label>
+                    <span>음료 이름</span>
+                    <input type="text" id="custom-name-input" placeholder="예: 아메리카노" maxlength="100" autocomplete="off">
+                </label>
+                <label>
+                    <span>사이즈 (선택)</span>
+                    <input type="text" id="custom-size-input" placeholder="예: M" maxlength="50" autocomplete="off">
+                </label>
+                <label>
+                    <span>카페인 함량 (mg)</span>
+                    <input type="number" id="custom-caffeine-input" placeholder="예: 150" min="1" max="1000" inputmode="numeric">
+                </label>
+            </div>
+            <button type="button" class="next_btn" id="wizard-custom-next-btn">다음</button>
+        </div>
+
         <!-- 5단계: 아이콘 선택 -->
         <div class="overlay_step overlay_step--icons" data-step="5" style="display:none;">
             <h3>아이콘을 선택하세요</h3>

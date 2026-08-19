@@ -198,6 +198,53 @@
     align-items: start; 
 }
 
+.custom_form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    /* 모달 배경(카드 svg)이 고정 비율이라, 폼이 카드 영역보다 커지면
+       카드 밖으로 삐져나간다. 카드 안에서 자체 스크롤되도록 높이를 제한한다. */
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.custom_form::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom_form::-webkit-scrollbar-thumb {
+    background-color: var(--cd-brown-light);
+    border-radius: 10px;
+}
+
+.custom_form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--cd-brown-ink);
+    text-align: left;
+}
+
+.custom_form input {
+    padding: 8px 14px;
+    border: 1px solid var(--cd-brown-light);
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: var(--cd-font-body);
+    color: var(--cd-brown-ink);
+    background: #fff;
+}
+
+.custom_form input:focus {
+    outline: none;
+    border-color: var(--cd-brown-dark);
+}
+
 .option_search {
     display: block;
     width: 100%;
@@ -390,6 +437,10 @@
 
     .overlay_step--list .option_list {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .custom_form {
+        max-width: 100%;
     }
 
     .option_item img {
