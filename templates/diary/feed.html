@@ -79,6 +79,19 @@
     <button type="button" class="cd-custom-submit" id="cd-custom-submit">기록하기</button>
   </div>
 </div>
+
+<!-- 한잔 마시기 재확인 — 매번 뜨고, 이 잔까지 마시면 일일 권장 상한을 넘는 경우엔
+     메시지가 경고 문구로 바뀐다(feed.js openLimitConfirmModal 참고) -->
+<div class="cd-limit-overlay" id="cd-limit-overlay" hidden>
+  <div class="cd-limit-card">
+    <p class="cd-limit-card__total">지금까지 <span id="cd-limit-current-mg">0</span>mg + 이 잔 <span id="cd-limit-drink-mg">0</span>mg</p>
+    <p class="cd-limit-card__message" id="cd-limit-message">이 음료를 마신 걸로 기록할까요?</p>
+    <div class="cd-limit-card__actions">
+      <button type="button" class="cd-limit-card__btn cd-limit-card__btn--no" id="cd-limit-no">아니오</button>
+      <button type="button" class="cd-limit-card__btn cd-limit-card__btn--yes" id="cd-limit-yes">예</button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
