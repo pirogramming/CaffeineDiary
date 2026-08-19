@@ -73,6 +73,11 @@ form?.addEventListener('submit', async (event) => {
     // 404(PROFILE_NOT_FOUND)를 받고 다시 튕겨나가므로 여기서 먼저 걸러낸다.
     // 기존 '/sleep-logs'는 페이지가 아니라 API 경로라 브라우저로 들어가면 깨진다.
     if (mode === 'signup') {
+        // "회원가입 → feed 진입" 흐름이라는 표시를 남겨둔다. sleep-logs/time·rating을
+        // 포함한 초기 설문 흐름을 다 거쳐 /feed/에 도착했을 때 온보딩 투어(tour.js)가
+        // 뜨게 하려는 것 — daily_rating.js가 이 값을 보고 /feed/?first_visit=1로
+        // 보낸 뒤 이 표시를 지운다.
+        sessionStorage.setItem('cd_pending_tour', '1');
         window.location.href = '/initial_survey';
     } else {
         window.location.href = data.has_profile ? '/feed/' : '/initial_survey';

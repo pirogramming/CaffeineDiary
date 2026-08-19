@@ -1,7 +1,6 @@
 /**
- * daily_rating.js — 수면 평점 (SLEEP-002 / POST /sleep-logs)
- * API가 1~5만 허용하므로, 아무것도 안 고른 상태(0)로는 제출을 막는다.
- * 이전 화면(daily_time.html)에서 datetime-local로 받아 sessionStorage에 저장해둔 값을 그대로 꺼내 쓴다.
+ * daily_rating.js — 수면 체크인 원두 평점 (SLEEP-002 / POST /sleep-logs)
+ * 원두 5개를 1~5로 매핑한 라디오. API가 1~5만 허용하므로, 아무것도 안 고른 상태(0)로는 제출을 막는다.
  */
 
 function getCookie(name) {
@@ -102,7 +101,13 @@ document.getElementById('cdDailyRatingForm')?.addEventListener('submit', async (
     // TODO: data.threshold_mg / personalization_weight 등을 화면에 반영하고 싶으면 여기서 사용
     sessionStorage.removeItem('cd_daily_actual_bedtime');
     sessionStorage.removeItem(RATING_STORAGE_KEY);
-    window.location.href = '/feed/';
+
+    // 회원가입 직후 흐름으로 여기까지 온 경우에만(=auth.js가 남겨둔 표시가
+    // 있을 때만) 온보딩 투어를 위한 쿼리를 붙인다. 평소 반복되는 수면설문
+    // 완료 시엔 이 표시가 없어서 그냥 /feed/로만 이동한다.
+    const isFirstSignupFlow = sessionStorage.getItem('cd_pending_tour') === '1';
+    sessionStorage.removeItem('cd_pending_tour');
+    window.location.href = isFirstSignupFlow ? '/feed/?first_visit=1' : '/feed/';
     return;
   }
 
