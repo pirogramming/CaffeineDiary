@@ -140,12 +140,7 @@ finishBtn?.addEventListener('click', async () => {
     window.location.href = '/feed/';
 });
 
-// 오늘의 스케줄 토글 — collapsed 클래스를 켜고 끄면 allnight_mode.css의
-// max-height 트랜지션으로 접히고 펼쳐진다.
-scheduleToggle?.addEventListener('click', () => {
-    scheduleToggle.classList.toggle('collapsed');
-    scheduleListEl.classList.toggle('collapsed');
-});
+// "오늘의 스케줄"은 접지 않고 항상 펼쳐진 상태로 둔다(토글 제거).
 
 refresh().then(() => {
     tickTimer = setInterval(tick, 1000);
