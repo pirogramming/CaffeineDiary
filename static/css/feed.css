@@ -42,7 +42,8 @@
     font-size: 14px;
     font-weight: 500;
     color: #C0392B;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    white-space: pre-line;
 }
 
 .cd-feed-hero__label {
@@ -139,7 +140,7 @@
     z-index: 1; /* 즐겨찾는 음료 선택 시 아이콘(cd-feed-cup__selected-icon) 위에 글자가 뜨도록 */
     /* 즐겨찾는 음료 아이콘마다 배경색이 달라 글자색 하나로는 대비가 보장되지 않는다.
        옅은 크림색 알약 배경을 깔아 어떤 아이콘 위에서도 항상 읽히게 한다. */
-    background: rgba(244, 239, 233, 0.88); /* --cd-cream 반투명 */
+    background: rgba(238, 225, 217, 0.88); /* --cd-cream 반투명 */
     border-radius: 999px;
     padding: 4px 14px;
 }
@@ -152,6 +153,7 @@
    "한잔 마시기" 글자(.cd-feed-cup__label)는 그대로 겹쳐 유지된다. */
 .cd-feed-cup__selected-icon {
     position: absolute;
+    padding: 10px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -165,12 +167,13 @@
 
 /* 버튼 하단에 뜨는 선택된 음료 이름 */
 .cd-feed-cup__selected-name {
-    margin-top: var(--cd-space-2, 8px);
+    margin-top: 8px;
     text-align: center;
     font-family: var(--cd-font-body);
     font-size: 16px;
     color: var(--cd-brown-dark);
     word-break: keep-all;
+    margin-bottom: 15px;
 }
 
 /* ---- 작은 컵들: 즐겨찾는 음료 3개 ---- */

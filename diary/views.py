@@ -352,11 +352,11 @@ class FeedStatusView(APIView):
             )
         if marginal_result.over_daily_limit:
             warnings.append(
-                {"code": "DAILY_LIMIT_EXCEEDED", "message": "일일 권장 상한을 초과했습니다."}
+                {"code": "DAILY_LIMIT_EXCEEDED", "message": "\n 일일 권장 상한을 초과했습니다."}
             )
         elif marginal_result.negligible:
             warnings.append(
-                {"code": "MARGINAL_EFFECT", "message": "추가 섭취는 각성 효과가 거의 없습니다."}
+                {"code": "MARGINAL_EFFECT", "message": "\n 추가 섭취는 각성 효과가 거의 없습니다."}
             )
 
         cutoff_at_local = timezone.localtime(cutoff_result.cutoff_at) if cutoff_result.cutoff_at else None

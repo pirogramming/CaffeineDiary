@@ -26,7 +26,7 @@ function renderFeedWarnings(warnings) {
     el.textContent = '';
     return;
   }
-  el.textContent = warnings.map((w) => w.message).join(' · ');
+  el.textContent = warnings.map((w) => w.message).join('  ');
   el.hidden = false;
 }
 
@@ -35,6 +35,7 @@ function renderFeedWarnings(warnings) {
 // 선택된 음료가 없으면(페이지 첫 로드) 기존처럼 서버 기본값(가장 최근 즐겨찾기)을 쓴다.
 async function loadCutoffTime() {
   const el = document.getElementById('cd-feed-cutoff-time');
+  const labelEl = document.getElementById('cd-feed-label');
   if (!el) return;
 
   const query = selectedDrink
@@ -58,7 +59,14 @@ async function loadCutoffTime() {
     return;
   }
 
-  el.textContent = data.cutoff_at ? formatCutoffTime(data.cutoff_at) : '-';
+  if (data.cutoff_at) {
+    if (labelEl) labelEl.textContent = '오늘의 카페인 마감 시간은';
+    el.textContent = formatCutoffTime(data.cutoff_at);
+  } else {
+    if (labelEl) labelEl.textContent = '이미 임계치를 넘었어요! '; // 메시지 써 있던 곳
+    el.textContent = 'STOP!'; // 시간 써 있던 곳
+  }
+
   renderFeedWarnings(data.warnings);
 }
 
