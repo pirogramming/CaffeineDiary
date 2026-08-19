@@ -39,6 +39,19 @@
         <label for="cd-survey-weight">몸무게:</label>
         <input type="number" id="cd-survey-weight" name="body_weight_kg" class="cd-survey-final__input" placeholder="여기에 입력해주세요" step="0.1" required>
       </div>
+
+      {% if needs_custom_caffeine %}
+      <!-- 이전 단계 중 하나라도 "직접 입력"이라 카탈로그에서 카페인량을 못 찾은
+           경우에만 뜬다(diary.views.SurveySleepView.get_context_data 참고). -->
+      <div class="cd-survey-final__custom-caffeine">
+        <label for="cd-survey-custom-caffeine">'{{ custom_drink_name }}'의 카페인 함량(mg):</label>
+        <input type="number" id="cd-survey-custom-caffeine" name="custom_caffeine_mg" placeholder="예: 150" min="1" max="1000" step="1" required>
+      </div>
+      {% endif %}
+
+      {% if errors %}
+      <p class="cd-survey-final__error">입력값을 확인해주세요. 카페인 함량은 1~1000mg 사이의 숫자로 입력해주세요.</p>
+      {% endif %}
     </div>
 
     <!-- 화살표(prev/content) 아래에 별도로 배치된 제출 버튼 -->

@@ -495,6 +495,21 @@ class SurveyStartView(LoginRequiredMixin, RedirectView):
     pattern_name = "diary:survey-category"
 
 
+def _resolved_survey_choice(request):
+    """설문 receipt 단계 공통: "직접 입력"을 골랐으면 choice가 아니라 custom_value를 쓴다.
+
+    survey_receipt_base.html의 커스텀 라디오는 value="custom"이 고정값이라,
+    choice를 그대로 세션에 저장하면 사용자가 실제로 타이핑한 텍스트가 사라지고
+    문자열 "custom"만 남는다(과거 버그: 이 값으로 프리셋을 찾다 실패해 설문
+    처음으로 튕겨나감). "직접 입력"을 고르고도 빈 채로 제출하면 그냥 빈 문자열이
+    되어 아래 all([...]) 체크에서 걸러진다.
+    """
+    choice = request.POST.get("choice")
+    if choice == "custom":
+        return (request.POST.get("custom_value") or "").strip()
+    return choice
+
+
 class SurveyCategoryView(LoginRequiredMixin, TemplateView):
     """1단계: 음료 카테고리 선택. 첫 단계라 prev_url을 안 넣는다 """
 
@@ -507,7 +522,7 @@ class SurveyCategoryView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        request.session["survey_category"] = request.POST.get("choice")
+        request.session["survey_category"] = _resolved_survey_choice(request)
         for key in ("survey_brand", "survey_menu", "survey_size"):
             request.session.pop(key, None)
         return redirect("diary:survey-brand")
@@ -531,7 +546,7 @@ class SurveyBrandView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        request.session["survey_brand"] = request.POST.get("choice")
+        request.session["survey_brand"] = _resolved_survey_choice(request)
         for key in ("survey_menu", "survey_size"):
             request.session.pop(key, None)
         return redirect("diary:survey-menu")
@@ -556,7 +571,7 @@ class SurveyMenuView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        request.session["survey_menu"] = request.POST.get("choice")
+        request.session["survey_menu"] = _resolved_survey_choice(request)
         request.session.pop("survey_size", None)
         return redirect("diary:survey-size")
 
@@ -580,20 +595,51 @@ class SurveySizeView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        request.session["survey_size"] = request.POST.get("choice")
+        request.session["survey_size"] = _resolved_survey_choice(request)
         return redirect("diary:survey-sleep")
 
 
 class SurveySleepView(LoginRequiredMixin, TemplateView):
+    """설문 마지막 단계: 취침시각·몸무게 + (프리셋을 못 찾았으면) 카페인량을 직접 받아
+    세션에 쌓인 선택값과 함께 프로필+즐겨찾는 음료를 생성한다.
+
+    이전 단계 중 하나라도 "직접 입력"이었으면(_resolved_survey_choice) 카탈로그에
+    없는 조합이라 find_preset이 항상 실패한다 — 예전엔 이 경우 설문 처음으로
+    되돌려보냈지만(버그), 이제는 이 화면에 카페인량 입력창을 추가로 띄워서 그
+    값으로 즐겨찾는 음료를 만든다.
+    """
+
     login_url = "/auth/login"
     template_name = "diary/survey_sleep.html"
 
-    def post(self, request, *args, **kwargs):
-        """설문 마지막 단계: 세션에 쌓인 선택값 + 이 화면의 입력을 묶어 프로필을 생성한다.
+    @staticmethod
+    def _resolve_preset(request):
+        """세션에 쌓인 선택값으로 프리셋을 찾는다. 직접입력 경로면 못 찾는 게 정상이다.
 
         직전 단계들의 session 값(survey_size)은 사이즈 코드라서, find_preset이
         요구하는 라벨로 한 번 바꿔야 한다.
+
+        Returns:
+            tuple[dict|None, str|None]: (프리셋 또는 None, 참고용 메뉴명)
         """
+        brand = request.session.get("survey_brand")
+        menu = request.session.get("survey_menu")
+        size_code = request.session.get("survey_size")
+
+        size = next((s for s in sizes_for_drink(brand, menu) if s["code"] == size_code), None)
+        preset = find_preset(brand, menu, size["label"]) if size else None
+        if preset is None or preset["caffeine_mg"] is None:
+            return None, menu
+        return preset, menu
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        preset, menu = self._resolve_preset(self.request)
+        context["needs_custom_caffeine"] = preset is None
+        context["custom_drink_name"] = menu or "직접 입력한 음료"
+        return context
+
+    def post(self, request, *args, **kwargs):
         category = request.session.get("survey_category")
         brand = request.session.get("survey_brand")
         menu = request.session.get("survey_menu")
@@ -601,16 +647,22 @@ class SurveySleepView(LoginRequiredMixin, TemplateView):
         if not all([category, brand, menu, size_code]):
             return redirect("diary:survey-category")
 
-        size = next((s for s in sizes_for_drink(brand, menu) if s["code"] == size_code), None)
-        preset = find_preset(brand, menu, size["label"]) if size else None
-        if preset is None or preset["caffeine_mg"] is None:
-            return redirect("diary:survey-category")
+        preset, _ = self._resolve_preset(request)
+
+        if preset is not None:
+            drink = {"name": preset["name"], "caffeine_mg": preset["caffeine_mg"]}
+        else:
+            # 직접입력 경로 — 카탈로그에 없으니 이 화면에서 입력받은 값을 쓴다.
+            drink = {
+                "name": menu or "직접 입력한 음료",
+                "caffeine_mg": request.POST.get("custom_caffeine_mg"),
+            }
 
         serializer = UserProfileSerializer(
             data={
                 "target_bedtime": request.POST.get("target_bedtime"),
                 "body_weight_kg": request.POST.get("body_weight_kg"),
-                "drinks": [{"name": preset["name"], "caffeine_mg": preset["caffeine_mg"]}],
+                "drinks": [drink],
             },
             context={"request": request},
         )
@@ -619,6 +671,12 @@ class SurveySleepView(LoginRequiredMixin, TemplateView):
                 serializer.save()
             except IntegrityError:
                 pass  # 이미 프로필이 있으면 그대로 진행
+        else:
+            # 카페인량이 비었거나 범위를 벗어나는 등으로 실패하면, 예전처럼 설문
+            # 처음으로 튕기지 않고 같은 화면에 에러를 보여주고 다시 입력받는다.
+            context = self.get_context_data(**kwargs)
+            context["errors"] = serializer.errors
+            return self.render_to_response(context)
 
         for key in ("survey_category", "survey_brand", "survey_menu", "survey_size"):
             request.session.pop(key, None)
