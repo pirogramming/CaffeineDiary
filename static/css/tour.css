@@ -1,0 +1,121 @@
+/* ==========================================================
+   tour.css — 최초 접속 시 nav바를 하나씩 설명하는 온보딩 투어
+   .cd-tour-spotlight는 실제로 "구멍 뚫린 배경"이 아니라, box-shadow를
+   화면 전체 크기(9999px)로 깔아서 대상 영역만 빼고 전부 어둡게 보이게
+   하는 흔한 트릭이다 — 대상이 바뀔 때마다 위치/크기만 옮기면 된다.
+   ========================================================== */
+
+.cd-tour-spotlight {
+  position: fixed;
+  z-index: 201;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+  transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+  pointer-events: none; /* 시각 효과일 뿐 클릭은 못 받게 */
+}
+
+/* 화면 전체를 덮어서, 투어 중엔 뒤에 있는 nav/콘텐츠를 실수로 못 누르게 막는다.
+   클릭하면(카드를 직접 안 눌러도) 다음 단계로 넘어가게 해서 "클릭해서 계속"과 맞춘다. */
+.cd-tour-catcher {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  cursor: pointer;
+}
+
+.cd-tour-card {
+  position: fixed;
+  z-index: 202;
+  max-width: 320px;
+  cursor: pointer;
+}
+
+.cd-tour-card__skip {
+  position: absolute;
+  z-index: 1;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--cd-cream-soft, #F8F2E9);
+  color: var(--cd-brown-deep, #3E312F);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cd-tour-card__body {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.cd-tour-card__icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+/* 채팅 말풍선 모양 — 왼쪽 아래만 각을 남겨 아이콘 쪽을 가리키는 느낌 */
+.cd-tour-card__bubble {
+  position: relative;
+  background: var(--cd-cream-soft, #F8F2E9);
+  border-radius: 20px 20px 20px 4px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.cd-tour-card__title {
+  font-family: var(--cd-font-body, cursive);
+  font-size: 16px;
+  color: var(--cd-brown-deep, #3E312F);
+  margin: 0 0 6px;
+}
+
+.cd-tour-card__desc {
+  font-size: 13px;
+  color: var(--cd-brown-ink, #362A28);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.cd-tour-card__progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #886f6b;
+  margin: 0;
+}
+
+
+/* ---- 모바일: nav바가 햄버거 메뉴 안에 숨어있어 스포트라이트로 못 가리킨다.
+   스포트라이트 없이, 카드에 "무슨 메뉴에 대한 설명인지" 제목만 보여주고
+   화면 하단 중앙에 고정한다. ---- */
+@media (max-width: 480px) {
+  .cd-tour-card--centered {
+    top: auto !important;
+    bottom: 40px !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 360px;
+  }
+
+  .cd-tour-card--centered .cd-tour-card__body {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cd-tour-card__skip {
+    top: 35px;
+    right: -5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-tour-spotlight { transition: none; }
+}
+
