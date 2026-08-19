@@ -4,64 +4,63 @@
 
 :root {
   /* 소셜 로그인 버튼 색 — 약간 색 조정 */
-    --cd-auth-kakao:  #f2d384;
-    --cd-auth-naver:  #bbde96;
-    --cd-auth-google: #A8C3E0;
+  --cd-auth-kakao: #f2d384;
 }
 
 .cd-auth-body {
-    margin: 0;
-    background: var(--cd-cream);
+  margin: 0;
+  background: var(--cd-cream);
 }
 
 .cd-auth-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--cd-space-5);
-    overflow: auto; 
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cd-space-5);
+  overflow: auto;
 }
 
 /* ---- 고정 크기 무대: 배경 이미지 + 카드 세트 ---- */
 
 .cd-auth__stage {
   position: relative;
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .cd-auth__bg {
   display: block;
-  width: 800px; 
-  height: auto;  /* 원본 비율 유지다 */
+  width: 800px;
+  height: auto;
+  /* 원본 비율 유지다 */
 }
 
 /* ---- 카드: 정중앙에 절대좌표로 고정 ---- */
 
 .cd-auth__paper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 52%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  padding: 10px;
 }
 
 /* ---- 타이틀 ---- */
 
 .cd-auth__title {
-    font-family: 'Kirang Haerang', var(--cd-font-display);
-    font-size: 40px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    text-align: center;
-    margin-top: 20px;
-    color: var(--cd-brown-dark);
+  font-family: 'Kirang Haerang', var(--cd-font-display);
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  text-align: center;
+  margin-top: 20px;
+  color: var(--cd-brown-dark);
 }
 
 .cd-auth__title-underline {
@@ -76,7 +75,8 @@
 .cd-auth__form {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* fields 그룹과 submit 그룹 사이 간격 */
+  gap: 20px;
+  /* fields 그룹과 submit 그룹 사이 간격 */
 }
 
 /* ---- 그룹 1: id / password / 주의사항(에러 메시지) ---- */
@@ -85,9 +85,9 @@
   flex-direction: column;
   gap: 10px;
   font-size: 13px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 /* ---- 그룹 2: 제출 버튼 ---- */
@@ -108,12 +108,20 @@
   padding: 5px 15px 6px 15px;
   width: 250px;
   border: none;
-  background: #F4EFE9; /* 옅은 그레이-크림 입력창 */
+  background: #F4EFE9;
+  /* 옅은 그레이-크림 입력창 */
   color: var(--cd-brown-ink);
   font-family: var(--cd-font-body);
 }
-.cd-auth__input:focus { outline: none; border-color: var(--cd-brown); }
-.cd-auth__input::placeholder { color: #8A7B6E; }
+
+.cd-auth__input:focus {
+  outline: none;
+  border-color: var(--cd-brown);
+}
+
+.cd-auth__input::placeholder {
+  color: #8A7B6E;
+}
 
 .cd-auth__check-btn {
   flex-shrink: 0;
@@ -126,7 +134,10 @@
   font-size: 14px;
   cursor: pointer;
 }
-.cd-auth__check-btn:hover { background: var(--cd-taupe-soft); }
+
+.cd-auth__check-btn:hover {
+  background: var(--cd-taupe-soft);
+}
 
 .cd-auth__hint {
   font-size: 0.8rem;
@@ -148,8 +159,14 @@
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
-.cd-auth__submit:hover { opacity: 0.9; }
-.cd-auth__submit:active { transform: scale(0.98); }
+
+.cd-auth__submit:hover {
+  opacity: 0.9;
+}
+
+.cd-auth__submit:active {
+  transform: scale(0.98);
+}
 
 /* ---- 소셜 로그인 버튼 3종 ---- */
 
@@ -176,16 +193,25 @@
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
-.cd-auth__social-btn:hover { opacity: 0.9; }
-.cd-auth__social-btn:active { transform: scale(0.98); }
 
-.cd-auth__social-btn--kakao  { background: var(--cd-auth-kakao); }
-.cd-auth__social-btn--naver  { background: var(--cd-auth-naver); }
-.cd-auth__social-btn--google { background: var(--cd-auth-google); }
+.cd-auth__social-btn:hover {
+  opacity: 0.9;
+}
+
+.cd-auth__social-btn:active {
+  transform: scale(0.98);
+}
+
+.cd-auth__social-btn--kakao {
+  background: var(--cd-auth-kakao);
+}
 
 @media (prefers-reduced-motion: reduce) {
+
   .cd-auth__submit,
-  .cd-auth__social-btn { transition: none; }
+  .cd-auth__social-btn {
+    transition: none;
+  }
 }
 
 /* ==========================================================
@@ -193,10 +219,18 @@
    ========================================================== */
 
 @media (max-width: 767px) {
-    .cd-auth__bg {width: 650px;}
+  .cd-auth__bg {
+    width: 650px;
+  }
 }
 
 @media (max-width: 480px) {
-    .cd-auth__bg {display: none;}
-    .cd-auth__paper { background-color: #FFF ; padding: 25px 30px 40px;}
+  .cd-auth__bg {
+    display: none;
+  }
+
+  .cd-auth__paper {
+    background-color: #FFF;
+    padding: 25px 30px 40px;
+  }
 }

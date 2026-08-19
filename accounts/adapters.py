@@ -24,6 +24,13 @@ class AccountAdapter(DefaultAccountAdapter):
             return reverse("diary:feed")
         return reverse("diary:survey-start")
 
+    def get_signup_redirect_url(self, request):
+        # 최초 소셜 가입(신규 카카오 등)은 allauth가 get_login_redirect_url이 아니라
+        # 이 메서드를 호출한다. 기본값은 SIGNUP_REDIRECT_URL("/", 마케팅 첫 화면)이라
+        # 온보딩으로 못 가고 로그인/회원가입 선택 화면에 떨어진다. 로그인과 동일하게
+        # 프로필 유무로 분기시킨다(가입 직후엔 프로필이 없으니 온보딩으로 간다).
+        return self.get_login_redirect_url(request)
+
 
 class KakaoSocialAccountAdapter(DefaultSocialAccountAdapter):
     def populate_user(self, request, sociallogin, data):

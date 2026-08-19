@@ -149,7 +149,7 @@ img, svg { display: block; max-width: 100%; }
     position: absolute;
     left: 0; right: 0; bottom: -6px;
     height: 2px;
-    background: var(--cd-brown-deep);
+    background: var(--cd-brown-dark);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.15s ease;

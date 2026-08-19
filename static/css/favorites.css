@@ -1,6 +1,6 @@
 .drink_brand, .drink_name, .drink_size, .drink_caffeine,
 .option_item span, .next_btn, .edit_btn {
-    font-family: var(--cd-font-display);
+    font-family: var(--cd-font-body);
 }
 
 .favorites_page {
@@ -150,7 +150,7 @@
 .overlay_step h3 {
     text-align: center;
     font-size: 32px;
-    margin-top: -40px;
+    margin-top: 20px;
     margin-bottom: 25px;
 }
 
@@ -159,6 +159,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     justify-items: center;
+    height: 150px;
 }
 
 .option_item {
