@@ -206,6 +206,24 @@
   background: var(--cd-auth-kakao);
 }
 
+/* 카카오 로그인 아래의 계정 전환 링크 */
+.cd-auth__alternate {
+  margin-top: 20x;
+  text-align: center;
+}
+
+.cd-auth__alternate-link {
+  color: #8A7B6E;
+  font-family: var(--cd-font-body);
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cd-auth__alternate-link:hover {
+  color: var(--cd-brown-ink);
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .cd-auth__submit,

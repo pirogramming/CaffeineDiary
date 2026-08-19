@@ -43,6 +43,9 @@
           <!-- 카카오만 settings.py에 실제로 설치·설정돼 있어 지금 바로 동작한다. -->
           <a href="/auth/social/kakao/login/" class="cd-auth__social-btn cd-auth__social-btn--kakao">카카오로 로그인하기</a>
         </div>
+        <div class="cd-auth__alternate">
+          {% block auth_alternate %}{% endblock %}
+        </div>
       </div>
     </div>
 
