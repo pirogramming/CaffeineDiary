@@ -77,6 +77,22 @@ class SignupAPITests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("password", res.data["errors"])
 
+    def test_signup_requires_uppercase_letter_in_password(self):
+        """회원가입 비밀번호에는 대문자가 하나 이상 필요하다."""
+        res = self.client.post(
+            self.url, self._body(password="lowercase1!", password_confirm="lowercase1!"), format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("대문자", res.data["errors"]["password"])
+
+    def test_signup_requires_special_character_in_password(self):
+        """회원가입 비밀번호에는 특수문자가 하나 이상 필요하다."""
+        res = self.client.post(
+            self.url, self._body(password="Uppercase1", password_confirm="Uppercase1"), format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("특수문자", res.data["errors"]["password"])
+
     def test_signup_duplicate_username_rejected(self):
         """이미 있는 아이디로 가입하면 409, 새 계정이 생기지 않는다."""
         User.objects.create_user(username="coffeelover", password="pw12345!")
