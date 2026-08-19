@@ -66,6 +66,21 @@ class SignupSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"password_confirm": "비밀번호가 일치하지 않습니다."}
             )
+
+        # Django 기본 검증기는 길이·유사도·단순 숫자 비밀번호만 검사하므로,
+        # 대/소문자·숫자·특수문자 포함 여부는 별도로 확인해야 한다.
+        composition_errors = []
+        if not any(char.islower() for char in password):
+            composition_errors.append("소문자를 하나 이상 포함해주세요.")
+        if not any(char.isupper() for char in password):
+            composition_errors.append("대문자를 하나 이상 포함해주세요.")
+        if not any(char.isdigit() for char in password):
+            composition_errors.append("숫자를 하나 이상 포함해주세요.")
+        if not any(not char.isalnum() for char in password):
+            composition_errors.append("특수문자를 하나 이상 포함해주세요.")
+        if composition_errors:
+            raise serializers.ValidationError({"password": " ".join(composition_errors)})
+
         try:
             validate_password(password)
         except DjangoValidationError as exc:
