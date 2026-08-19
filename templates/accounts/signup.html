@@ -20,6 +20,10 @@
 
 {% block auth_submit_label %}회원가입하기{% endblock %}
 
+{% block auth_alternate %}
+<a href="{% url 'login-page' %}" class="cd-auth__alternate-link">이미 계정이 있으신가요?</a>
+{% endblock %}
+
 {% block extra_js %}
 <script>
   document.getElementById('cd-auth-form')?.setAttribute('data-auth-mode', 'signup');
