@@ -218,3 +218,58 @@
         height: 80px;
     }
 }
+
+/* 카드 안내(?) 아이콘 + 호버 툴팁 -------------------------------------- */
+.card_help {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 6;
+    cursor: help;
+}
+
+.card_help__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--cd-brown-dark);
+    color: var(--cd-brown-dark);
+    font-family: var(--cd-font-body);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    background: transparent;
+}
+
+/* 마우스를 올리면(또는 포커스 시) 뜨는 안내 문구 — 반투명 검정 배경 / 흰 글씨 */
+.card_help__tip {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: max-content;
+    max-width: 200px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-family: var(--cd-font-body);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.card_help:hover .card_help__tip,
+.card_help:focus .card_help__tip,
+.card_help:focus-within .card_help__tip {
+    opacity: 1;
+    visibility: visible;
+}

@@ -21,6 +21,11 @@
             <div class="diary_card">
                 <img src="{% static 'images/todaycaffeine_card.svg' %}" alt="" class="card_bg">
                 <div class="card_title">
+                    <span class="card_help" tabindex="0" role="button" aria-label="오늘의 카페인 안내">
+                        <span class="card_help__icon">?</span>
+                        <span class="card_help__tip">오늘 섭취한 카페인이 시간에 따라 몸에 얼마나 남아있는지 보여줍니다. 점선 아래로 내려가는 시점이 커피 마감시간의 기준이
+                            됩니다.</span>
+                    </span>
                     <h3>오늘의 카페인</h3>
                     <div class="chart_wrapper">
                         <canvas id="todayCaffeineGraph"></canvas>
@@ -31,6 +36,10 @@
             <div class="diary_card">
                 <img src="{% static 'images/yesleep_card.svg' %}" alt="" class="card_bg">
                 <div class="card_title">
+                    <span class="card_help" tabindex="0" role="button" aria-label="어제의 수면 안내">
+                        <span class="card_help__icon">?</span>
+                        <span class="card_help__tip">어제 {user}님이 잠잘때 몸에 남아있던 카페인량과 수면질이에요. 이를 통해 마감시간이 점점 정확해집니다.</span>
+                    </span>
                     <h3>어제의 수면</h3>
                     <div class="chart_wrapper">
                         <canvas id="yesterdaySleepGraph"></canvas>
@@ -42,6 +51,10 @@
         <div class="diary_card wide">
             <img src="{% static 'images/weeklygraph_card.svg' %}" alt="" class="card_bg">
             <div class="card_title">
+                <span class="card_help" tabindex="0" role="button" aria-label="일주일 그래프 안내">
+                    <span class="card_help__icon">?</span>
+                    <span class="card_help__tip">최근 7일간의 햐루 총 카페인섭취량과 수면질이에요.</span>
+                </span>
                 <h3>일주일 그래프</h3>
                 <div class="chart_wrapper">
                     <canvas id="weeklyGraph"></canvas>
