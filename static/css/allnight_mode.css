@@ -36,9 +36,11 @@ body {
 
 .logo {
     position: relative;
+    margin-top: 24px;
 }
 
 .logotext {
+
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -46,17 +48,21 @@ body {
 }
 
 .logotext__icon {
-    width: 36px;
+    width: 50px;
     height: auto;
 }
 
 .logotext__words {
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    display: inline-block;
     color: #F4EFE9;
-    font-family: var(--cd-font-display);
-    font-size: 24px;
-    font-weight: bold;
+    text-align: left;
+    font-family: "Kirang Haerang";
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px; /* 80% */
+    padding: 10px;
 }
 
 nav {
@@ -232,8 +238,8 @@ main {
     grid-template-columns: auto auto;
     justify-content: center;
     align-items: start; /* 회차 블록이 (음료 3종 세로 나열로) 길어져도 시각/본문이 각 행 위쪽에서 나란히 시작하도록 */
-    column-gap: 13em;
-    font-size: 20px;
+    column-gap: 20em;
+    font-size: 18px;
     row-gap: 28px; /* 회차 블록이 여러 줄이 되면서 13px로는 회차끼리 붙어 보여 넓혔다 */
     overflow: hidden;
     max-height: 2000px; /* 회차 블록이 길어진 만큼(기존 500px로는 회차가 많으면 잘림) 여유를 크게 잡음 */
@@ -378,7 +384,7 @@ main {
     }
 
     .toggle_text {
-        font-size: 16px;
+        font-size: 15px;
         padding: 6px 18px;
     }
 
@@ -390,7 +396,7 @@ main {
         column-gap: 0;
         justify-content: start;
         padding-left: 10%;
-        font-size: 15px;
+        font-size: 13px;
     }
 
     .schedule_list.collapsed {
