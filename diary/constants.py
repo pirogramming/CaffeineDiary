@@ -51,7 +51,7 @@ class Brand(models.TextChoices):
 # 값인지 serializer가 검증한다(음료 종류와 안 맞는 아이콘은 못 고르게).
 DRINK_ICON_KEYS = {
     DrinkType.COFFEE: [f"coffee_icon{i}" for i in range(1, 7)],
-    DrinkType.TEA: ["tea_icon"],
+    DrinkType.TEA: ["tea_icon", "tea_icon2", "tea_icon3"],
     DrinkType.ENERGY: [f"energydrink_icon{i}" for i in range(1, 8)],
     DrinkType.SODA: [f"cola_icon{i}" for i in range(1, 3)],
 }
