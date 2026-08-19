@@ -1,57 +1,55 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Caffeine Diary{% endblock %}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Caffeine Diary{% endblock %}</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kirang+Haerang&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet">
 
-<!-- 이 페이지는 base.html(로그인 후 nav 셸)을 상속하지 않는 독립 문서다. -->
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-{% block extra_css %}{% endblock %}
+  <!-- 이 페이지는 base.html(로그인 후 nav 셸)을 상속하지 않는 독립 문서다. -->
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+  {% block extra_css %}{% endblock %}
 </head>
+
 <body class="cd-auth-body">
 
-<main class="cd-auth-page">
+  <main class="cd-auth-page">
 
-  <div class="cd-auth__stage">
-    <img src="{% static 'images/auth_bg_corkboard.png' %}" alt="" class="cd-auth__bg">
+    <div class="cd-auth__stage">
+      <img src="{% static 'images/auth_bg_corkboard.png' %}" alt="" class="cd-auth__bg">
 
-    <div class="cd-auth__paper">
-      <h1 class="cd-auth__title">{% block auth_title %}{% endblock %}</h1>
-      <div class="cd-auth__title-underline"></div>
+      <div class="cd-auth__paper">
+        <h1 class="cd-auth__title">{% block auth_title %}{% endblock %}</h1>
+        <div class="cd-auth__title-underline"></div>
 
-      <form class="cd-auth__form" id="cd-auth-form" novalidate>
-        <div class="cd-auth__fields">
-          {% block auth_fields %}{% endblock %}
-          <p class="cd-field__error" id="cd-auth-error" hidden></p>
+        <form class="cd-auth__form" id="cd-auth-form" novalidate>
+          <div class="cd-auth__fields">
+            {% block auth_fields %}{% endblock %}
+            <p class="cd-field__error" id="cd-auth-error" hidden></p>
+          </div>
+          <div class="cd-auth__submit-wrap">
+            <button type="submit" class="cd-auth__submit">{% block auth_submit_label %}{% endblock %}</button>
+          </div>
+        </form>
+
+        <div class="cd-auth__social">
+          <!-- 카카오만 settings.py에 실제로 설치·설정돼 있어 지금 바로 동작한다. -->
+          <a href="/auth/social/kakao/login/" class="cd-auth__social-btn cd-auth__social-btn--kakao">카카오로 로그인하기</a>
         </div>
-        <div class="cd-auth__submit-wrap">
-          <button type="submit" class="cd-auth__submit">{% block auth_submit_label %}{% endblock %}</button>
-        </div>
-      </form>
-
-      <div class="cd-auth__social">
-        <!-- 카카오만 settings.py에 실제로 설치·설정돼 있어 지금 바로 동작한다. -->
-        <a href="/auth/social/kakao/login/" class="cd-auth__social-btn cd-auth__social-btn--kakao">카카오로 로그인하기</a>
-
-        <!-- TODO: 네이버/구글은 아직 settings.py에 INSTALLED_APPS·SOCIALACCOUNT_PROVIDERS
-             설정이 없어서 지금 누르면 404. 설정 완료되면 href만 실제 경로로 바꾸면 됨
-             (예상 경로: /auth/social/google/login/, /auth/social/naver/login/). -->
-        <a href="#" class="cd-auth__social-btn cd-auth__social-btn--naver" aria-disabled="true">네이버로 로그인하기</a>
-        <a href="#" class="cd-auth__social-btn cd-auth__social-btn--google" aria-disabled="true">구글로 로그인하기</a>
       </div>
     </div>
-  </div>
 
-</main>
+  </main>
 
-<script src="{% static 'js/auth.js' %}"></script>
-{% block extra_js %}{% endblock %}
+  <script src="{% static 'js/auth.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
+
 </html>
