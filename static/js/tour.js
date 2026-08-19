@@ -21,7 +21,12 @@
 
   function shouldRunTour() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('first_visit') === '1';
+    if (params.get('first_visit') === '1') return true;
+    // 회원가입 직후 초기 설문(initial_survey/*)은 일일 수면설문(/sleep-logs/rating,
+    // daily_rating.js)을 거치지 않고 SurveySleepView가 곧장 /feed/로 보내므로
+    // first_visit 파라미터가 붙지 않는다. 그래서 가입 시 auth.js가 심어둔
+    // cd_pending_tour 플래그를 여기서 직접 보고, 초기 설문 경로에서도 투어가 뜨게 한다.
+    return sessionStorage.getItem('cd_pending_tour') === '1';
   }
 
   // 쿼리스트링을 지워서, 새로고침했을 때 투어가 다시 시작되지 않게 한다
@@ -132,6 +137,9 @@
 
   function startTour() {
     if (!shouldRunTour()) return;
+    // 어느 경로(파라미터 / 세션 플래그)로 들어왔든 투어는 최초 1회만. 새로고침·
+    // 재방문에 다시 뜨지 않도록 두 신호를 모두 소비한다(플래그 제거 + URL 정리).
+    sessionStorage.removeItem('cd_pending_tour');
     buildDom();
     renderStep();
     cleanUrl();
