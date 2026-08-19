@@ -38,7 +38,8 @@
                 <div class="card_title">
                     <span class="card_help" tabindex="0" role="button" aria-label="어제의 수면 안내">
                         <span class="card_help__icon">?</span>
-                        <span class="card_help__tip">어제 {user}님이 잠잘때 몸에 남아있던 카페인량과 수면질이에요. 이를 통해 마감시간이 점점 정확해집니다.</span>
+                        <span class="card_help__tip">어제 {{ request.user.profile.nickname|default:request.user.username }}님이 잠잘때 몸에 남아있던 카페인량과 수면질이에요. 이를 통해
+                            마감시간이 점점 정확해집니다.</span>
                     </span>
                     <h3>어제의 수면</h3>
                     <div class="chart_wrapper">

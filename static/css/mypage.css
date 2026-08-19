@@ -79,7 +79,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap:40%; 
+    gap: 40%;
     margin-bottom: 10px;
 }
 
@@ -107,6 +107,37 @@
 #mypage-nickname {
     font-family: var(--cd-font-display);
     font-size: 45px;
+}
+
+.mypage_nickname_edit {
+    display: inline-flex;
+    align-items: center;
+    border-bottom: 2px solid #403C31;
+    vertical-align: middle;
+    font-family: var(--cd-font-display);
+    font-size: 45px;
+    font-weight: bold;
+    color: #403C31;
+}
+
+.mypage_nickname_edit[hidden] {
+    display: none;
+}
+
+.mypage_nickname_input {
+    width: 7ch;
+    box-sizing: content-box;
+    /* input은 브라우저가 기본 폰트로 되돌리지 않도록 직접 지정한다. */
+    font-family: 'Kirang Haerang', 'Baloo 2', cursive;
+    font-size: 45px;
+    font-weight: bold;
+    line-height: 1.2;
+    color: #403C31;
+    border: none;
+    outline: none;
+    text-align: center;
+    padding: 0 2px;
+    background: transparent;
 }
 
 .edit_wrap {
@@ -245,6 +276,14 @@
         font-size: 28px;
     }
 
+    .mypage_nickname_edit {
+        font-size: 28px;
+    }
+
+    .mypage_nickname_input {
+        font-size: 28px;
+    }
+
     .mypage_title h2 span {
         font-size: 16px;
     }
@@ -277,8 +316,17 @@
 
 
 @media (max-width: 480px) {
+
     .mypage_title h2,
     #mypage-nickname {
+        font-size: 22px;
+    }
+
+    .mypage_nickname_edit {
+        font-size: 22px;
+    }
+
+    .mypage_nickname_input {
         font-size: 22px;
     }
 

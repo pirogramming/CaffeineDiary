@@ -20,7 +20,14 @@
 
         <div class="mypage_content">
             <div class="mypage_title">
-                <h2><span id="mypage-nickname">닉네임</span> <span>님</span></h2>
+                <h2>
+                    <span id="mypage-nickname">닉네임</span>
+                    <span id="mypage-nickname-edit" class="mypage_nickname_edit" hidden>
+                        <input type="text" id="mypage-nickname-input" class="mypage_nickname_input" maxlength="150"
+                            aria-label="닉네임">
+                    </span>
+                    <span>님</span>
+                </h2>
                 <div class="edit_wrap">
                     <img src="{% static 'images/edit_btn.svg' %}" alt="" class="edit_btn_bg">
                     <button class="edit_btn" id="mypage-edit-btn">
