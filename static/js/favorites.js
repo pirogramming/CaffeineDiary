@@ -174,7 +174,7 @@
     const seen = new Map();
     wizard.presetsForType.forEach((p) => { if (!seen.has(p.brand)) seen.set(p.brand, p.brand_name); });
     const options = [...seen.entries()].map(([value, label]) => ({ value, label }));
-    options.push({ value: 'custom', label: '직접입력' });
+    options.unshift({ value: 'custom', label: '직접입력' });
     renderOptionList(steps.brand, options, (value) => {
       wizard.brand = value;
     });
@@ -185,7 +185,7 @@
       wizard.presetsForType.filter((p) => p.brand === wizard.brand).map((p) => p.name)
     )];
     const options = names.map((n) => ({ value: n, label: n }));
-    options.push({ value: MENU_CUSTOM_VALUE, label: '직접입력' });
+    options.unshift({ value: MENU_CUSTOM_VALUE, label: '직접입력' });
     renderOptionList(steps.menu, options, (value) => {
       wizard.nameIsCustom = value === MENU_CUSTOM_VALUE;
       wizard.name = wizard.nameIsCustom ? null : value;
