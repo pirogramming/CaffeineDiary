@@ -4,6 +4,11 @@
  * POST .../from-preset/(추가) 또는 PATCH .../<id>/(교체)로 저장한다.
  * 브랜드 단계에서 "직접입력"을 고르면 메뉴/사이즈 프리셋 단계 대신 자유 입력
  * 폼으로 가고, POST/PATCH .../drinks/(직접입력 전용 엔드포인트)로 저장한다.
+ * 메뉴(음료명) 단계에서 "직접입력"을 고르면(브랜드는 카탈로그 유지) 이름과
+ * 카페인량만 직접 입력받고, 사이즈는 그 브랜드의 기존 사이즈 목록을 그대로
+ * 보여준다 — DrinkSerializer가 브랜드가 custom이 아니면 사이즈를 카탈로그
+ * 라벨로만 허용하기 때문에(자유 입력 사이즈는 서버에서 거부된다) 이 단계의
+ * 사이즈는 항상 카탈로그에서 골라야 한다.
  */
 (function () {
   const listEl = document.getElementById('favorite-drinks-list');
@@ -15,6 +20,7 @@
     type: overlay.querySelector('[data-step="1"]'),
     brand: overlay.querySelector('[data-step="2"]'),
     menu: overlay.querySelector('[data-step="3"]'),
+    menuCustom: overlay.querySelector('[data-step="menu-custom"]'),
     size: overlay.querySelector('[data-step="4"]'),
     custom: overlay.querySelector('[data-step="custom"]'),
     icon: overlay.querySelector('[data-step="5"]'),
@@ -26,10 +32,16 @@
   const customCaffeineInput = document.getElementById('custom-caffeine-input');
   const customNextBtn = document.getElementById('wizard-custom-next-btn');
 
+  const customMenuNameInput = document.getElementById('custom-menu-name-input');
+  const customMenuCaffeineInput = document.getElementById('custom-menu-caffeine-input');
+  const menuCustomNextBtn = document.getElementById('wizard-menu-custom-next-btn');
+
+  const MENU_CUSTOM_VALUE = '__custom__'; // 실제 메뉴명과 겹치지 않도록 예약된 값
+
   let wizard = {
     mode: 'add', editingId: null,
     type: null, brand: null, name: null, size: null, iconKey: null,
-    customBrandName: '', caffeineMg: null,
+    nameIsCustom: false, customBrandName: '', caffeineMg: null,
     presetsForType: [],
   };
 
@@ -133,7 +145,7 @@
     wizard = {
       mode, editingId: editingId ?? null,
       type: null, brand: null, name: null, size: null, iconKey: null,
-      customBrandName: '', caffeineMg: null,
+      nameIsCustom: false, customBrandName: '', caffeineMg: null,
       presetsForType: [],
     };
     steps.type.querySelectorAll('.option_item').forEach((el) => el.classList.remove('is-selected'));
@@ -145,6 +157,8 @@
     customNameInput.value = '';
     customSizeInput.value = '';
     customCaffeineInput.value = '';
+    customMenuNameInput.value = '';
+    customMenuCaffeineInput.value = '';
     showStep('type');
     overlay.style.display = 'flex';
   }
@@ -170,8 +184,11 @@
     const names = [...new Set(
       wizard.presetsForType.filter((p) => p.brand === wizard.brand).map((p) => p.name)
     )];
-    renderOptionList(steps.menu, names.map((n) => ({ value: n, label: n })), (value) => {
-      wizard.name = value;
+    const options = names.map((n) => ({ value: n, label: n }));
+    options.push({ value: MENU_CUSTOM_VALUE, label: '직접입력' });
+    renderOptionList(steps.menu, options, (value) => {
+      wizard.nameIsCustom = value === MENU_CUSTOM_VALUE;
+      wizard.name = wizard.nameIsCustom ? null : value;
     });
     // 새로 그린 목록이라 전부 보이는 상태 — 검색창만 비워서 이전 검색어가 안 남게 한다.
     if (menuSearchInput) menuSearchInput.value = '';
@@ -182,6 +199,7 @@
   menuSearchInput?.addEventListener('input', () => {
     const q = menuSearchInput.value.trim().toLowerCase();
     steps.menu.querySelectorAll('.option_item').forEach((item) => {
+      if (item.dataset.value === MENU_CUSTOM_VALUE) return; // "직접입력"은 검색과 무관하게 항상 노출
       item.hidden = q.length > 0 && !item.textContent.trim().toLowerCase().includes(q);
     });
   });
@@ -195,6 +213,20 @@
     );
   }
 
+  // 메뉴가 직접입력이면 특정 이름에 매칭되는 프리셋이 없으므로, 사이즈는 그
+  // 브랜드가 취급하는 사이즈 라벨 전체(이름 무관)에서 고른다. 카페인량은
+  // 프리셋에 없으니 라벨에 mg를 붙이지 않는다 — 사용자가 직접 입력한 값을 쓴다.
+  function loadSizeOptionsForBrand() {
+    const sizes = [...new Set(
+      wizard.presetsForType.filter((p) => p.brand === wizard.brand).map((p) => p.size)
+    )].filter(Boolean);
+    renderOptionList(
+      steps.size,
+      sizes.map((s) => ({ value: s, label: s })),
+      (value) => { wizard.size = value; }
+    );
+  }
+
   function loadIconOptions() {
     const options = window.CD_DRINK_ICON_OPTIONS[wizard.type] || window.CD_DRINK_ICON_OPTIONS.other;
     renderIconOptionList(steps.icon, options, (key) => {
@@ -204,11 +236,15 @@
 
   async function saveDrink() {
     let res;
-    if (wizard.brand === 'custom') {
+    if (wizard.brand === 'custom' || wizard.nameIsCustom) {
+      // 브랜드 전체 직접입력이거나, 브랜드는 카탈로그인데 메뉴명만 직접입력인 경우.
+      // 두 경우 다 카페인량을 서버 프리셋에서 조회할 수 없으므로 사용자가 입력한
+      // 값을 그대로 쓴다. custom_brand_name은 brand=custom일 때만 의미가 있다
+      // (DrinkSerializer.validate가 그 외엔 어차피 빈 값으로 정리하지만 명시한다).
       const payload = {
         type: wizard.type,
-        brand: 'custom',
-        custom_brand_name: wizard.customBrandName,
+        brand: wizard.brand,
+        custom_brand_name: wizard.brand === 'custom' ? wizard.customBrandName : '',
         name: wizard.name,
         size: wizard.size,
         caffeine_mg: wizard.caffeineMg,
@@ -293,8 +329,26 @@
   });
 
   steps.menu.querySelector('.next_btn').addEventListener('click', () => {
-    if (!wizard.name) { alert('메뉴를 선택해주세요.'); return; }
+    if (!wizard.name && !wizard.nameIsCustom) { alert('메뉴를 선택해주세요.'); return; }
+    if (wizard.nameIsCustom) {
+      showStep('menuCustom');
+      return;
+    }
     loadSizeOptions();
+    showStep('size');
+  });
+
+  menuCustomNextBtn.addEventListener('click', () => {
+    const name = customMenuNameInput.value.trim();
+    const caffeine = Number(customMenuCaffeineInput.value);
+    if (!name) { alert('음료 이름을 입력해주세요.'); return; }
+    if (!customMenuCaffeineInput.value || !(caffeine > 0 && caffeine <= 1000)) {
+      alert('카페인 함량을 1~1000mg 사이로 입력해주세요.');
+      return;
+    }
+    wizard.name = name;
+    wizard.caffeineMg = caffeine;
+    loadSizeOptionsForBrand();
     showStep('size');
   });
 
