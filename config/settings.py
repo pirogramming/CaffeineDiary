@@ -218,3 +218,20 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # collectstatic 수집 위치. 운영에서 nginx가 이 디렉토리를 정적 파일로 서빙한다.
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# 운영(DEBUG=False)에서는 파일명에 콘텐츠 해시를 붙여(예: base.a1b2c3.css) 배포마다
+# URL이 바뀌게 한다. nginx의 30일 캐시(expires 30d)와 맞물려도 재배포 시 즉시 반영되어
+# 강력 새로고침 없이 최신 정적 파일을 받게 된다. 로컬 개발은 collectstatic을 매번
+# 돌리지 않으므로 manifest 오류를 피하기 위해 기본 스토리지를 유지한다.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
+    },
+}
+
