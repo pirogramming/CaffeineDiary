@@ -53,8 +53,25 @@
         <div class="overlay_step overlay_step--list" data-step="3" style="display:none;">
             <h3>어떤 메뉴인가요?</h3>
             <input type="text" class="option_search" data-option-search placeholder="메뉴 검색" autocomplete="off">
-            <div class="option_list"></div>
+            <div class="option_list option_list_menu"></div>
             <button type="button" class="next_btn" data-next="size">다음</button>
+        </div>
+
+        <!-- 3단계에서 "직접입력"을 고르면 여기로 온다. 브랜드는 카탈로그 그대로라
+             사이즈는 다음 단계(4단계)에서 그 브랜드의 기존 사이즈 목록을 그대로 보여준다. -->
+        <div class="overlay_step overlay_step--custom" data-step="menu-custom" style="display:none;">
+            <h3>음료 정보를 입력해주세요</h3>
+            <div class="custom_form">
+                <label>
+                    <span>음료 이름</span>
+                    <input type="text" id="custom-menu-name-input" placeholder="예: 아메리카노" maxlength="100" autocomplete="off">
+                </label>
+                <label>
+                    <span>카페인 함량 (mg)</span>
+                    <input type="number" id="custom-menu-caffeine-input" placeholder="예: 150" min="1" max="1000" inputmode="numeric">
+                </label>
+            </div>
+            <button type="button" class="next_btn" id="wizard-menu-custom-next-btn">다음</button>
         </div>
 
         <!-- 4단계: 사이즈 선택 -->
